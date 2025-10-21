@@ -1,28 +1,13 @@
 <template>
-  <v-container fluid class="pa-6">
+  <CommonPageContainer>
     <!-- Header -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <div class="d-flex justify-space-between align-center flex-wrap ga-4">
-          <div>
-            <h1 class="text-h3 font-weight-bold mb-2">Rentals</h1>
-            <p class="text-h6 text-medium-emphasis font-weight-regular">
-              Track and manage rental bookings
-            </p>
-          </div>
-          <v-btn
-            color="primary"
-            size="x-large"
-            elevation="2"
-            class="rounded-lg"
-            @click="showAddDialog = true"
-          >
-            <v-icon icon="mdi-plus" start></v-icon>
-            New Rental
-          </v-btn>
-        </div>
-      </v-col>
-    </v-row>
+    <CommonPageHeader
+      title="Rentals"
+      subtitle="Track and manage rental bookings"
+      action-text="New Rental"
+      action-icon="mdi-plus"
+      @action-click="showAddDialog = true"
+    />
 
     <!-- Filters -->
     <v-row class="mb-6">
@@ -337,7 +322,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-container>
+  </CommonPageContainer>
 </template>
 
 <script setup lang="ts">

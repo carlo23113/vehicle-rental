@@ -169,7 +169,7 @@
               <!-- Image -->
               <div class="vehicle-list-image">
                 <v-img
-                  :src="vehicle.imageUrl || '/placeholder-car.jpg'"
+                  :src="vehicle.imageUrl || '/placeholder-car.svg'"
                   :alt="`${vehicle.make} ${vehicle.model}`"
                   cover
                   width="200"
@@ -360,7 +360,7 @@
     <!-- Vehicle Details Dialog -->
     <v-dialog v-model="showDetailsDialog" max-width="800">
       <v-card v-if="selectedVehicle">
-        <v-img :src="selectedVehicle.imageUrl || '/placeholder-car.jpg'" height="300" cover>
+        <v-img :src="selectedVehicle.imageUrl || '/placeholder-car.svg'" height="300" cover>
           <template #placeholder>
             <div class="d-flex align-center justify-center h-100 bg-surface-variant">
               <v-icon icon="mdi-car" size="96"></v-icon>

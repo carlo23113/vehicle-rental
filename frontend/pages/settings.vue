@@ -1,14 +1,9 @@
 <template>
-  <v-container fluid class="pa-6">
-    <!-- Header -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <h1 class="text-h4 font-weight-bold mb-2">Settings</h1>
-        <p class="text-body-1 text-medium-emphasis">
-          Manage your account settings and preferences
-        </p>
-      </v-col>
-    </v-row>
+  <CommonPageContainer>
+    <CommonPageHeader
+      title="Settings"
+      subtitle="Manage your account settings and preferences"
+    />
 
     <v-row>
       <!-- Settings Navigation -->
@@ -446,7 +441,7 @@
         </v-card>
       </v-col>
     </v-row>
-  </v-container>
+  </CommonPageContainer>
 </template>
 
 <script setup lang="ts">

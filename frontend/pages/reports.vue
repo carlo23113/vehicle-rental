@@ -1,22 +1,11 @@
 <template>
-  <v-container fluid class="pa-6">
-    <!-- Header -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <div class="d-flex justify-space-between align-center flex-wrap ga-4">
-          <div>
-            <h1 class="text-h3 font-weight-bold mb-2">Reports & Analytics</h1>
-            <p class="text-h6 text-medium-emphasis font-weight-regular">
-              View business insights and performance metrics
-            </p>
-          </div>
-          <v-btn color="primary" size="x-large" elevation="2" class="rounded-lg">
-            <v-icon icon="mdi-download" start></v-icon>
-            Export Report
-          </v-btn>
-        </div>
-      </v-col>
-    </v-row>
+  <CommonPageContainer>
+    <CommonPageHeader
+      title="Reports & Analytics"
+      subtitle="View business insights and performance metrics"
+      action-text="Export Report"
+      action-icon="mdi-download"
+    />
 
     <!-- Date Range Filter -->
     <v-row class="mb-6">
@@ -264,7 +253,7 @@
         </v-card>
       </v-col>
     </v-row>
-  </v-container>
+  </CommonPageContainer>
 </template>
 
 <script setup lang="ts">

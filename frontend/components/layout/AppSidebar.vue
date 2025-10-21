@@ -6,6 +6,7 @@
     :rail-width="65"
     elevation="2"
     class="sidebar"
+    style="z-index: 1004 !important;"
   >
     <!-- Logo / Header -->
     <div class="sidebar-header pa-4" :class="{ 'rail-header': rail }">

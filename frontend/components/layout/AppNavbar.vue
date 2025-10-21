@@ -28,15 +28,19 @@
     <!-- Dark Mode Toggle -->
     <v-btn icon variant="text" class="mr-1" @click="toggleDarkMode">
       <v-icon>{{ isDark ? 'mdi-weather-night' : 'mdi-weather-sunny' }}</v-icon>
-      <v-tooltip activator="parent" location="bottom">
-        {{ isDark ? 'Light Mode' : 'Dark Mode' }}
-      </v-tooltip>
+      <ClientOnly>
+        <v-tooltip activator="parent" location="bottom">
+          {{ isDark ? 'Light Mode' : 'Dark Mode' }}
+        </v-tooltip>
+      </ClientOnly>
     </v-btn>
 
     <!-- Quick Actions -->
     <v-btn icon variant="text" class="mr-1">
       <v-icon>mdi-plus-circle</v-icon>
-      <v-tooltip activator="parent" location="bottom">Quick Add</v-tooltip>
+      <ClientOnly>
+        <v-tooltip activator="parent" location="bottom">Quick Add</v-tooltip>
+      </ClientOnly>
     </v-btn>
 
     <!-- Notifications -->
@@ -44,7 +48,9 @@
       <v-badge content="3" color="error" offset-x="-2" offset-y="-2" dot>
         <v-icon>mdi-bell-outline</v-icon>
       </v-badge>
-      <v-tooltip activator="parent" location="bottom">Notifications</v-tooltip>
+      <ClientOnly>
+        <v-tooltip activator="parent" location="bottom">Notifications</v-tooltip>
+      </ClientOnly>
     </v-btn>
 
     <!-- User Menu -->

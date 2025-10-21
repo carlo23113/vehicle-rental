@@ -4,7 +4,7 @@
     <div class="vehicle-image">
       <div class="image-overlay"></div>
       <v-img
-        :src="vehicle.imageUrl || '/placeholder-car.jpg'"
+        :src="vehicle.imageUrl || '/placeholder-car.svg'"
         :alt="vehicleName"
         cover
         height="220"

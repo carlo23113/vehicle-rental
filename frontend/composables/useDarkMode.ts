@@ -11,23 +11,30 @@ export const useDarkMode = () => {
       const savedTheme = localStorage.getItem('theme')
       if (savedTheme) {
         isDark.value = savedTheme === 'dark'
-        theme.global.name.value = savedTheme
       } else {
         // Check system preference
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
         isDark.value = prefersDark
-        theme.global.name.value = prefersDark ? 'dark' : 'light'
+      }
+      // Apply theme immediately
+      if (isDark.value) {
+        theme.change('dark')
+      } else {
+        theme.change('light')
       }
     }
   })
 
   // Watch for changes and persist
-  watch(isDark, (newValue) => {
-    const themeName = newValue ? 'dark' : 'light'
-    theme.global.name.value = themeName
+  watch(isDark, newValue => {
+    if (newValue) {
+      theme.change('dark')
+    } else {
+      theme.change('light')
+    }
 
     if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', themeName)
+      localStorage.setItem('theme', newValue ? 'dark' : 'light')
     }
   })
 

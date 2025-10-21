@@ -32,7 +32,7 @@
           >
             {{ stat.title }}
           </p>
-          <h2 class="text-h3 font-weight-bold mb-1">{{ stat.value }}</h2>
+          <h2 class="text-h4 font-weight-bold mb-1">{{ stat.value }}</h2>
           <p class="text-caption text-medium-emphasis">vs last month</p>
         </div>
       </v-card>

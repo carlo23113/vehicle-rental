@@ -1,10 +1,11 @@
 <template>
-  <v-container fluid class="pa-6 dashboard">
-    <!-- Header -->
-    <LazyDashboardHeader
-      :greeting="greeting"
-      :user-name="userName"
-      @add-vehicle="handleQuickAction('add-vehicle')"
+  <CommonPageContainer>
+    <CommonPageHeader
+      :title="`Good ${greeting}, ${userName}! 👋`"
+      subtitle="Here's what's happening with your fleet today"
+      action-text="Add Vehicle"
+      action-icon="mdi-plus"
+      @action-click="handleQuickAction('add-vehicle')"
     />
 
     <!-- Statistics Cards -->
@@ -39,7 +40,7 @@
         <LazyDashboardMaintenanceAlerts :alerts="maintenanceAlerts" />
       </v-col>
     </v-row>
-  </v-container>
+  </CommonPageContainer>
 </template>
 
 <script setup lang="ts">
@@ -67,9 +68,3 @@ const handleQuickAction = (action: string) => {
   // TODO: Implement quick action handlers
 };
 </script>
-
-<style scoped>
-.dashboard {
-  background: transparent;
-}
-</style>
