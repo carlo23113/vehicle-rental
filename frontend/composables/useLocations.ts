@@ -4,6 +4,7 @@ export interface Location {
   id: string
   name: string
   address: string
+  country?: string
   city: string
   state: string
   zipCode: string
@@ -16,11 +17,22 @@ export interface Location {
     weekend: string
   }
   capacity: number
-  hasMaintenanceFacility: boolean
   createdAt: string
 }
 
+export interface LocationFilters {
+  search: string
+  status: string
+  type: string
+}
+
 export const useLocations = () => {
+  const filters = ref<LocationFilters>({
+    search: '',
+    status: 'all',
+    type: 'all',
+  })
+
   const locations = ref<Location[]>([
     {
       id: '1',
@@ -38,7 +50,6 @@ export const useLocations = () => {
         weekend: '9:00 AM - 6:00 PM',
       },
       capacity: 50,
-      hasMaintenanceFacility: true,
       createdAt: '2024-01-15',
     },
     {
@@ -57,7 +68,6 @@ export const useLocations = () => {
         weekend: '7:00 AM - 9:00 PM',
       },
       capacity: 75,
-      hasMaintenanceFacility: false,
       createdAt: '2024-02-01',
     },
     {
@@ -76,7 +86,6 @@ export const useLocations = () => {
         weekend: '9:00 AM - 5:00 PM',
       },
       capacity: 30,
-      hasMaintenanceFacility: true,
       createdAt: '2024-03-10',
     },
     {
@@ -95,7 +104,6 @@ export const useLocations = () => {
         weekend: '10:00 AM - 6:00 PM',
       },
       capacity: 40,
-      hasMaintenanceFacility: false,
       createdAt: '2024-04-05',
     },
     {
@@ -114,10 +122,25 @@ export const useLocations = () => {
         weekend: 'Closed',
       },
       capacity: 20,
-      hasMaintenanceFacility: false,
       createdAt: '2024-01-20',
     },
   ])
+
+  const filteredLocations = computed(() => {
+    return locations.value.filter(location => {
+      const matchesSearch =
+        !filters.value.search ||
+        location.name.toLowerCase().includes(filters.value.search.toLowerCase()) ||
+        location.city.toLowerCase().includes(filters.value.search.toLowerCase()) ||
+        location.address.toLowerCase().includes(filters.value.search.toLowerCase()) ||
+        location.email.toLowerCase().includes(filters.value.search.toLowerCase())
+
+      const matchesStatus = filters.value.status === 'all' || location.status === filters.value.status
+      const matchesType = filters.value.type === 'all' || location.type === filters.value.type
+
+      return matchesSearch && matchesStatus && matchesType
+    })
+  })
 
   const activeLocations = computed(() => {
     return locations.value.filter(location => location.status === 'active')
@@ -125,6 +148,14 @@ export const useLocations = () => {
 
   const getLocationById = (id: string) => {
     return locations.value.find(location => location.id === id)
+  }
+
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      active: 'success',
+      inactive: 'warning',
+    }
+    return colors[status] || 'default'
   }
 
   const getFullAddress = (location: Location) => {
@@ -169,8 +200,11 @@ export const useLocations = () => {
 
   return {
     locations,
+    filters,
+    filteredLocations,
     activeLocations,
     getLocationById,
+    getStatusColor,
     getFullAddress,
     formatLocationForSelect,
     addLocation,

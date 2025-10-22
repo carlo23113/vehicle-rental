@@ -1,18 +1,40 @@
 <template>
-  <CommonUiDataTable :headers="headers" :items="locations" :items-per-page="10">
-    <!-- Name & Address Column -->
-    <template #item.name="{ item }">
-      <div>
-        <div class="font-weight-semibold d-flex align-center ga-2">
+  <CommonUiDataTable
+    :headers="headers"
+    :items="locations"
+    :items-per-page="10"
+    table-class="locations-table"
+    empty-icon="mdi-map-marker-off"
+    empty-title="No locations found"
+    empty-message="Try adjusting your filters or add a new location"
+  >
+    <!-- Location & Type Column -->
+    <template #item.location="{ item }">
+      <div class="flex items-center py-3">
+        <v-avatar
+          :color="item.type === 'main' ? 'primary' : 'info'"
+          size="48"
+          class="location-avatar"
+        >
           <v-icon
             :icon="item.type === 'main' ? 'mdi-office-building' : 'mdi-map-marker'"
-            size="16"
-            :color="item.type === 'main' ? 'primary' : 'default'"
+            size="24"
           />
-          {{ item.name }}
+        </v-avatar>
+        <div class="ml-3">
+          <div class="font-bold text-base">{{ item.name }}</div>
+          <div class="text-xs text-medium-emphasis">
+            {{ item.type === 'main' ? 'Main Office' : 'Branch Location' }}
+          </div>
         </div>
-        <div class="text-caption text-medium-emphasis mt-1">{{ item.address }}</div>
-        <div class="text-caption text-medium-emphasis">
+      </div>
+    </template>
+
+    <!-- Address Column -->
+    <template #item.address="{ item }">
+      <div>
+        <div class="text-body-2">{{ item.address }}</div>
+        <div class="text-xs text-medium-emphasis">
           {{ item.city }}, {{ item.state }} {{ item.zipCode }}
         </div>
       </div>
@@ -20,99 +42,53 @@
 
     <!-- Contact Column -->
     <template #item.contact="{ item }">
-      <div class="text-body-2">
-        <div class="d-flex align-center ga-1">
-          <v-icon icon="mdi-phone" size="14" />
-          {{ item.phone }}
-        </div>
-        <div class="d-flex align-center ga-1 mt-1">
-          <v-icon icon="mdi-email" size="14" />
-          {{ item.email }}
-        </div>
-      </div>
-    </template>
-
-    <!-- Operating Hours Column -->
-    <template #item.hours="{ item }">
-      <div class="text-body-2">
-        <div class="d-flex align-center ga-1">
-          <v-icon icon="mdi-calendar-week" size="14" />
-          <span class="text-caption">Weekday:</span>
-          {{ item.operatingHours.weekday }}
-        </div>
-        <div class="d-flex align-center ga-1 mt-1">
-          <v-icon icon="mdi-calendar-weekend" size="14" />
-          <span class="text-caption">Weekend:</span>
-          {{ item.operatingHours.weekend }}
-        </div>
-      </div>
-    </template>
-
-    <!-- Capacity & Facilities Column -->
-    <template #item.capacity="{ item }">
-      <div class="d-flex flex-column ga-1">
-        <v-chip size="small" variant="tonal" color="primary">
-          <v-icon icon="mdi-garage" start />
-          {{ item.capacity }} vehicles
-        </v-chip>
-        <v-chip
-          v-if="item.hasMaintenanceFacility"
-          size="small"
-          variant="tonal"
-          color="warning"
-        >
-          <v-icon icon="mdi-tools" start />
-          Maintenance
-        </v-chip>
+      <div>
+        <div class="text-body-2">{{ item.phone }}</div>
+        <div class="text-xs text-medium-emphasis">{{ item.email }}</div>
       </div>
     </template>
 
     <!-- Status Column -->
     <template #item.status="{ item }">
-      <v-chip :color="item.status === 'active' ? 'success' : 'error'" size="small" variant="tonal">
-        <v-icon
-          :icon="item.status === 'active' ? 'mdi-check-circle' : 'mdi-close-circle'"
-          start
-        />
+      <v-chip :color="getStatusColor(item.status)" size="small" variant="flat" class="status-chip">
         {{ item.status }}
       </v-chip>
     </template>
 
+    <!-- Capacity Column -->
+    <template #item.capacity="{ item }">
+      <div>
+        <div class="font-bold text-base">{{ item.capacity }} vehicles</div>
+      </div>
+    </template>
+
     <!-- Actions Column -->
     <template #item.actions="{ item }">
-      <div class="d-flex ga-1">
+      <div class="flex gap-2" @click.stop>
         <v-btn
           icon="mdi-eye"
           size="small"
-          variant="text"
-          color="primary"
+          variant="tonal"
+          color="info"
+          class="action-btn"
           @click="$emit('view', item)"
         />
         <v-btn
           icon="mdi-pencil"
           size="small"
-          variant="text"
-          color="warning"
+          variant="tonal"
+          color="primary"
+          class="action-btn"
           @click="$emit('edit', item)"
         />
         <v-btn
           icon="mdi-delete"
           size="small"
-          variant="text"
+          variant="tonal"
           color="error"
+          class="action-btn"
           @click="$emit('delete', item)"
         />
-      </div>
-    </template>
-
-    <!-- Empty State -->
-    <template #no-data>
-      <div class="text-center py-8">
-        <v-icon icon="mdi-map-marker-off" size="64" color="grey-lighten-1" />
-        <div class="text-h6 mt-4">No locations found</div>
-        <div class="text-body-2 text-medium-emphasis mt-2">
-          Add your first location to get started
-        </div>
       </div>
     </template>
   </CommonUiDataTable>
@@ -123,6 +99,7 @@ import type { Location } from '~/composables/useLocations'
 
 defineProps<{
   locations: Location[]
+  getStatusColor: (status: string) => string
 }>()
 
 defineEmits<{
@@ -132,11 +109,39 @@ defineEmits<{
 }>()
 
 const headers = [
-  { title: 'Location & Address', key: 'name', sortable: true },
-  { title: 'Contact', key: 'contact', sortable: false },
-  { title: 'Operating Hours', key: 'hours', sortable: false },
-  { title: 'Capacity & Facilities', key: 'capacity', sortable: true },
+  { title: 'Location', key: 'location', sortable: true },
+  { title: 'Address', key: 'address', sortable: true },
+  { title: 'Contact', key: 'contact', sortable: true },
   { title: 'Status', key: 'status', sortable: true },
+  { title: 'Capacity', key: 'capacity', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false, align: 'end' as const },
 ]
 </script>
+
+<style lang="scss" scoped>
+.location-avatar {
+  @apply transition-all duration-300;
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.18),
+    0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.locations-table :deep(tbody tr:hover) .location-avatar {
+  @apply scale-105;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.25),
+    0 0 0 3px rgba(var(--v-theme-primary), 0.2);
+}
+
+.status-chip {
+  @apply rounded-lg font-bold;
+}
+
+.action-btn {
+  @apply transition-all duration-200;
+
+  &:hover {
+    @apply scale-110;
+  }
+}
+</style>

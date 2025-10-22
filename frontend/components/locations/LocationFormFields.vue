@@ -67,36 +67,51 @@
           />
         </v-col>
         <v-col cols="12" md="6">
-          <v-text-field
-            v-model="localForm.city"
-            label="City"
-            placeholder="San Francisco"
+          <v-select
+            v-model="localForm.country"
+            label="Country"
             variant="outlined"
             density="comfortable"
+            :items="countryOptions"
             :rules="[rules.required]"
-            prepend-inner-icon="mdi-city"
+            prepend-inner-icon="mdi-earth"
+            @update:model-value="handleCountryChange"
           />
         </v-col>
-        <v-col cols="12" md="3">
-          <v-text-field
+        <v-col cols="12" md="6">
+          <v-select
             v-model="localForm.state"
-            label="State"
-            placeholder="CA"
+            label="State/Province"
             variant="outlined"
             density="comfortable"
+            :items="stateOptions"
             :rules="[rules.required]"
             prepend-inner-icon="mdi-map-outline"
+            :disabled="!localForm.country"
+            @update:model-value="handleStateChange"
           />
         </v-col>
-        <v-col cols="12" md="3">
-          <v-text-field
-            v-model="localForm.zipCode"
-            label="Zip Code"
-            placeholder="94102"
+        <v-col cols="12" md="6">
+          <v-select
+            v-model="localForm.city"
+            label="City"
             variant="outlined"
             density="comfortable"
-            :rules="[rules.required, rules.zipCode]"
-            prepend-inner-icon="mdi-mailbox"
+            :items="cityOptions"
+            :rules="[rules.required]"
+            prepend-inner-icon="mdi-city-variant-outline"
+            :disabled="!localForm.state"
+          />
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="localForm.zipCode"
+            label="ZIP/Postal Code"
+            placeholder="1000"
+            variant="outlined"
+            density="comfortable"
+            :rules="[rules.required]"
+            prepend-inner-icon="mdi-mailbox-outline"
           />
         </v-col>
       </v-row>
@@ -130,61 +145,13 @@
         </v-col>
       </v-row>
     </CommonFormSection>
-
-    <!-- Operating Hours -->
-    <CommonFormSection title="Operating Hours" icon="mdi-clock-outline">
-      <v-row>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="localForm.operatingHours.weekday"
-            label="Weekday Hours"
-            placeholder="8:00 AM - 8:00 PM"
-            variant="outlined"
-            density="comfortable"
-            :rules="[rules.required]"
-            prepend-inner-icon="mdi-calendar-week"
-          />
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="localForm.operatingHours.weekend"
-            label="Weekend Hours"
-            placeholder="9:00 AM - 6:00 PM"
-            variant="outlined"
-            density="comfortable"
-            :rules="[rules.required]"
-            prepend-inner-icon="mdi-calendar-weekend"
-          />
-        </v-col>
-      </v-row>
-    </CommonFormSection>
-
-    <!-- Facilities -->
-    <CommonFormSection title="Facilities" icon="mdi-tools">
-      <v-row>
-        <v-col cols="12">
-          <v-switch
-            v-model="localForm.hasMaintenanceFacility"
-            label="Has Maintenance Facility"
-            color="primary"
-            hide-details
-          >
-            <template #prepend>
-              <v-icon icon="mdi-garage-variant" />
-            </template>
-          </v-switch>
-          <div class="text-caption text-medium-emphasis mt-2 ml-12">
-            Enable this if the location has vehicle maintenance and repair facilities
-          </div>
-        </v-col>
-      </v-row>
-    </CommonFormSection>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Location } from '~/composables/useLocations'
+import { useCountryLocations } from '~/composables/useCountryLocations'
 
 export type LocationFormData = Omit<Location, 'id' | 'createdAt'>
 
@@ -200,6 +167,23 @@ const localForm = computed({
   get: () => props.modelValue,
   set: value => emit('update:modelValue', value),
 })
+
+const { getCountryOptions, getStateOptions, getCityOptions } = useCountryLocations()
+
+const countryOptions = computed(() => getCountryOptions())
+const stateOptions = computed(() => getStateOptions(localForm.value.country || ''))
+const cityOptions = computed(() =>
+  getCityOptions(localForm.value.country || '', localForm.value.state || '')
+)
+
+const handleCountryChange = () => {
+  localForm.value.state = ''
+  localForm.value.city = ''
+}
+
+const handleStateChange = () => {
+  localForm.value.city = ''
+}
 
 const typeOptions = [
   { title: 'Main Office', value: 'main' },

@@ -22,6 +22,8 @@ export const usePageTitle = () => {
       '/users': 'Users',
       '/roles': 'Roles',
       '/settings': 'Settings',
+      '/locations': 'Locations',
+      '/locations/add': 'Add Location',
     }
 
     // Check if we have a custom title for this route
