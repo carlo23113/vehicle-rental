@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useCurrency } from '~/composables/useCurrency'
+
+const { formatCurrency } = useCurrency()
+
 interface Rental {
   id: number
   customer: string
@@ -90,7 +94,7 @@ const headers = [
       </template>
 
       <template #[`item.amount`]="{ item }">
-        <div class="text-h6 font-weight-bold amount-text">${{ item.amount }}</div>
+        <div class="text-h6 font-weight-bold amount-text">{{ formatCurrency(parseFloat(item.amount)) }}</div>
       </template>
     </v-data-table>
   </v-card>

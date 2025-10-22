@@ -192,8 +192,10 @@ export const useReports = () => {
     return maintenanceSummary.value.reduce((sum, item) => sum + item.totalCost, 0)
   })
 
+  const { formatCurrency: formatCurrencyUtil } = useCurrency()
+
   const formatCurrency = (value: number) => {
-    return `$${value.toLocaleString()}`
+    return formatCurrencyUtil(value)
   }
 
   const formatDate = (dateString: string) => {

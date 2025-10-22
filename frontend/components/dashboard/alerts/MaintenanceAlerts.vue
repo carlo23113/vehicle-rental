@@ -10,9 +10,9 @@ defineProps<{
 </script>
 
 <template>
-  <CommonDashboardCard>
+  <CommonUiDashboardCard>
     <v-card-title class="pa-6 pb-4">
-      <CommonSectionHeader
+      <CommonUiSectionHeader
         title="Maintenance Alerts"
         subtitle="Vehicles requiring attention"
         icon="mdi-alert-circle"
@@ -29,5 +29,5 @@ defineProps<{
         />
       </v-list>
     </v-card-text>
-  </CommonDashboardCard>
+  </CommonUiDashboardCard>
 </template>

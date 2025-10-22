@@ -16,9 +16,9 @@ defineEmits<{
 </script>
 
 <template>
-  <CommonDashboardCard class="mb-4">
+  <CommonUiDashboardCard class="mb-4">
     <v-card-title class="pa-6 pb-4">
-      <CommonSectionHeader
+      <CommonUiSectionHeader
         title="Quick Actions"
         subtitle="Shortcut to common tasks"
         icon="mdi-lightning-bolt"
@@ -36,5 +36,5 @@ defineEmits<{
         </v-col>
       </v-row>
     </v-card-text>
-  </CommonDashboardCard>
+  </CommonUiDashboardCard>
 </template>

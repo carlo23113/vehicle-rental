@@ -194,6 +194,28 @@ export const useVehicles = () => {
     return labels[type] || type
   }
 
+  const getTypeIcon = (type: string) => {
+    const icons: Record<string, string> = {
+      sedan: 'mdi-car-side',
+      suv: 'mdi-car-estate',
+      truck: 'mdi-truck',
+      van: 'mdi-van-utility',
+      electric: 'mdi-ev-station',
+      luxury: 'mdi-car-sports',
+    }
+    return icons[type] || 'mdi-car'
+  }
+
+  const getStatusIcon = (status: string) => {
+    const icons: Record<string, string> = {
+      available: 'mdi-check-circle',
+      rented: 'mdi-key',
+      maintenance: 'mdi-tools',
+      'out-of-service': 'mdi-close-circle',
+    }
+    return icons[status] || 'mdi-circle'
+  }
+
   return {
     vehicles,
     filters,
@@ -203,5 +225,7 @@ export const useVehicles = () => {
     deleteVehicle,
     getStatusColor,
     getTypeLabel,
+    getTypeIcon,
+    getStatusIcon,
   }
 }

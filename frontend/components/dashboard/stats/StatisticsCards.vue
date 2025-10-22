@@ -15,7 +15,7 @@ defineProps<{
 
 <template>
   <div class="stats-grid">
-    <CommonStatCard
+    <CommonUiStatCard
       v-for="stat in stats"
       :key="stat.title"
       :icon="stat.icon"

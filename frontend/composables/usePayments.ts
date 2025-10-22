@@ -264,8 +264,10 @@ export const usePayments = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   }
 
+  const { formatCurrency: formatCurrencyUtil } = useCurrency()
+
   const formatCurrency = (value: number) => {
-    return `$${value.toLocaleString()}`
+    return formatCurrencyUtil(value)
   }
 
   return {

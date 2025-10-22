@@ -106,11 +106,10 @@
             <div>
               <p class="text-caption text-medium-emphasis mb-1">Total Revenue</p>
               <h3 class="text-h4 font-weight-bold">
-                ${{
-                  rentals
+                {{
+                  formatCurrency(rentals
                     .filter(r => r.status !== 'cancelled')
-                    .reduce((sum, r) => sum + r.totalAmount, 0)
-                    .toLocaleString()
+                    .reduce((sum, r) => sum + r.totalAmount, 0))
                 }}
               </h3>
             </div>
@@ -173,8 +172,8 @@
 
               <template #item.totalAmount="{ item }">
                 <div>
-                  <div class="font-weight-bold text-h6">${{ item.totalAmount }}</div>
-                  <div class="text-caption text-medium-emphasis">${{ item.dailyRate }}/day</div>
+                  <div class="font-weight-bold text-h6">{{ formatCurrency(item.totalAmount) }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ formatCurrency(item.dailyRate) }}/day</div>
                 </div>
               </template>
 
@@ -328,8 +327,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRentals } from '~/composables/useRentals'
+import { useCurrency } from '~/composables/useCurrency'
 
 const { rentals, filters, filteredRentals, getStatusColor, formatDate } = useRentals()
+const { formatCurrency } = useCurrency()
 
 const showAddDialog = ref(false)
 

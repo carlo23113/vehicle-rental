@@ -94,7 +94,7 @@
             <div>
               <p class="text-caption text-medium-emphasis mb-1">Total Revenue</p>
               <h3 class="text-h4 font-weight-bold">
-                ${{ customers.reduce((sum, c) => sum + c.totalSpent, 0).toLocaleString() }}
+                {{ formatCurrency(customers.reduce((sum, c) => sum + c.totalSpent, 0)) }}
               </h3>
             </div>
           </div>
@@ -157,7 +157,7 @@
                 <div>
                   <div class="font-weight-bold">{{ item.totalRentals }} rentals</div>
                   <div class="text-caption text-medium-emphasis">
-                    ${{ item.totalSpent.toLocaleString() }} spent
+                    {{ formatCurrency(item.totalSpent) }} spent
                   </div>
                 </div>
               </template>
@@ -350,6 +350,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useCustomers } from '~/composables/useCustomers'
+import { useCurrency } from '~/composables/useCurrency'
+
+const { formatCurrency } = useCurrency()
 
 const {
   customers,

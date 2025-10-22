@@ -23,9 +23,9 @@ const chartData = computed(() =>
 </script>
 
 <template>
-  <CommonDashboardCard class="h-full">
+  <CommonUiDashboardCard class="h-full">
     <v-card-title class="pa-6 pb-4">
-      <CommonSectionHeader title="Vehicle Status" subtitle="Real-time fleet distribution" />
+      <CommonUiSectionHeader title="Vehicle Status" subtitle="Real-time fleet distribution" />
     </v-card-title>
     <v-card-text class="pa-6 pt-2">
       <LazyDashboardVehicleStatusChart :data="chartData" />
@@ -41,5 +41,5 @@ const chartData = computed(() =>
         />
       </div>
     </v-card-text>
-  </CommonDashboardCard>
+  </CommonUiDashboardCard>
 </template>

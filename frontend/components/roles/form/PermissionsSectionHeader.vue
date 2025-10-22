@@ -1,13 +1,8 @@
 <template>
   <div class="mb-4">
     <div class="flex items-center justify-between">
-      <CommonSectionHeader
-        title="Permissions"
-        subtitle="Select what this role can access"
-      />
-      <v-chip size="small" variant="tonal" color="primary">
-        {{ selectedCount }} selected
-      </v-chip>
+      <CommonUiSectionHeader title="Permissions" subtitle="Select what this role can access" />
+      <v-chip size="small" variant="tonal" color="primary"> {{ selectedCount }} selected </v-chip>
     </div>
   </div>
 

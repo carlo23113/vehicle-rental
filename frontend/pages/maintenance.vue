@@ -116,11 +116,10 @@
             <div>
               <p class="text-caption text-medium-emphasis mb-1">Total Cost</p>
               <h3 class="text-h4 font-weight-bold">
-                ${{
-                  maintenanceRecords
+                {{
+                  formatCurrency(maintenanceRecords
                     .filter(r => r.status === 'completed')
-                    .reduce((sum, r) => sum + r.cost, 0)
-                    .toLocaleString()
+                    .reduce((sum, r) => sum + r.cost, 0))
                 }}
               </h3>
             </div>
@@ -194,7 +193,7 @@
               </template>
 
               <template #item.cost="{ item }">
-                <div class="font-weight-bold text-h6">${{ item.cost.toFixed(2) }}</div>
+                <div class="font-weight-bold text-h6">{{ formatCurrency(item.cost) }}</div>
               </template>
 
               <template #item.actions="{ item }">
@@ -371,6 +370,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useMaintenance } from '~/composables/useMaintenance'
+import { useCurrency } from '~/composables/useCurrency'
+
+const { formatCurrency } = useCurrency()
 
 const {
   maintenanceRecords,

@@ -34,6 +34,7 @@
         :title="rail ? undefined : item.title"
         :value="item.value"
         :to="item.to"
+        :active="isActiveRoute(item.to)"
         color="primary"
         rounded="lg"
         class="nav-item mb-1"
@@ -81,10 +82,18 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 defineProps<{
   rail: boolean
 }>()
+
+const route = useRoute()
+
+// Check if a route is active (including child routes)
+const isActiveRoute = (path: string) => {
+  return route.path.startsWith(path)
+}
 
 // Navigation items
 const navigationItems = ref([

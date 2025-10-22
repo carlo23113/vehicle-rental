@@ -1,0 +1,44 @@
+/* Shared Navbar Action Button Styles */
+.action-btn {
+  background: rgba(var(--v-theme-primary), 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: visible;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center,
+    rgba(var(--v-theme-primary), 0.25) 0%,
+    rgba(var(--v-theme-primary), 0.1) 50%,
+    transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 50%;
+  transform: scale(0.5);
+}
+
+.action-btn:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.action-btn:hover {
+  background: rgba(var(--v-theme-primary), 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.15);
+}
+
+/* Stagger Animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

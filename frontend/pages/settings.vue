@@ -160,6 +160,41 @@
 
               <v-list-item>
                 <template v-slot:prepend>
+                  <v-icon>mdi-currency-usd</v-icon>
+                </template>
+                <v-list-item-title>Currency</v-list-item-title>
+                <v-list-item-subtitle>
+                  Choose your preferred currency for displaying prices
+                </v-list-item-subtitle>
+              </v-list-item>
+              <v-col cols="12" md="6" class="px-4">
+                <v-select
+                  v-model="preferences.currency"
+                  :items="currencies"
+                  item-title="name"
+                  item-value="code"
+                  variant="outlined"
+                  density="comfortable"
+                  @update:model-value="updateCurrency"
+                >
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props">
+                      <template v-slot:prepend>
+                        <span class="text-lg font-bold mr-2">{{ item.raw.symbol }}</span>
+                      </template>
+                    </v-list-item>
+                  </template>
+                  <template v-slot:selection="{ item }">
+                    <span class="font-bold mr-2">{{ item.raw.symbol }}</span>
+                    {{ item.raw.name }} ({{ item.raw.code }})
+                  </template>
+                </v-select>
+              </v-col>
+
+              <v-divider></v-divider>
+
+              <v-list-item>
+                <template v-slot:prepend>
                   <v-icon>mdi-clock-outline</v-icon>
                 </template>
                 <v-list-item-title>Time Format</v-list-item-title>
@@ -448,9 +483,11 @@
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useDarkMode } from '~/composables/useDarkMode'
+import { useCurrency } from '~/composables/useCurrency'
 
 const authStore = useAuthStore()
 const { isDark, setDarkMode } = useDarkMode()
+const { currencies, selectedCurrency, setCurrency } = useCurrency()
 
 const activeSection = ref('profile')
 const saving = ref(false)
@@ -482,6 +519,7 @@ const profileForm = ref({
 const preferences = ref({
   darkMode: isDark.value,
   language: 'en',
+  currency: selectedCurrency.value.code,
   timeFormat: '12-hour',
   emailNotifications: true,
   pushNotifications: true,
@@ -570,6 +608,13 @@ const saveNotifications = async () => {
   await new Promise(resolve => setTimeout(resolve, 1000))
   saving.value = false
   // Show success message
+}
+
+const updateCurrency = (currencyCode: string) => {
+  const currency = currencies.find(c => c.code === currencyCode)
+  if (currency) {
+    setCurrency(currency)
+  }
 }
 </script>
 

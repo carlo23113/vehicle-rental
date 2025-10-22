@@ -104,7 +104,7 @@
         <div class="pricing-section">
           <div class="text-caption text-medium-emphasis mb-1">Starting from</div>
           <div class="d-flex align-baseline ga-1">
-            <span class="price-amount">${{ vehicle.dailyRate }}</span>
+            <span class="price-amount">{{ formatCurrency(vehicle.dailyRate) }}</span>
             <span class="price-period">/day</span>
           </div>
         </div>
@@ -126,7 +126,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useCurrency } from '~/composables/useCurrency'
 import type { Vehicle } from '~/types/vehicle'
+
+const { formatCurrency } = useCurrency()
 
 const props = defineProps<{
   vehicle: Vehicle

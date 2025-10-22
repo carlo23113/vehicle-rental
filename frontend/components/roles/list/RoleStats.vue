@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-col v-for="stat in stats" :key="stat.label" cols="6" lg="3">
-      <CommonStatCard
+      <CommonUiStatCard
         :icon="stat.icon"
         :label="stat.label"
         :value="stat.value"
@@ -25,6 +25,6 @@ const stats = computed(() => [
   { icon: 'mdi-shield-account', label: 'Total Roles', value: props.totalRoles, color: 'primary' },
   { icon: 'mdi-account-multiple', label: 'Total Users', value: props.totalUsers, color: 'success' },
   { icon: 'mdi-lock-check', label: 'Permissions', value: props.totalPermissions, color: 'info' },
-  { icon: 'mdi-shield-lock', label: 'Custom Roles', value: props.customRoles, color: 'warning' }
+  { icon: 'mdi-shield-lock', label: 'Custom Roles', value: props.customRoles, color: 'warning' },
 ])
 </script>

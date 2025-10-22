@@ -23,18 +23,65 @@ const { permissionsByModule, handleSaveRole, handleDelete, handleBack, handleVie
 
 const showEditDialog = ref(false)
 const handleEdit = () => (showEditDialog.value = true)
+
+const getHeaderActions = (role: any): Array<{
+  key: string
+  label: string
+  icon: string
+  variant: 'text' | 'flat' | 'elevated' | 'tonal' | 'outlined' | 'plain'
+  color?: string
+}> => {
+  const actions: Array<{
+    key: string
+    label: string
+    icon: string
+    variant: 'text' | 'flat' | 'elevated' | 'tonal' | 'outlined' | 'plain'
+    color?: string
+  }> = [
+    {
+      key: 'edit',
+      label: 'Edit',
+      icon: 'mdi-pencil',
+      variant: 'outlined'
+    }
+  ]
+
+  if (!role.isSystem) {
+    actions.push({
+      key: 'delete',
+      label: 'Delete',
+      icon: 'mdi-delete',
+      variant: 'text',
+      color: 'error'
+    })
+  }
+
+  return actions
+}
+
+const handleHeaderAction = (key: string) => {
+  if (key === 'edit') {
+    handleEdit()
+  } else if (key === 'delete') {
+    handleDelete()
+  }
+}
 </script>
 
 <template>
   <div v-if="role" class="p-5 max-w-[1400px] mx-auto">
-    <CommonPageBreadcrumbs
+    <CommonPageDetailPageHeader
+      :title="role.name"
+      :subtitle="role.description"
+      :badge="role.isSystem ? 'System' : undefined"
+      badge-color="primary"
+      show-breadcrumbs
       parent-label="Roles & Permissions"
       parent-icon="mdi-shield-account"
-      :current-label="role.name"
+      :actions="getHeaderActions(role)"
       @back="handleBack"
+      @action="handleHeaderAction"
     />
-
-    <RolesDetailRoleDetailHeader :role="role" @edit="handleEdit" @delete="handleDelete" />
 
     <RolesDetailRoleInfoCards :role="role" />
 

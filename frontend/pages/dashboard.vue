@@ -44,9 +44,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { useDashboardData } from '~/composables/useDashboardData'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const { stats, vehicleStatus, recentRentals, quickActions, maintenanceAlerts } = useDashboardData()
 
@@ -62,7 +64,21 @@ const greeting = computed(() => {
 const revenueFilter = ref<'week' | 'month' | 'year'>('month')
 
 const handleQuickAction = (action: string) => {
-  console.log('Quick action:', action)
-  // TODO: Implement quick action handlers
+  switch (action) {
+    case 'add-vehicle':
+      router.push('/vehicles/add')
+      break
+    case 'new-rental':
+      router.push('/rentals')
+      break
+    case 'add-customer':
+      router.push('/customers')
+      break
+    case 'generate-report':
+      router.push('/reports')
+      break
+    default:
+      console.log('Quick action:', action)
+  }
 }
 </script>

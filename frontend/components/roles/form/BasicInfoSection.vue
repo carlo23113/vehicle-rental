@@ -1,6 +1,6 @@
 <template>
   <div class="relative mb-7">
-    <CommonSectionHeader
+    <CommonUiSectionHeader
       title="Basic Information"
       subtitle="Define the role's name and purpose"
     />

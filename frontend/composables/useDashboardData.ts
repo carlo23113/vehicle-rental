@@ -1,11 +1,14 @@
 import { ref, computed } from 'vue'
+import { useCurrency } from './useCurrency'
 
 export const useDashboardData = () => {
+  const { formatCurrency } = useCurrency()
+
   // Statistics data
   const stats = ref([
     {
       title: "Total Revenue",
-      value: "$124.5K",
+      value: formatCurrency(124500),
       change: "12.5%",
       trend: "up" as const,
       icon: "mdi-currency-usd",

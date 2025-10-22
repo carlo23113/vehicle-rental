@@ -97,19 +97,19 @@
   box-shadow: 0 4px 16px rgba(var(--v-theme-primary), 0.25);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
 }
 
-.action-btn::before {
+.action-btn::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
-.action-btn:hover::before {
+.action-btn:hover::after {
   opacity: 1;
 }
 

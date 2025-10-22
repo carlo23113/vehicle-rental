@@ -224,7 +224,7 @@
               <!-- Pricing & Action -->
               <div class="d-flex flex-column justify-space-between align-end">
                 <div class="text-right">
-                  <div class="text-h4 font-weight-bold text-primary">${{ vehicle.dailyRate }}</div>
+                  <div class="text-h4 font-weight-bold text-primary">{{ formatCurrency(vehicle.dailyRate) }}</div>
                   <div class="text-caption text-medium-emphasis">per day</div>
                 </div>
                 <v-btn
@@ -334,7 +334,7 @@
             <div class="price-summary pa-4 rounded-lg">
               <div class="d-flex justify-space-between mb-2">
                 <span>Daily Rate:</span>
-                <span class="font-weight-bold">${{ selectedVehicle.dailyRate }}/day</span>
+                <span class="font-weight-bold">{{ formatCurrency(selectedVehicle.dailyRate) }}/day</span>
               </div>
               <div class="d-flex justify-space-between mb-2">
                 <span>Number of Days:</span>
@@ -343,7 +343,7 @@
               <v-divider class="my-2"></v-divider>
               <div class="d-flex justify-space-between">
                 <span class="text-h6 font-weight-bold">Total:</span>
-                <span class="text-h6 font-weight-bold text-primary"> ${{ calculateTotal }} </span>
+                <span class="text-h6 font-weight-bold text-primary"> {{ formatCurrency(calculateTotal) }} </span>
               </div>
             </div>
           </v-form>
@@ -429,7 +429,7 @@
           <div class="d-flex justify-space-between align-center">
             <div>
               <div class="text-h3 font-weight-bold text-primary">
-                ${{ selectedVehicle.dailyRate }}
+                {{ formatCurrency(selectedVehicle.dailyRate) }}
                 <span class="text-h6 text-medium-emphasis font-weight-regular">/day</span>
               </div>
             </div>
@@ -453,6 +453,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useVehicles } from '~/composables/useVehicles'
+import { useCurrency } from '~/composables/useCurrency'
 import type { Vehicle } from '~/types/vehicle'
 
 definePageMeta({
@@ -460,6 +461,7 @@ definePageMeta({
 })
 
 const { vehicles, getStatusColor, getTypeLabel } = useVehicles()
+const { formatCurrency } = useCurrency()
 
 const filters = ref({
   search: '',

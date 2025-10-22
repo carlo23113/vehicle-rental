@@ -1,7 +1,9 @@
 <template>
   <v-app>
-    <!-- Lazy-loaded Sidebar -->
-    <LazyLayoutAppSidebar :rail="rail" />
+    <ClientOnly>
+      <!-- Lazy-loaded Sidebar -->
+      <LazyLayoutAppSidebar :rail="rail" />
+    </ClientOnly>
 
     <!-- Lazy-loaded Navbar -->
     <LazyLayoutAppNavbar @toggle-rail="rail = !rail" />

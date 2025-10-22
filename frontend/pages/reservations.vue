@@ -115,11 +115,10 @@
             <div>
               <p class="text-caption text-medium-emphasis mb-1">Expected Revenue</p>
               <h3 class="text-h4 font-weight-bold">
-                ${{
-                  reservations
+                {{
+                  formatCurrency(reservations
                     .filter(r => r.status !== 'cancelled')
-                    .reduce((sum, r) => sum + r.totalAmount, 0)
-                    .toLocaleString()
+                    .reduce((sum, r) => sum + r.totalAmount, 0))
                 }}
               </h3>
             </div>
@@ -192,7 +191,7 @@
 
               <template #item.payment="{ item }">
                 <div>
-                  <div class="font-weight-bold text-h6">${{ item.totalAmount }}</div>
+                  <div class="font-weight-bold text-h6">{{ formatCurrency(item.totalAmount) }}</div>
                   <v-chip
                     :color="getPaymentStatusColor(item.paymentStatus)"
                     size="x-small"
@@ -202,7 +201,7 @@
                     {{ item.paymentStatus }}
                   </v-chip>
                   <div class="text-caption text-medium-emphasis mt-1">
-                    Deposit: ${{ item.depositAmount }}
+                    Deposit: {{ formatCurrency(item.depositAmount) }}
                   </div>
                 </div>
               </template>
@@ -402,6 +401,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useReservations } from '~/composables/useReservations'
+import { useCurrency } from '~/composables/useCurrency'
+
+const { formatCurrency } = useCurrency()
 
 const {
   reservations,
