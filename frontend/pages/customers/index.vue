@@ -48,9 +48,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCustomers } from '~/composables/useCustomers'
 import { useCurrency } from '~/composables/useCurrency'
 
+const router = useRouter()
 const { formatCurrency } = useCurrency()
 
 const {
@@ -105,17 +107,15 @@ const stats = computed(() => {
 })
 
 const viewCustomer = (customer: any) => {
-  console.log('View customer:', customer)
-  // TODO: Implement view details
+  router.push(`/customers/${customer.id}`)
 }
 
 const editCustomer = (customer: any) => {
-  console.log('Edit customer:', customer)
-  // TODO: Implement edit functionality
+  router.push(`/customers/edit/${customer.id}`)
 }
 
 const confirmDelete = (customer: any) => {
+  // TODO: Implement delete confirmation dialog
   console.log('Delete customer:', customer)
-  // TODO: Implement delete confirmation
 }
 </script>
