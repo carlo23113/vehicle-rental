@@ -41,6 +41,9 @@ importers:
       chart.js:
         specifier: ^4.5.1
         version: 4.5.1
+      country-state-city:
+        specifier: ^3.2.1
+        version: 3.2.1
       nuxt:
         specifier: ^4.1.3
         version: 4.1.3(@parcel/watcher@2.5.1)(@types/node@24.9.0)(@vue/compiler-sfc@3.5.22)(db0@0.3.4)(eslint@9.38.0(jiti@2.6.1))(ioredis@5.8.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.52.5)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.44.0)(typescript@5.9.3)(vite@6.0.0(@types/node@24.9.0)(jiti@2.6.1)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.1.1(typescript@5.9.3))(yaml@2.8.1)
@@ -2514,6 +2517,9 @@ packages:
 
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
+
+  country-state-city@3.2.1:
+    resolution: {integrity: sha512-kxbanqMc6izjhc/EHkGPCTabSPZ2G6eG4/97akAYHJUN4stzzFEvQPZoF8oXDQ+10gM/O/yUmISCR1ZVxyb6EA==}
 
   crc-32@1.2.2:
     resolution: {integrity: sha512-ROmzCKrTnOwybPcJApAA6WBWij23HVfGVNKqqrZpuyZOHqK2CwHSvpGuyt/UNNvaIjEd8X5IFGp4Mh+Ie1IHJQ==}
@@ -8058,6 +8064,8 @@ snapshots:
       browserslist: 4.26.3
 
   core-util-is@1.0.3: {}
+
+  country-state-city@3.2.1: {}
 
   crc-32@1.2.2: {}
 
