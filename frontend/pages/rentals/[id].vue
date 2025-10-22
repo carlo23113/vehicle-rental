@@ -18,8 +18,8 @@
       <!-- Left Column: Main Info -->
       <v-col cols="12" lg="8">
         <RentalInfoCard :rental="rental" class="mb-6" />
-        <RentalCustomerCard :customer="rental.customer" class="mb-6" />
-        <RentalVehicleCard :vehicle="rental.vehicle" class="mb-6" />
+        <RentalCustomerCard :customer="rental.customer" :customer-id="rental.customerId" class="mb-6" />
+        <RentalVehicleCard :vehicle="rental.vehicle" :vehicle-id="rental.vehicleId" class="mb-6" />
         <RentalLocationCard
           :pickup-location="rental.pickupLocation"
           :pickup-time="rental.pickupTime"
@@ -113,12 +113,14 @@ const rental = ref({
   returnTime: '08:00',
   mileageLimit: 100,
   notes: 'Customer requested early pickup. Vehicle has been inspected and is ready.',
+  customerId: 1,
   customer: {
     name: 'John Doe',
     email: 'john.doe@email.com',
     phone: '(555) 123-4567',
     license: 'DL123456789',
   },
+  vehicleId: 1,
   vehicle: {
     make: 'Toyota',
     model: 'Camry',

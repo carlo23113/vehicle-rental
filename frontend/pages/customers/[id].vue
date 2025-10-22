@@ -66,6 +66,13 @@
           <CommonUiDetailCard v-if="customer.notes" title="Notes" icon="mdi-note-text" class="mb-6">
             <p class="text-body-2">{{ customer.notes }}</p>
           </CommonUiDetailCard>
+
+          <CustomerRentalsHistoryCard
+            :rentals="customerRentals"
+            :customer-id="customer.id"
+            :format-date="formatDate"
+            class="mb-6"
+          />
         </v-col>
 
         <!-- Right Column: Stats -->
@@ -138,6 +145,7 @@ const customerId = String(route.params.id)
 
 const {
   customer,
+  customerRentals,
   loading,
   deleteDialog,
   actionLoading,

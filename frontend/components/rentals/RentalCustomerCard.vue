@@ -1,5 +1,17 @@
 <template>
   <CommonUiDetailCard title="Customer Information" icon="mdi-account">
+    <template v-if="customerId" #actions>
+      <v-btn
+        variant="outlined"
+        color="primary"
+        size="small"
+        prepend-icon="mdi-account-eye"
+        @click="viewCustomer"
+      >
+        View Customer
+      </v-btn>
+    </template>
+
     <div class="d-flex align-start mb-4" style="gap: 16px">
       <v-avatar color="primary" size="56" class="text-white">
         <span class="text-h6 font-weight-bold">{{ customerInitials }}</span>
@@ -28,6 +40,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 interface Props {
   customer: {
@@ -36,9 +49,11 @@ interface Props {
     phone: string
     license: string
   }
+  customerId?: number | string
 }
 
 const props = defineProps<Props>()
+const router = useRouter()
 
 const customerInitials = computed(() => {
   const names = props.customer.name.split(' ').filter(n => n.length > 0)
@@ -47,4 +62,10 @@ const customerInitials = computed(() => {
   }
   return props.customer.name.substring(0, 2).toUpperCase()
 })
+
+const viewCustomer = () => {
+  if (props.customerId) {
+    router.push(`/customers/${props.customerId}`)
+  }
+}
 </script>

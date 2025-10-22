@@ -1,5 +1,17 @@
 <template>
   <CommonUiDetailCard title="Vehicle Information" icon="mdi-car">
+    <template v-if="vehicleId" #actions>
+      <v-btn
+        variant="outlined"
+        color="primary"
+        size="small"
+        prepend-icon="mdi-car-info"
+        @click="viewVehicle"
+      >
+        View Vehicle
+      </v-btn>
+    </template>
+
     <v-row>
       <v-col cols="12">
         <div class="d-flex align-center mb-4" style="gap: 12px">
@@ -35,6 +47,8 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+
 interface Props {
   vehicle: {
     make: string
@@ -45,9 +59,17 @@ interface Props {
     color: string
     mileage?: number
   }
+  vehicleId?: number | string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+const router = useRouter()
+
+const viewVehicle = () => {
+  if (props.vehicleId) {
+    router.push(`/vehicles/${props.vehicleId}`)
+  }
+}
 </script>
 
 <style scoped>

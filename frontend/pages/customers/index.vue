@@ -43,27 +43,49 @@
         />
       </v-col>
     </v-row>
+
+    <!-- Delete Confirmation Dialog -->
+    <CommonDialogDeleteConfirmation
+      v-model="showDeleteDialog"
+      title="Delete Customer?"
+      :item-name="customerToDelete ? getFullName(customerToDelete) : ''"
+      :item-details="customerToDelete ? `${customerToDelete.email} · ${customerToDelete.phone}` : ''"
+      icon="mdi-account-outline"
+      message="This action is permanent and cannot be undone. All customer data and history will be removed."
+      :loading="deleting"
+      @confirm="handleDelete"
+      @cancel="handleCancelDelete"
+    />
+
+    <CommonUiSnackbar v-model="snackbar" />
   </CommonPageContainer>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCustomers } from '~/composables/useCustomers'
 import { useCurrency } from '~/composables/useCurrency'
+import { useSnackbar } from '~/composables/useSnackbar'
 
 const router = useRouter()
 const { formatCurrency } = useCurrency()
+const { snackbar, showSuccess, showError } = useSnackbar()
 
 const {
   customers,
   filters,
   filteredCustomers,
+  deleteCustomer,
   getStatusColor,
   getFullName,
   getInitials,
   formatDate,
 } = useCustomers()
+
+const showDeleteDialog = ref(false)
+const customerToDelete = ref<any>(null)
+const deleting = ref(false)
 
 const statusOptions = [
   { title: 'All Statuses', value: 'all' },
@@ -115,7 +137,33 @@ const editCustomer = (customer: any) => {
 }
 
 const confirmDelete = (customer: any) => {
-  // TODO: Implement delete confirmation dialog
-  console.log('Delete customer:', customer)
+  customerToDelete.value = customer
+  showDeleteDialog.value = true
+}
+
+const handleDelete = async () => {
+  if (!customerToDelete.value) return
+
+  deleting.value = true
+
+  try {
+    // Delete customer from store
+    deleteCustomer(customerToDelete.value.id)
+
+    showSuccess(
+      `${getFullName(customerToDelete.value)} has been deleted successfully.`
+    )
+    showDeleteDialog.value = false
+    customerToDelete.value = null
+  } catch (error) {
+    console.error('Error deleting customer:', error)
+    showError('Failed to delete customer. Please try again.')
+  } finally {
+    deleting.value = false
+  }
+}
+
+const handleCancelDelete = () => {
+  customerToDelete.value = null
 }
 </script>

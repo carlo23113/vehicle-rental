@@ -61,14 +61,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useRentals } from '~/composables/useRentals'
+import { useCustomers } from '~/composables/useCustomers'
 import { useCurrency } from '~/composables/useCurrency'
 import { useSnackbar } from '~/composables/useSnackbar'
 
 const router = useRouter()
+const route = useRoute()
 const { rentals, filters, filteredRentals, getStatusColor, formatDate } = useRentals()
+const { customers, getFullName } = useCustomers()
 const { formatCurrency } = useCurrency()
 const { snackbar, showSuccess, showError } = useSnackbar()
 
@@ -177,4 +180,15 @@ const deleteRental = async () => {
 const cancelDelete = () => {
   rentalToDelete.value = null
 }
+
+// Check for customerId query parameter and populate search
+onMounted(() => {
+  const customerId = route.query.customerId
+  if (customerId) {
+    const customer = customers.value.find(c => c.id === Number(customerId))
+    if (customer) {
+      filters.value.search = getFullName(customer)
+    }
+  }
+})
 </script>

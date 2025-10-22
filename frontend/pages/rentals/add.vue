@@ -31,13 +31,25 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useRentalForm } from '~/composables/useRentalForm'
+
+const route = useRoute()
 
 const {
   form,
   formRef,
   loading,
   snackbar,
-  handleCreate
+  handleCreate,
+  loadCustomerData
 } = useRentalForm()
+
+onMounted(() => {
+  const customerId = route.query.customerId
+  if (customerId) {
+    loadCustomerData(String(customerId))
+  }
+})
 </script>

@@ -2,14 +2,18 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSnackbar } from '~/composables/useSnackbar'
 import { useCustomers } from '~/composables/useCustomers'
+import { useRentals } from '~/composables/useRentals'
 import type { Customer } from '~/types/customer'
+import type { Rental } from '~/types/rental'
 
 export const useCustomerDetails = (customerId: string) => {
   const router = useRouter()
   const { snackbar, showSuccess, showError } = useSnackbar()
   const { customers, getStatusColor, getFullName, formatDate, deleteCustomer } = useCustomers()
+  const { rentals } = useRentals()
 
   const customer = ref<Customer | null>(null)
+  const customerRentals = ref<Rental[]>([])
   const loading = ref(true)
   const deleteDialog = ref(false)
   const actionLoading = ref(false)
@@ -34,6 +38,12 @@ export const useCustomerDetails = (customerId: string) => {
       }
 
       customer.value = foundCustomer
+
+      // Load customer rentals
+      customerRentals.value = rentals.value
+        .filter(r => r.customerId === Number(customerId))
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5) // Show only last 5 rentals
     } catch (error) {
       console.error('Error loading customer:', error)
       showError('Failed to load customer data. Please try again.')
@@ -107,6 +117,7 @@ export const useCustomerDetails = (customerId: string) => {
 
   return {
     customer,
+    customerRentals,
     loading,
     deleteDialog,
     actionLoading,

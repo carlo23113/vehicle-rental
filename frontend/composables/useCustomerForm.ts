@@ -9,7 +9,7 @@ export const useCustomerForm = (isEditMode = false) => {
   const formRef = ref()
   const loading = ref(false)
   const { snackbar, showSuccess, showError } = useSnackbar()
-  const { addCustomer } = useCustomers()
+  const { customers, addCustomer, updateCustomer } = useCustomers()
 
   const getTodayDate = () => {
     return new Date().toISOString().split('T')[0]
@@ -77,6 +77,9 @@ export const useCustomerForm = (isEditMode = false) => {
       // TODO: Implement API call to update customer
       console.log('Updating customer:', id, form.value)
 
+      // Update customer in store
+      updateCustomer(Number(id), form.value)
+
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
 
@@ -100,22 +103,31 @@ export const useCustomerForm = (isEditMode = false) => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Mock data - replace with actual API call
+      // Load customer from store
+      const customer = customers.value.find(c => c.id === Number(id))
+
+      if (!customer) {
+        showError('Customer not found')
+        router.push('/customers')
+        return
+      }
+
+      // Populate form with customer data
       form.value = {
-        firstName: 'John',
-        lastName: 'Smith',
-        email: 'john.smith@email.com',
-        phone: '(555) 123-4567',
-        country: 'PH',
-        address: '123 Main Street',
-        city: 'Manila',
-        state: 'NCR',
-        zipCode: '1000',
-        driversLicense: 'D1234567',
-        licenseExpiry: '2026-08-15',
-        dateOfBirth: '1985-03-20',
-        status: 'active',
-        notes: 'Preferred customer, always on time'
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        email: customer.email,
+        phone: customer.phone,
+        country: 'PH', // Default since not in customer type yet
+        address: customer.address,
+        city: customer.city,
+        state: customer.state,
+        zipCode: customer.zipCode,
+        driversLicense: customer.driversLicense,
+        licenseExpiry: customer.licenseExpiry,
+        dateOfBirth: customer.dateOfBirth,
+        status: customer.status,
+        notes: customer.notes || ''
       }
     } catch (error) {
       console.error('Error loading customer:', error)

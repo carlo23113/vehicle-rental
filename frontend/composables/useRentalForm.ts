@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSnackbar } from '~/composables/useSnackbar'
 import { useRentalCalculations } from '~/composables/useRentalCalculations'
+import { useCustomers } from '~/composables/useCustomers'
 import type { RentalFormData } from '~/components/rentals/RentalFormFields.vue'
 
 export const useRentalForm = (isEditMode = false) => {
@@ -10,6 +11,7 @@ export const useRentalForm = (isEditMode = false) => {
   const loading = ref(false)
   const { snackbar, showSuccess, showError } = useSnackbar()
   const { getTodayDate, getFutureDate } = useRentalCalculations()
+  const { customers, getFullName } = useCustomers()
 
   const getDefaultFormData = (): RentalFormData => ({
     customerId: null,
@@ -123,6 +125,39 @@ export const useRentalForm = (isEditMode = false) => {
     }
   }
 
+  const loadCustomerData = async (customerId: string) => {
+    loading.value = true
+
+    try {
+      // TODO: Implement API call to load customer
+      console.log('Loading customer for rental:', customerId)
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Find customer from store
+      const customerIdNum = Number(customerId)
+      const customer = customers.value.find(c => c.id === customerIdNum)
+
+      if (!customer) {
+        showError('Customer not found')
+        return
+      }
+
+      // Pre-fill customer data in the form
+      form.value.customerId = customer.id
+      form.value.customerName = getFullName(customer)
+      form.value.customerEmail = customer.email
+      form.value.customerPhone = customer.phone
+      form.value.customerLicense = customer.driversLicense
+    } catch (error) {
+      console.error('Error loading customer:', error)
+      showError('Failed to load customer data.')
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     form,
     formRef,
@@ -131,6 +166,7 @@ export const useRentalForm = (isEditMode = false) => {
     handleCreate,
     handleUpdate,
     loadRentalData,
+    loadCustomerData,
     getDefaultFormData
   }
 }
