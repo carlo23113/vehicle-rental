@@ -2,7 +2,7 @@
   <div class="detail-page-header">
     <!-- Breadcrumbs -->
     <CommonPageBreadcrumbs
-      v-if="showBreadcrumbs"
+      v-if="showBreadcrumbs && parentLabel && parentIcon"
       :parent-label="parentLabel"
       :parent-icon="parentIcon"
       :current-label="title"

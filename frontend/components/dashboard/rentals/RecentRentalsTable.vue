@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useCurrency } from '~/composables/useCurrency'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const { formatCurrency } = useCurrency()
 
 interface Rental {
@@ -27,31 +29,39 @@ const headers = [
   { title: 'Vehicle', key: 'vehicle', sortable: true },
   { title: 'Period', key: 'startDate', sortable: true },
   { title: 'Status', key: 'status', sortable: true },
-  { title: 'Amount', key: 'amount', sortable: true, align: 'end' as const }
+  { title: 'Amount', key: 'amount', sortable: true, align: 'end' as const },
 ]
+
+const handleRowClick = (event: any, { item }: { item: Rental }) => {
+  router.push(`/rentals/${item.id}`)
+}
 </script>
 
 <template>
-  <v-card elevation="0" class="rentals-table-card">
-    <v-card-title class="pa-6 d-flex justify-space-between align-center">
-      <div>
-        <h3 class="text-h5 font-weight-bold mb-1">Recent Rentals</h3>
-        <p class="text-caption text-medium-emphasis">Latest rental transactions</p>
-      </div>
-      <v-btn variant="text" color="primary" append-icon="mdi-arrow-right" class="hover-lift">
+  <CommonUiDetailCard title="Recent Rentals" icon="mdi-clipboard-text-clock">
+    <template #actions>
+      <v-btn
+        to="/rentals"
+        variant="text"
+        color="primary"
+        append-icon="mdi-arrow-right"
+        class="hover-lift"
+      >
         View All
       </v-btn>
-    </v-card-title>
-    <v-skeleton-loader v-if="loading" type="table" class="mx-6 mb-6" />
+    </template>
+    <v-skeleton-loader v-if="loading" type="table" />
     <v-data-table
       v-else
       :headers="headers"
-      :items="rentals"
-      :items-per-page="5"
+      :items="rentals.slice(0, 4)"
+      :items-per-page="4"
       class="modern-datatable"
       hover
       :show-select="false"
       item-value="id"
+      hide-default-footer
+      @click:row="handleRowClick"
     >
       <template #[`item.customer`]="{ item }">
         <div class="d-flex align-center py-2">
@@ -97,225 +107,157 @@ const headers = [
       </template>
 
       <template #[`item.amount`]="{ item }">
-        <div class="text-h6 font-weight-bold amount-text">{{ formatCurrency(parseFloat(item.amount)) }}</div>
+        <div class="text-h6 font-weight-bold amount-text">
+          {{ formatCurrency(parseFloat(item.amount)) }}
+        </div>
       </template>
     </v-data-table>
-  </v-card>
+  </CommonUiDetailCard>
 </template>
 
-<style scoped>
-.rentals-table-card {
-  border: 1px solid rgba(var(--v-border-color), 0.06);
-  border-radius: 24px;
-  background: linear-gradient(135deg,
-    rgb(var(--v-theme-surface)) 0%,
-    rgba(var(--v-theme-surface), 0.98) 100%);
-  backdrop-filter: blur(20px);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05),
-              0 0 0 1px rgba(var(--v-theme-primary), 0.05);
-  overflow: hidden;
-  position: relative;
-}
-
-.rentals-table-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 24px;
-  padding: 2px;
-  background: linear-gradient(135deg,
-    rgba(var(--v-theme-primary), 0.2) 0%,
-    transparent 50%,
-    rgba(var(--v-theme-secondary), 0.2) 100%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.rentals-table-card:hover::before {
-  opacity: 1;
-}
-
-.rentals-table-card:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08),
-              0 0 0 1px rgba(var(--v-theme-primary), 0.12);
-  transform: translateY(-2px);
-}
-
+<style lang="scss" scoped>
 .modern-datatable {
-  background: transparent;
-}
+  @apply bg-transparent;
 
-.modern-datatable :deep(.v-table__wrapper) {
-  border-radius: 0 0 24px 24px;
-  overflow: hidden;
-}
+  :deep(.v-table__wrapper) {
+    @apply rounded-b-2xl overflow-hidden relative;
+  }
 
-.modern-datatable :deep(.v-data-table__th) {
-  background: linear-gradient(135deg,
-    rgba(var(--v-theme-primary), 0.04) 0%,
-    rgba(var(--v-theme-primary), 0.02) 100%) !important;
-  font-weight: 800;
-  text-transform: uppercase;
-  font-size: 0.7rem;
-  letter-spacing: 1px;
-  color: rgba(var(--v-theme-on-surface), 0.8) !important;
-  border-bottom: 2px solid rgba(var(--v-theme-primary), 0.15) !important;
-  padding: 20px 16px !important;
-  position: relative;
-}
+  :deep(.v-data-table__th) {
+    background: linear-gradient(
+      135deg,
+      rgba(var(--v-theme-primary), 0.04) 0%,
+      rgba(var(--v-theme-primary), 0.02) 100%
+    ) !important;
+    @apply font-extrabold uppercase text-[0.7rem] tracking-wider relative;
+    color: rgba(var(--v-theme-on-surface), 0.8) !important;
+    border-bottom: 2px solid rgba(var(--v-theme-primary), 0.15) !important;
+    padding: 20px 16px !important;
 
-.modern-datatable :deep(.v-data-table__th::after) {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(var(--v-theme-primary), 0.4) 50%,
-    transparent 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
+    &::after {
+      @apply absolute bottom-[-2px] left-0 right-0 h-0.5 opacity-0 transition-opacity duration-300;
+      content: '';
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(var(--v-theme-primary), 0.4) 50%,
+        transparent 100%
+      );
+    }
 
-.modern-datatable :deep(.v-data-table__th:hover::after) {
-  opacity: 1;
-}
+    &:hover::after {
+      @apply opacity-100;
+    }
+  }
 
-.modern-datatable :deep(.v-data-table__td) {
-  border-bottom: 1px solid rgba(var(--v-border-color), 0.04) !important;
-  padding: 16px !important;
-}
+  :deep(.v-data-table__td) {
+    border-bottom: 1px solid rgba(var(--v-border-color), 0.04) !important;
+    padding: 16px !important;
+  }
 
-.modern-datatable :deep(tbody tr) {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
+  :deep(tbody tr) {
+    @apply transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] relative border-l-4 border-transparent cursor-pointer;
 
-.modern-datatable :deep(.v-table__wrapper) {
-  position: relative;
-}
+    &:hover {
+      border-left-color: rgb(var(--v-theme-primary));
+      background: linear-gradient(
+        90deg,
+        rgba(var(--v-theme-primary), 0.06) 0%,
+        rgba(var(--v-theme-primary), 0.02) 100%
+      ) !important;
 
-.modern-datatable :deep(tbody tr) {
-  border-left: 4px solid transparent;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+      .avatar-shadow {
+        box-shadow:
+          0 8px 20px rgba(0, 0, 0, 0.25),
+          0 0 0 3px rgba(var(--v-theme-primary), 0.2);
+        @apply scale-105;
+      }
 
-.modern-datatable :deep(tbody tr:hover) {
-  border-left-color: rgb(var(--v-theme-primary));
-}
+      .status-chip {
+        @apply scale-105;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
 
-.modern-datatable :deep(tbody tr:hover) {
-  background: linear-gradient(90deg,
-    rgba(var(--v-theme-primary), 0.06) 0%,
-    rgba(var(--v-theme-primary), 0.02) 100%) !important;
-}
+      .amount-text::after {
+        @apply opacity-100 scale-x-100;
+      }
+    }
+  }
 
-.modern-datatable :deep(.v-data-table-footer) {
-  border-top: 1px solid rgba(var(--v-border-color), 0.08);
-  background: linear-gradient(180deg,
-    rgba(var(--v-theme-surface), 0.95) 0%,
-    rgba(var(--v-theme-surface), 0.98) 100%);
-  backdrop-filter: blur(20px);
-  padding: 16px !important;
-}
+  :deep(.v-data-table-footer) {
+    @apply border-t backdrop-blur-xl;
+    border-color: rgba(var(--v-border-color), 0.08);
+    background: linear-gradient(
+      180deg,
+      rgba(var(--v-theme-surface), 0.95) 0%,
+      rgba(var(--v-theme-surface), 0.98) 100%
+    );
+    padding: 16px !important;
 
-.modern-datatable :deep(.v-data-table-footer .v-btn) {
-  transition: all 0.3s ease;
-}
+    .v-btn {
+      @apply transition-all duration-300;
 
-.modern-datatable :deep(.v-data-table-footer .v-btn:hover) {
-  transform: scale(1.1);
-  background: rgba(var(--v-theme-primary), 0.1) !important;
-}
+      &:hover {
+        @apply scale-110;
+        background: rgba(var(--v-theme-primary), 0.1) !important;
+      }
+    }
+  }
 
-.modern-datatable :deep(.v-select) {
-  border-radius: 12px;
+  :deep(.v-select) {
+    @apply rounded-xl;
+  }
 }
 
 .avatar-shadow {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18),
-              0 0 0 3px rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.modern-datatable :deep(tbody tr:hover) .avatar-shadow {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25),
-              0 0 0 3px rgba(var(--v-theme-primary), 0.2);
-  transform: scale(1.05);
+  @apply transition-all duration-300;
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.18),
+    0 0 0 3px rgba(255, 255, 255, 0.1);
 }
 
 .status-chip {
-  border-radius: 10px;
-  padding: 0 14px;
+  @apply rounded-[10px] px-[14px] transition-all duration-300;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.modern-datatable :deep(tbody tr:hover) .status-chip {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .amount-text {
-  background: linear-gradient(135deg,
+  @apply relative inline-block;
+  background: linear-gradient(
+    135deg,
     rgb(var(--v-theme-primary)) 0%,
-    rgb(var(--v-theme-secondary)) 100%);
+    rgb(var(--v-theme-secondary)) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  position: relative;
-  display: inline-block;
-}
 
-.amount-text::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg,
-    rgb(var(--v-theme-primary)) 0%,
-    rgb(var(--v-theme-secondary)) 100%);
-  opacity: 0;
-  transform: scaleX(0);
-  transition: all 0.3s ease;
-}
-
-.modern-datatable :deep(tbody tr:hover) .amount-text::after {
-  opacity: 1;
-  transform: scaleX(1);
+  &::after {
+    @apply absolute bottom-[-2px] left-0 right-0 h-0.5 opacity-0 scale-x-0 transition-all duration-300;
+    content: '';
+    background: linear-gradient(
+      90deg,
+      rgb(var(--v-theme-primary)) 0%,
+      rgb(var(--v-theme-secondary)) 100%
+    );
+  }
 }
 
 .hover-lift {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
+  @apply transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] relative;
 
-.hover-lift::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg,
-    rgba(var(--v-theme-primary), 0.1) 0%,
-    transparent 100%);
-  border-radius: 8px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
+  &::before {
+    @apply absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300;
+    content: '';
+    background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1) 0%, transparent 100%);
+  }
 
-.hover-lift:hover::before {
-  opacity: 1;
-}
+  &:hover {
+    @apply translate-x-1;
 
-.hover-lift:hover {
-  transform: translateX(4px);
+    &::before {
+      @apply opacity-100;
+    }
+  }
 }
 </style>

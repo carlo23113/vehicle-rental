@@ -15,7 +15,7 @@
               :key="item.value"
               :value="item.value"
               :active="activeSection === item.value"
-              @click="activeSection = item.value"
+              @click="handleSectionClick(item.value)"
               rounded="lg"
               class="mb-1"
             >
@@ -481,16 +481,26 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { useDarkMode } from '~/composables/useDarkMode'
 import { useCurrency } from '~/composables/useCurrency'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const { isDark, setDarkMode } = useDarkMode()
 const { currencies, selectedCurrency, setCurrency } = useCurrency()
 
 const activeSection = ref('profile')
 const saving = ref(false)
+
+const handleSectionClick = (value: string) => {
+  if (value === 'contract') {
+    router.push('/settings/contract-editor')
+  } else {
+    activeSection.value = value
+  }
+}
 
 const userInitials = computed(() => {
   const name = authStore.userName?.split(' ') || ['A']
@@ -504,6 +514,7 @@ const settingsSections = ref([
   { title: 'Preferences', value: 'preferences', icon: 'mdi-cog-outline' },
   { title: 'Security', value: 'security', icon: 'mdi-shield-lock-outline' },
   { title: 'Notifications', value: 'notifications', icon: 'mdi-bell-outline' },
+  { title: 'Contract Template', value: 'contract', icon: 'mdi-file-document-edit-outline' },
 ])
 
 // Profile Form

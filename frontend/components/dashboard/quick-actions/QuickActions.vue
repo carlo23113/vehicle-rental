@@ -1,9 +1,11 @@
 <script setup lang="ts">
+type ActionColor = 'success' | 'primary' | 'error' | 'warning' | 'info'
+
 interface QuickAction {
   title: string
   icon: string
   action: string
-  color: string
+  color: ActionColor
 }
 
 defineProps<{
@@ -16,25 +18,17 @@ defineEmits<{
 </script>
 
 <template>
-  <CommonUiDashboardCard class="mb-4">
-    <v-card-title class="pa-6 pb-4">
-      <CommonUiSectionHeader
-        title="Quick Actions"
-        subtitle="Shortcut to common tasks"
-        icon="mdi-lightning-bolt"
+  <CommonUiDetailCard title="Quick Actions" icon="mdi-lightning-bolt" class="mb-4">
+    <div class="flex flex-col gap-2">
+      <CommonUiActionButton
+        v-for="action in actions"
+        :key="action.title"
+        :icon="action.icon"
+        :title="action.title"
+        :subtitle="`Quick access to ${action.title.toLowerCase()}`"
+        :color="action.color"
+        @click="$emit('action-click', action.action)"
       />
-    </v-card-title>
-    <v-card-text class="pa-6 pt-2">
-      <v-row dense>
-        <v-col v-for="action in actions" :key="action.title" cols="6">
-          <LazyQuickActionButton
-            :title="action.title"
-            :icon="action.icon"
-            :color="action.color"
-            @click="$emit('action-click', action.action)"
-          />
-        </v-col>
-      </v-row>
-    </v-card-text>
-  </CommonUiDashboardCard>
+    </div>
+  </CommonUiDetailCard>
 </template>

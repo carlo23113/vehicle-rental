@@ -5,28 +5,28 @@
     max-width="440"
     persistent
   >
-    <v-card class="delete-dialog">
+    <v-card class="rounded-2xl overflow-hidden">
       <v-card-text class="!p-0">
         <!-- Icon Section -->
-        <div class="icon-section">
-          <div class="icon-bounce">
-            <div class="icon-ring" />
+        <div class="icon-section pt-10 px-8 pb-8 flex justify-center">
+          <div class="relative inline-flex items-center justify-center animate-[fadeInScale_0.3s_cubic-bezier(0.34,1.56,0.64,1)]">
+            <div class="icon-ring absolute w-[72px] h-[72px] border-2 rounded-full animate-[pulseRing_2s_cubic-bezier(0.4,0,0.6,1)_infinite]" />
             <v-icon icon="mdi-alert-circle-outline" size="48" color="error" />
           </div>
         </div>
 
         <!-- Content -->
-        <div class="content-slide !px-8 !pb-6">
+        <div class="!px-8 !pb-6 animate-[fadeInUp_0.4s_cubic-bezier(0.34,1.56,0.64,1)_0.1s_both]">
           <h2 class="text-h6 !font-semibold text-center !mb-2">{{ title }}</h2>
 
           <!-- Item Info -->
-          <div v-if="hasItemInfo" class="item-info">
-            <div v-if="icon" class="item-icon icon-scale">
+          <div v-if="hasItemInfo" class="item-info group my-5 mx-auto py-4 px-5 flex items-center gap-[14px] border-[1.5px] rounded-[14px] max-w-[340px] relative overflow-hidden transition-all duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
+            <div v-if="icon" class="item-icon w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0 transition-all duration-[250ms] group-hover:scale-105">
               <v-icon :icon="icon" size="20" />
             </div>
-            <div class="item-text">
-              <div v-if="itemName" class="item-name">{{ itemName }}</div>
-              <div v-if="itemDetails" class="item-meta">{{ itemDetails }}</div>
+            <div class="flex-1 min-w-0">
+              <div v-if="itemName" class="item-name text-[0.9375rem] font-semibold mb-0.5 tracking-[-0.01em] leading-[1.4]">{{ itemName }}</div>
+              <div v-if="itemDetails" class="item-meta text-[0.8125rem] font-medium tracking-[0.01em] leading-[1.3]">{{ itemDetails }}</div>
             </div>
           </div>
 
@@ -34,8 +34,8 @@
           <slot name="content" />
 
           <!-- Warning Message -->
-          <div class="warning">
-            <v-icon icon="mdi-information-outline" size="16" class="!text-error/70" />
+          <div class="warning mt-5 flex items-center justify-center gap-1.5 py-3 px-4 border-l-[3px] rounded-md text-sm">
+            <v-icon icon="mdi-information-outline" size="16" />
             <span>{{ message }}</span>
           </div>
         </div>
@@ -49,7 +49,7 @@
           variant="text"
           size="large"
           :disabled="loading"
-          class="cancel-btn"
+          class="flex-1 !normal-case !font-semibold !tracking-[0.25px] !rounded-[10px] !h-11 transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:!bg-on-surface/[0.04]"
           @click="handleCancel"
         >
           {{ cancelText }}
@@ -59,7 +59,7 @@
           variant="flat"
           size="large"
           :loading="loading"
-          class="delete-btn"
+          class="flex-1 !normal-case !font-semibold !tracking-[0.25px] !rounded-[10px] !h-11 !shadow-[0_2px_8px_rgba(var(--v-theme-error),0.25)] transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:!shadow-[0_4px_12px_rgba(var(--v-theme-error),0.35)] hover:-translate-y-px active:translate-y-0"
           @click="handleConfirm"
         >
           {{ confirmText }}
@@ -108,56 +108,20 @@ const handleCancel = () => {
 </script>
 
 <style scoped>
-.delete-dialog {
-  border-radius: 16px !important;
-  overflow: hidden;
-}
-
 /* Icon Section */
 .icon-section {
-  padding: 40px 32px 32px;
-  display: flex;
-  justify-content: center;
   background: linear-gradient(180deg, rgba(var(--v-theme-error), 0.03), transparent);
 }
 
-.icon-bounce {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeInScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
 .icon-ring {
-  position: absolute;
-  width: 72px;
-  height: 72px;
-  border: 2px solid rgb(var(--v-theme-error));
-  border-radius: 50%;
+  border-color: rgb(var(--v-theme-error));
   opacity: 0.15;
-  animation: pulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Content */
-.content-slide {
-  animation: fadeInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
 }
 
 /* Item Info */
 .item-info {
-  margin: 20px auto;
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
   background: rgba(var(--v-theme-surface), 1);
-  border: 1.5px solid rgba(var(--v-border-color), 0.2);
-  border-radius: 14px;
-  max-width: 340px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+  border-color: rgba(var(--v-border-color), 0.2);
 }
 
 .item-info::before {
@@ -173,8 +137,6 @@ const handleCancel = () => {
 .item-info:hover {
   border-color: rgba(var(--v-theme-primary), 0.3);
   background: rgba(var(--v-theme-primary), 0.02);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .item-info:hover::before {
@@ -182,57 +144,26 @@ const handleCancel = () => {
 }
 
 .item-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
   background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.12), rgba(var(--v-theme-primary), 0.06));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
   color: rgb(var(--v-theme-primary));
-  transition: all 0.25s ease;
 }
 
-.item-info:hover .icon-scale {
+.item-info:hover .item-icon {
   background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.18), rgba(var(--v-theme-primary), 0.1));
-  transform: scale(1.05);
-}
-
-.item-text {
-  flex: 1;
-  min-width: 0;
 }
 
 .item-name {
-  font-size: 0.9375rem;
-  font-weight: 600;
   color: rgb(var(--v-theme-on-surface));
-  margin-bottom: 2px;
-  letter-spacing: -0.01em;
-  line-height: 1.4;
 }
 
 .item-meta {
-  font-size: 0.8125rem;
   color: rgba(var(--v-theme-on-surface), 0.55);
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  line-height: 1.3;
 }
 
 /* Warning */
 .warning {
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 12px 16px;
   background: rgba(var(--v-theme-error), 0.05);
-  border-left: 3px solid rgba(var(--v-theme-error), 0.3);
-  border-radius: 6px;
-  font-size: 0.875rem;
+  border-color: rgba(var(--v-theme-error), 0.3);
   color: rgba(var(--v-theme-on-surface), 0.7);
 }
 
@@ -240,36 +171,7 @@ const handleCancel = () => {
   color: rgba(var(--v-theme-error), 0.7);
 }
 
-/* Buttons */
-.cancel-btn,
-.delete-btn {
-  flex: 1;
-  text-transform: none !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.25px !important;
-  border-radius: 10px !important;
-  height: 44px !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.cancel-btn:hover {
-  background: rgba(var(--v-theme-on-surface), 0.04) !important;
-}
-
-.delete-btn {
-  box-shadow: 0 2px 8px rgba(var(--v-theme-error), 0.25) !important;
-}
-
-.delete-btn:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(var(--v-theme-error), 0.35) !important;
-  transform: translateY(-1px);
-}
-
-.delete-btn:active {
-  transform: translateY(0);
-}
-
-/* Animations */
+/* Custom Animations */
 @keyframes pulseRing {
   0%, 100% {
     transform: scale(1);

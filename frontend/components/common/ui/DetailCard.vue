@@ -1,11 +1,14 @@
 <template>
   <v-card elevation="0" class="detail-card">
     <v-card-text class="pa-6">
-      <div v-if="title || icon" class="flex items-center gap-3 mb-5">
-        <div v-if="icon" class="icon-wrapper">
-          <v-icon :icon="icon" size="20" color="primary" />
+      <div v-if="title || icon || $slots.actions" class="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <div v-if="icon" class="icon-wrapper">
+            <v-icon :icon="icon" size="20" color="primary" />
+          </div>
+          <h3 class="text-base font-bold">{{ title }}</h3>
         </div>
-        <h3 class="text-base font-bold">{{ title }}</h3>
+        <slot name="actions" />
       </div>
       <slot />
     </v-card-text>
