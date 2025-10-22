@@ -19,6 +19,7 @@ interface Rental {
 
 defineProps<{
   rentals: Rental[]
+  loading?: boolean
 }>()
 
 const headers = [
@@ -41,7 +42,9 @@ const headers = [
         View All
       </v-btn>
     </v-card-title>
+    <v-skeleton-loader v-if="loading" type="table" class="mx-6 mb-6" />
     <v-data-table
+      v-else
       :headers="headers"
       :items="rentals"
       :items-per-page="5"

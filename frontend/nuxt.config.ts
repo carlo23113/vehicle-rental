@@ -33,6 +33,18 @@ export default defineNuxtConfig({
         '@@': resolve(__dirname, './'),
       },
     },
+    build: {
+      // Enable code splitting for better lazy loading
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Split vendor chunks for better caching
+            'vuetify': ['vuetify'],
+            'vue-vendor': ['vue', 'vue-router'],
+          }
+        }
+      }
+    }
   },
 
   imports: {
@@ -44,5 +56,36 @@ export default defineNuxtConfig({
     '@': './',
     '~~': './',
     '@@': './'
+  },
+
+  // Enable component lazy loading with path prefixes to avoid naming conflicts
+  components: [
+    {
+      path: '~/components/common',
+      prefix: 'Common',
+      pathPrefix: true,
+    },
+    {
+      path: '~/components/layout',
+      pathPrefix: false,
+    },
+    {
+      path: '~/components/dashboard',
+      pathPrefix: false,
+    },
+    {
+      path: '~/components',
+      pathPrefix: false,
+    }
+  ],
+
+  // Optimize chunk loading
+  experimental: {
+    payloadExtraction: true,
+  },
+
+  // Performance optimizations
+  nitro: {
+    compressPublicAssets: true,
   }
 })

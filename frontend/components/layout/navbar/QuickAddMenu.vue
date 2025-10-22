@@ -1,15 +1,15 @@
 <template>
   <v-menu v-model="isOpen" offset="8">
     <template v-slot:activator="{ props }">
-      <LayoutNavbarActionButton v-bind="props">
+      <NavbarActionButton v-bind="props">
         <v-icon>mdi-plus-circle</v-icon>
         <ClientOnly>
           <v-tooltip activator="parent" location="bottom">Quick Add</v-tooltip>
         </ClientOnly>
-      </LayoutNavbarActionButton>
+      </NavbarActionButton>
     </template>
 
-    <LayoutNavbarPanel width="280">
+    <NavbarPanel width="280">
       <v-card-title class="p-4">
         <h3 class="text-subtitle-1 font-bold">Quick Add</h3>
         <p class="text-caption text-medium-emphasis m-0">Create new items</p>
@@ -35,7 +35,7 @@
           </v-list-item-subtitle>
         </v-list-item>
       </v-list>
-    </LayoutNavbarPanel>
+    </NavbarPanel>
   </v-menu>
 </template>
 
@@ -82,7 +82,7 @@ const handleClick = (action: string) => {
 
   switch (action) {
     case 'new-rental':
-      router.push('/rentals?action=new')
+      router.push('/rentals/add')
       break
     case 'add-vehicle':
       router.push('/vehicles/add')

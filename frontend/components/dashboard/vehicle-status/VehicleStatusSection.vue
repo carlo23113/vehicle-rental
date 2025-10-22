@@ -11,6 +11,7 @@ interface VehicleStatus {
 
 const props = defineProps<{
   statuses: VehicleStatus[]
+  loading?: boolean
 }>()
 
 const chartData = computed(() =>
@@ -28,18 +29,27 @@ const chartData = computed(() =>
       <CommonUiSectionHeader title="Vehicle Status" subtitle="Real-time fleet distribution" />
     </v-card-title>
     <v-card-text class="pa-6 pt-2">
-      <LazyDashboardVehicleStatusChart :data="chartData" />
-      <div class="mt-4">
-        <DashboardVehicleStatusItem
-          v-for="status in statuses"
-          :key="status.label"
-          :label="status.label"
-          :value="status.value"
-          :percentage="status.percentage"
-          :color="status.color"
-          :theme-color="status.themeColor"
-        />
-      </div>
+      <template v-if="loading">
+        <v-skeleton-loader type="image" height="200" class="mb-4" />
+        <v-skeleton-loader type="list-item" class="mb-2" />
+        <v-skeleton-loader type="list-item" class="mb-2" />
+        <v-skeleton-loader type="list-item" class="mb-2" />
+        <v-skeleton-loader type="list-item" />
+      </template>
+      <template v-else>
+        <LazyVehicleStatusChart :data="chartData" />
+        <div class="mt-4">
+          <LazyVehicleStatusItem
+            v-for="status in statuses"
+            :key="status.label"
+            :label="status.label"
+            :value="status.value"
+            :percentage="status.percentage"
+            :color="status.color"
+            :theme-color="status.themeColor"
+          />
+        </div>
+      </template>
     </v-card-text>
   </CommonUiDashboardCard>
 </template>

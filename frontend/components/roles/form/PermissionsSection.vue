@@ -1,6 +1,6 @@
 <template>
   <div>
-    <RolesFormPermissionsSectionHeader
+    <PermissionsSectionHeader
       :selected-count="selectedCount"
       @select-all="emit('select-all')"
       @clear-all="emit('clear-all')"
@@ -13,7 +13,7 @@
       multiple
       class="border-none rounded-none overflow-hidden gap-0"
     >
-      <RolesFormPermissionsModulePanel
+      <PermissionsModulePanel
         v-for="(perms, module) in permissionsByModule"
         :key="module"
         :module-name="String(module)"

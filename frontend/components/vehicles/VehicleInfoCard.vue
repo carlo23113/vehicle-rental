@@ -29,12 +29,17 @@
           </v-chip>
         </CommonUiDetailItem>
       </v-col>
+      <v-col v-if="locationName" cols="12" md="6">
+        <CommonUiDetailItem label="Location" icon="mdi-map-marker" :value="locationName" />
+      </v-col>
     </v-row>
   </CommonUiDetailCard>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useVehicles } from '~/composables/useVehicles'
+import { useLocations } from '~/composables/useLocations'
 
 interface Props {
   vehicle: {
@@ -44,10 +49,18 @@ interface Props {
     color: string
     type: string
     status: string
+    locationId?: string
   }
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const { getStatusColor, getTypeLabel, getTypeIcon, getStatusIcon } = useVehicles()
+const { getLocationById } = useLocations()
+
+const locationName = computed(() => {
+  if (!props.vehicle.locationId) return null
+  const location = getLocationById(props.vehicle.locationId)
+  return location ? location.name : null
+})
 </script>

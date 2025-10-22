@@ -1,6 +1,11 @@
 <template>
-  <v-expansion-panel class="border-none rounded-none overflow-visible mb-0 before:shadow-none" elevation="0">
-    <v-expansion-panel-title class="px-4 py-3 min-h-0 bg-transparent transition-colors duration-200 hover:bg-surface-variant/20">
+  <v-expansion-panel
+    class="border-none rounded-none overflow-visible mb-0 before:shadow-none"
+    elevation="0"
+  >
+    <v-expansion-panel-title
+      class="px-4 py-3 min-h-0 bg-transparent transition-colors duration-200 hover:bg-surface-variant/20"
+    >
       <template #default>
         <div class="flex items-center flex-grow">
           <span class="text-[0.8125rem] font-semibold">{{ moduleName }}</span>
@@ -18,14 +23,18 @@
         >
           Select All
         </v-btn>
-        <v-icon size="20" :class="expanded ? 'rotate-180' : ''" class="transition-transform duration-300">
+        <v-icon
+          size="20"
+          :class="expanded ? 'rotate-180' : ''"
+          class="transition-transform duration-300"
+        >
           mdi-chevron-down
         </v-icon>
       </template>
     </v-expansion-panel-title>
     <v-expansion-panel-text class="bg-transparent">
       <div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-0 px-4 py-2">
-        <RolesFormPermissionCheckbox
+        <PermissionCheckbox
           v-for="permission in permissions"
           :key="permission.id"
           :permission="permission"

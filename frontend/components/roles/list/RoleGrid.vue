@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-col v-for="role in roles" :key="role.id" cols="12" md="6" lg="4">
-      <RolesListRoleCard
+      <RoleCard
         :role="role"
         @view="$emit('view', role)"
         @edit="$emit('edit', role)"

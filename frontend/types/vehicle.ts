@@ -2,6 +2,13 @@ export type VehicleStatus = 'available' | 'rented' | 'maintenance' | 'out-of-ser
 
 export type VehicleType = 'sedan' | 'suv' | 'truck' | 'van' | 'electric' | 'luxury'
 
+export type RateType = 'city' | 'province'
+
+export interface VehicleRates {
+  cityRate: number
+  provinceRate: number
+}
+
 export interface Vehicle {
   id: number
   make: string
@@ -14,10 +21,12 @@ export interface Vehicle {
   color: string
   mileage: number
   dailyRate: number
+  rates: VehicleRates
   imageUrl?: string
   features: string[]
   lastMaintenanceDate?: string
   nextMaintenanceDate?: string
+  locationId: string
 }
 
 export interface VehicleFilters {

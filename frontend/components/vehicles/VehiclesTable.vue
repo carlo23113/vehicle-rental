@@ -40,10 +40,18 @@
       </v-chip>
     </template>
 
-    <template #item.dailyRate="{ item }">
-      <div class="rate-display">
-        <span class="text-lg font-bold">{{ formatCurrency(item.dailyRate) }}</span>
-        <span class="text-xs text-medium-emphasis">/day</span>
+    <template #item.rates="{ item }">
+      <div class="rates-display">
+        <div class="rate-row">
+          <v-chip size="small" variant="tonal" color="primary" prepend-icon="mdi-city">
+            {{ formatCurrency(item.rates.cityRate) }}/day
+          </v-chip>
+        </div>
+        <div class="rate-row mt-1">
+          <v-chip size="small" variant="tonal" color="secondary" prepend-icon="mdi-map-marker-distance">
+            {{ formatCurrency(item.rates.provinceRate) }}/day
+          </v-chip>
+        </div>
       </div>
     </template>
 
@@ -110,7 +118,7 @@ const headers = [
   { title: 'License Plate', key: 'licensePlate', sortable: true },
   { title: 'Type', key: 'type', sortable: true },
   { title: 'Status', key: 'status', sortable: true },
-  { title: 'Daily Rate', key: 'dailyRate', sortable: true },
+  { title: 'Rates (City/Province)', key: 'rates', sortable: false },
   { title: 'Mileage', key: 'mileage', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false, align: 'end' as const },
 ]
@@ -151,10 +159,15 @@ const headers = [
   font-weight: 600;
 }
 
-.rate-display {
+.rates-display {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
   gap: 0.25rem;
+}
+
+.rate-row {
+  display: flex;
+  align-items: center;
 }
 
 .action-btn {

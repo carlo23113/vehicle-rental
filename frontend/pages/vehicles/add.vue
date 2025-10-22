@@ -13,12 +13,8 @@
       <v-col cols="12">
         <CommonFormCard>
           <v-form ref="formRef" @submit.prevent="handleSubmit">
-            <VehiclesVehicleFormFields v-model="form" />
-            <VehiclesVehiclePhotoUpload
-              v-model="photos"
-              @error="showError"
-              @warning="showWarning"
-            />
+            <VehicleFormFields v-model="form" />
+            <VehiclePhotoUpload v-model="photos" @error="showError" @warning="showWarning" />
 
             <CommonFormActions
               submit-text="Add Vehicle"
@@ -56,7 +52,12 @@ const form = ref<VehicleFormData>({
   status: 'available',
   color: '',
   dailyRate: null,
+  rates: {
+    cityRate: null,
+    provinceRate: null,
+  },
   mileage: null,
+  locationId: '1',
 })
 
 const photos = ref<PhotoFile[]>([])

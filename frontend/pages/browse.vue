@@ -144,7 +144,7 @@
         lg="3"
       >
         <div class="vehicle-grid-item fade-in-up" :style="{ animationDelay: `${index * 50}ms` }">
-          <ListingVehicleCard
+          <VehicleCard
             :vehicle="vehicle"
             @select="showVehicleDetails"
             @book="openBookingDialog"

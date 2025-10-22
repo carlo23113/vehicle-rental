@@ -83,16 +83,16 @@ const handleHeaderAction = (key: string) => {
       @action="handleHeaderAction"
     />
 
-    <RolesDetailRoleInfoCards :role="role" />
+    <RoleInfoCards :role="role" />
 
-    <RolesDetailPermissionsCard
+    <PermissionsCard
       :permissions-by-module="permissionsByModule"
       :total-permissions="role.permissions.length"
     />
 
-    <RolesDetailAssignedUsersCard :users="roleUsers" @view-user="handleViewUser" />
+    <AssignedUsersCard :users="roleUsers" @view-user="handleViewUser" />
 
-    <RolesFormRoleFormDialog v-model="showEditDialog" :role="role" @save="handleSaveRole" />
+    <RoleFormDialog v-model="showEditDialog" :role="role" @save="handleSaveRole" />
   </div>
   <div v-else class="py-12 px-6 max-w-[600px] mx-auto">
     <v-card class="text-center pa-8" elevation="0">

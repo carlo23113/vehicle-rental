@@ -15,9 +15,14 @@ export const useVehicles = () => {
       color: 'Silver',
       mileage: 15420,
       dailyRate: 45,
+      rates: {
+        cityRate: 45,
+        provinceRate: 65,
+      },
       features: ['Bluetooth', 'Backup Camera', 'Cruise Control'],
       lastMaintenanceDate: '2024-09-15',
       nextMaintenanceDate: '2025-03-15',
+      locationId: '1',
     },
     {
       id: 2,
@@ -31,9 +36,14 @@ export const useVehicles = () => {
       color: 'Blue',
       mileage: 8230,
       dailyRate: 65,
+      rates: {
+        cityRate: 65,
+        provinceRate: 90,
+      },
       features: ['AWD', 'Sunroof', 'Apple CarPlay', 'Lane Assist'],
       lastMaintenanceDate: '2024-08-20',
       nextMaintenanceDate: '2025-02-20',
+      locationId: '2',
     },
     {
       id: 3,
@@ -47,9 +57,14 @@ export const useVehicles = () => {
       color: 'Black',
       mileage: 22100,
       dailyRate: 75,
+      rates: {
+        cityRate: 75,
+        provinceRate: 105,
+      },
       features: ['4WD', 'Towing Package', 'Bed Liner'],
       lastMaintenanceDate: '2024-10-05',
       nextMaintenanceDate: '2025-04-05',
+      locationId: '1',
     },
     {
       id: 4,
@@ -63,9 +78,14 @@ export const useVehicles = () => {
       color: 'White',
       mileage: 5200,
       dailyRate: 95,
+      rates: {
+        cityRate: 95,
+        provinceRate: 130,
+      },
       features: ['Autopilot', 'Premium Audio', 'Glass Roof'],
       lastMaintenanceDate: '2024-09-30',
       nextMaintenanceDate: '2025-03-30',
+      locationId: '3',
     },
     {
       id: 5,
@@ -79,9 +99,14 @@ export const useVehicles = () => {
       color: 'Gray',
       mileage: 12400,
       dailyRate: 120,
+      rates: {
+        cityRate: 120,
+        provinceRate: 165,
+      },
       features: ['Leather Seats', 'Navigation', 'Premium Sound', 'Heated Seats'],
       lastMaintenanceDate: '2024-10-18',
       nextMaintenanceDate: '2024-10-25',
+      locationId: '3',
     },
     {
       id: 6,
@@ -95,9 +120,14 @@ export const useVehicles = () => {
       color: 'White',
       mileage: 18900,
       dailyRate: 85,
+      rates: {
+        cityRate: 85,
+        provinceRate: 120,
+      },
       features: ['12 Passenger', 'Rear AC', 'Bluetooth'],
       lastMaintenanceDate: '2024-09-10',
       nextMaintenanceDate: '2025-03-10',
+      locationId: '4',
     },
     {
       id: 7,
@@ -111,9 +141,14 @@ export const useVehicles = () => {
       color: 'Red',
       mileage: 19500,
       dailyRate: 42,
+      rates: {
+        cityRate: 42,
+        provinceRate: 60,
+      },
       features: ['Bluetooth', 'Backup Camera'],
       lastMaintenanceDate: '2024-08-25',
       nextMaintenanceDate: '2025-02-25',
+      locationId: '2',
     },
     {
       id: 8,
@@ -127,9 +162,14 @@ export const useVehicles = () => {
       color: 'Green',
       mileage: 31200,
       dailyRate: 70,
+      rates: {
+        cityRate: 70,
+        provinceRate: 95,
+      },
       features: ['4WD', 'Removable Top', 'Off-Road Package'],
       lastMaintenanceDate: '2024-10-10',
       nextMaintenanceDate: '2024-11-15',
+      locationId: '4',
     },
   ])
 

@@ -12,7 +12,7 @@ defineEmits<{
 const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'week', label: 'Week' },
   { value: 'month', label: 'Month' },
-  { value: 'year', label: 'Year' }
+  { value: 'year', label: 'Year' },
 ]
 </script>
 
@@ -33,13 +33,18 @@ const filterOptions: { value: FilterType; label: string }[] = [
         rounded="xl"
         color="primary"
       >
-        <v-btn v-for="option in filterOptions" :key="option.value" :value="option.value" class="px-4">
+        <v-btn
+          v-for="option in filterOptions"
+          :key="option.value"
+          :value="option.value"
+          class="px-4"
+        >
           {{ option.label }}
         </v-btn>
       </v-btn-toggle>
     </v-card-title>
     <v-card-text class="pa-6 pt-0">
-      <LazyDashboardRevenueChart :filter="filter" />
+      <LazyRevenueChart :filter="filter" />
     </v-card-text>
   </v-card>
 </template>
@@ -48,13 +53,16 @@ const filterOptions: { value: FilterType; label: string }[] = [
 .revenue-card {
   border: 1px solid rgba(var(--v-border-color), 0.06);
   border-radius: 24px;
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    135deg,
     rgb(var(--v-theme-surface)) 0%,
-    rgba(var(--v-theme-surface), 0.98) 100%);
+    rgba(var(--v-theme-surface), 0.98) 100%
+  );
   backdrop-filter: blur(20px);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05),
-              0 0 0 1px rgba(var(--v-theme-primary), 0.05);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(var(--v-theme-primary), 0.05);
   position: relative;
   overflow: hidden;
 }
@@ -65,13 +73,19 @@ const filterOptions: { value: FilterType; label: string }[] = [
   inset: 0;
   border-radius: 24px;
   padding: 2px;
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    135deg,
     rgba(var(--v-theme-primary), 0.2) 0%,
     transparent 50%,
-    rgba(var(--v-theme-secondary), 0.2) 100%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    rgba(var(--v-theme-secondary), 0.2) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   mask-composite: exclude;
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -82,8 +96,9 @@ const filterOptions: { value: FilterType; label: string }[] = [
 }
 
 .revenue-card:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08),
-              0 0 0 1px rgba(var(--v-theme-primary), 0.12);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(var(--v-theme-primary), 0.12);
   transform: translateY(-2px);
 }
 </style>

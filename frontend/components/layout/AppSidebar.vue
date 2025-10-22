@@ -22,37 +22,52 @@
 
     <v-divider class="mx-3"></v-divider>
 
-    <!-- Navigation Items -->
+    <!-- Navigation Items with Progressive Loading -->
     <v-list density="compact" nav class="pa-2">
       <div v-if="!rail" class="text-xs text-medium-emphasis px-3 mb-2 mt-2 font-weight-medium">
         MAIN MENU
       </div>
-      <v-list-item
-        v-for="item in navigationItems"
-        :key="item.title"
-        :prepend-icon="item.icon"
-        :title="rail ? undefined : item.title"
-        :value="item.value"
-        :to="item.to"
-        :active="isActiveRoute(item.to)"
-        color="primary"
-        rounded="lg"
-        class="nav-item mb-1"
-      >
-        <template v-slot:prepend>
-          <v-icon :size="18">{{ item.icon }}</v-icon>
-        </template>
-        <template v-if="item.badge && !rail" v-slot:append>
-          <v-chip
-            :color="item.badgeColor || 'error'"
-            size="x-small"
-            variant="flat"
-            class="badge-chip"
-          >
-            {{ item.badge }}
-          </v-chip>
-        </template>
-      </v-list-item>
+
+      <!-- Render visible navigation items progressively -->
+      <template v-if="mounted">
+        <v-list-item
+          v-for="(item, index) in visibleNavigationItems"
+          :key="item.title"
+          :prepend-icon="item.icon"
+          :title="rail ? undefined : item.title"
+          :value="item.value"
+          :to="item.to"
+          :active="isActiveRoute(item.to)"
+          color="primary"
+          rounded="lg"
+          class="nav-item mb-1"
+          :style="{ animationDelay: `${index * 30}ms` }"
+        >
+          <template v-slot:prepend>
+            <v-icon :size="18">{{ item.icon }}</v-icon>
+          </template>
+          <template v-if="item.badge && !rail" v-slot:append>
+            <v-chip
+              :color="item.badgeColor || 'error'"
+              size="x-small"
+              variant="flat"
+              class="badge-chip"
+            >
+              {{ item.badge }}
+            </v-chip>
+          </template>
+        </v-list-item>
+      </template>
+
+      <!-- Skeleton loaders while loading -->
+      <template v-else>
+        <v-skeleton-loader
+          v-for="i in 5"
+          :key="i"
+          type="list-item"
+          class="mb-1"
+        />
+      </template>
     </v-list>
 
     <v-divider class="mx-3 my-2"></v-divider>
@@ -62,26 +77,32 @@
       <div v-if="!rail" class="text-xs text-medium-emphasis px-3 mb-2 font-weight-medium">
         OTHERS
       </div>
-      <v-list-item
-        v-for="item in secondaryItems"
-        :key="item.title"
-        :prepend-icon="item.icon"
-        :title="rail ? undefined : item.title"
-        :value="item.value"
-        :to="item.to"
-        rounded="lg"
-        class="nav-item mb-1"
-      >
-        <template v-slot:prepend>
-          <v-icon :size="18">{{ item.icon }}</v-icon>
-        </template>
-      </v-list-item>
+      <template v-if="mounted">
+        <v-list-item
+          v-for="item in secondaryItems"
+          :key="item.title"
+          :prepend-icon="item.icon"
+          :title="rail ? undefined : item.title"
+          :value="item.value"
+          :to="item.to"
+          rounded="lg"
+          class="nav-item mb-1"
+        >
+          <template v-slot:prepend>
+            <v-icon :size="18">{{ item.icon }}</v-icon>
+          </template>
+        </v-list-item>
+      </template>
+      <template v-else>
+        <v-skeleton-loader type="list-item" class="mb-1" />
+        <v-skeleton-loader type="list-item" class="mb-1" />
+      </template>
     </v-list>
   </v-navigation-drawer>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 defineProps<{
@@ -89,14 +110,16 @@ defineProps<{
 }>()
 
 const route = useRoute()
+const mounted = ref(false)
+const visibleNavigationItems = ref<any[]>([])
 
 // Check if a route is active (including child routes)
 const isActiveRoute = (path: string) => {
   return route.path.startsWith(path)
 }
 
-// Navigation items
-const navigationItems = ref([
+// All navigation items
+const navigationItems = [
   {
     title: 'Dashboard',
     icon: 'mdi-view-dashboard',
@@ -122,6 +145,12 @@ const navigationItems = ref([
     icon: 'mdi-account-group',
     value: 'customers',
     to: '/customers',
+  },
+  {
+    title: 'Locations',
+    icon: 'mdi-map-marker-multiple',
+    value: 'locations',
+    to: '/locations',
   },
   {
     title: 'Reservations',
@@ -161,7 +190,7 @@ const navigationItems = ref([
     value: 'roles',
     to: '/roles',
   },
-])
+]
 
 const secondaryItems = ref([
   {
@@ -177,6 +206,29 @@ const secondaryItems = ref([
     to: '/help',
   },
 ])
+
+// Progressive loading of navigation items
+onMounted(() => {
+  // Load items progressively for smoother initial render
+  let index = 0
+  const loadNextBatch = () => {
+    const batchSize = 3
+    const nextBatch = navigationItems.slice(index, index + batchSize)
+    visibleNavigationItems.value.push(...nextBatch)
+    index += batchSize
+
+    if (index < navigationItems.length) {
+      requestAnimationFrame(loadNextBatch)
+    } else {
+      mounted.value = true
+    }
+  }
+
+  // Start loading after a tiny delay to prioritize critical content
+  setTimeout(() => {
+    loadNextBatch()
+  }, 50)
+})
 </script>
 
 <style scoped>

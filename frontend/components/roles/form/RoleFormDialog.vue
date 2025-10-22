@@ -28,11 +28,11 @@ const {
   selectAllPermissions,
   clearAllPermissions,
   resetForm,
-  getFormData
+  getFormData,
 } = useRoleForm()
 
-const dialogTitle = computed(() => props.role ? 'Edit Role' : 'Create New Role')
-const saveButtonText = computed(() => props.role ? 'Save Changes' : 'Create Role')
+const dialogTitle = computed(() => (props.role ? 'Edit Role' : 'Create New Role'))
+const saveButtonText = computed(() => (props.role ? 'Save Changes' : 'Create Role'))
 
 const handleSave = () => {
   emit('save', getFormData())
@@ -52,12 +52,9 @@ watch(() => props.role, resetForm, { immediate: true })
       <v-divider />
 
       <v-card-text class="px-7 py-6">
-        <RolesFormBasicInfoSection
-          v-model:name="editForm.name"
-          v-model:description="editForm.description"
-        />
+        <BasicInfoSection v-model:name="editForm.name" v-model:description="editForm.description" />
 
-        <RolesFormPermissionsSection
+        <PermissionsSection
           :permissions-by-module="permissionsByModule"
           v-model:selected-permissions="selectedPermissions"
           v-model:expanded-modules="expandedModules"

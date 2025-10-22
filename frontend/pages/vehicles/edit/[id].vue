@@ -38,8 +38,8 @@
       <v-col cols="12">
         <CommonFormCard>
           <v-form ref="formRef" @submit.prevent="handleSubmit">
-            <VehiclesVehicleFormFields v-model="form" />
-            <VehiclesVehiclePhotoUpload
+            <VehicleFormFields v-model="form" />
+            <VehiclePhotoUpload
               v-model="photos"
               :existing-photos="vehicle.photos"
               @error="showError"
@@ -86,7 +86,12 @@ const form = ref<VehicleFormData>({
   status: 'available',
   color: '',
   dailyRate: null,
+  rates: {
+    cityRate: null,
+    provinceRate: null,
+  },
   mileage: null,
+  locationId: '',
 })
 
 const photos = ref<PhotoFile[]>([])
@@ -115,7 +120,12 @@ const loadVehicle = async () => {
       status: 'available',
       color: 'Silver',
       dailyRate: 89,
+      rates: {
+        cityRate: 45,
+        provinceRate: 65,
+      },
       mileage: 15420,
+      locationId: '1', // Downtown Main Branch
       photos: [
         'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800',
         'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800',
@@ -133,7 +143,12 @@ const loadVehicle = async () => {
       status: vehicle.value.status,
       color: vehicle.value.color,
       dailyRate: vehicle.value.dailyRate,
+      rates: {
+        cityRate: vehicle.value.rates.cityRate,
+        provinceRate: vehicle.value.rates.provinceRate,
+      },
       mileage: vehicle.value.mileage,
+      locationId: vehicle.value.locationId,
     }
   } catch (error) {
     console.error('Error loading vehicle:', error)

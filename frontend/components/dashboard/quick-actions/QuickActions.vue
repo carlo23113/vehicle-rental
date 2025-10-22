@@ -27,7 +27,7 @@ defineEmits<{
     <v-card-text class="pa-6 pt-2">
       <v-row dense>
         <v-col v-for="action in actions" :key="action.title" cols="6">
-          <DashboardQuickActionsQuickActionButton
+          <LazyQuickActionButton
             :title="action.title"
             :icon="action.icon"
             :color="action.color"

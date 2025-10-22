@@ -7,7 +7,7 @@
       'bg-gradient-to-br from-surface/95 to-surface/98',
       isScrolled
         ? 'shadow-[0_8px_32px_rgba(0,0,0,0.08)] border-primary/12 navbar-scrolled'
-        : 'shadow-[0_4px_20px_rgba(0,0,0,0.04)] border-border/8'
+        : 'shadow-[0_4px_20px_rgba(0,0,0,0.04)] border-border/8',
     ]"
   >
     <!-- Menu Toggle -->
@@ -24,23 +24,25 @@
     </div>
 
     <!-- Page Title -->
-    <LayoutNavbarPageTitleDisplay :title="pageTitle" />
+    <LazyPageTitleDisplay :title="pageTitle" />
 
     <v-spacer />
 
     <!-- Search Trigger -->
-    <LayoutNavbarSearchTrigger @click="openSearch" />
+    <LazySearchTrigger @click="openSearch" />
 
-    <!-- Action Buttons -->
+    <!-- Action Buttons (Lazy loaded for better initial performance) -->
     <div class="flex items-center gap-2 action-buttons">
-      <LayoutNavbarDarkModeToggle />
-      <LayoutNavbarQuickAddMenu />
-      <LayoutNavbarNotificationPanel />
-      <LayoutNavbarUserMenu />
+      <ClientOnly>
+        <LazyDarkModeToggle />
+        <LazyQuickAddMenu />
+        <LazyNotificationPanel />
+        <LazyUserMenu />
+      </ClientOnly>
     </div>
 
-    <!-- Search Dialog -->
-    <LayoutNavbarSearchDialog v-model="showSearch" />
+    <!-- Search Dialog (Only loads when needed) -->
+    <LazySearchDialog v-if="showSearch" v-model="showSearch" />
   </v-app-bar>
 </template>
 
@@ -58,10 +60,12 @@ const { showSearch, isScrolled, pageTitle, openSearch } = useNavbarState()
 .navbar-scrolled::after {
   content: '';
   @apply absolute bottom-0 left-0 right-0 h-0.5 opacity-30;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     transparent 0%,
     rgb(var(--v-theme-primary)) 50%,
-    transparent 100%);
+    transparent 100%
+  );
 }
 
 @keyframes slideIn {

@@ -10,23 +10,34 @@ interface Stat {
 
 defineProps<{
   stats: Stat[]
+  loading?: boolean
 }>()
 </script>
 
 <template>
   <div class="stats-grid">
-    <CommonUiStatCard
-      v-for="stat in stats"
-      :key="stat.title"
-      :icon="stat.icon"
-      :label="stat.title"
-      :value="stat.value"
-      :color="stat.color"
-      :change="stat.change"
-      :trend="stat.trend"
-      subtitle="vs last month"
-      variant="detailed"
-    />
+    <template v-if="loading">
+      <v-skeleton-loader
+        v-for="i in 4"
+        :key="i"
+        type="card"
+        height="120"
+      />
+    </template>
+    <template v-else>
+      <CommonUiStatCard
+        v-for="stat in stats"
+        :key="stat.title"
+        :icon="stat.icon"
+        :label="stat.title"
+        :value="stat.value"
+        :color="stat.color"
+        :change="stat.change"
+        :trend="stat.trend"
+        subtitle="vs last month"
+        variant="detailed"
+      />
+    </template>
   </div>
 </template>
 

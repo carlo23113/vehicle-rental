@@ -10,14 +10,14 @@
     />
 
     <!-- Filters -->
-    <RolesListRoleFilters
+    <RoleFilters
       v-model:search="filters.search"
       v-model:module="filters.module"
       :module-options="moduleFilterOptions"
     />
 
     <!-- Statistics -->
-    <RolesListRoleStats
+    <RoleStats
       :total-roles="roles.length"
       :total-users="totalUsers"
       :total-permissions="permissions.length"
@@ -25,7 +25,7 @@
     />
 
     <!-- Roles Grid -->
-    <RolesListRoleGrid
+    <RoleGrid
       :roles="filteredRoles"
       @view="viewRole"
       @edit="editRole"
@@ -34,7 +34,7 @@
     />
 
     <!-- Create/Edit Role Dialog -->
-    <RolesFormRoleFormDialog v-model="showEditDialog" :role="editingRole" @save="handleSaveRole" />
+    <RoleFormDialog v-model="showEditDialog" :role="editingRole" @save="handleSaveRole" />
   </CommonPageContainer>
 </template>
 

@@ -2,11 +2,11 @@
   <v-app>
     <ClientOnly>
       <!-- Lazy-loaded Sidebar -->
-      <LazyLayoutAppSidebar :rail="rail" />
+      <LazyAppSidebar :rail="rail" />
     </ClientOnly>
 
     <!-- Lazy-loaded Navbar -->
-    <LazyLayoutAppNavbar @toggle-rail="rail = !rail" />
+    <LazyAppNavbar @toggle-rail="rail = !rail" />
 
     <!-- Main Content -->
     <v-main>

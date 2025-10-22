@@ -6,6 +6,7 @@ interface MaintenanceAlert {
 
 defineProps<{
   alerts: MaintenanceAlert[]
+  loading?: boolean
 }>()
 </script>
 
@@ -20,8 +21,13 @@ defineProps<{
       />
     </v-card-title>
     <v-card-text class="pa-6 pt-2">
-      <v-list density="compact" class="bg-transparent">
-        <DashboardAlertsMaintenanceAlertItem
+      <template v-if="loading">
+        <v-skeleton-loader type="list-item" class="mb-2" />
+        <v-skeleton-loader type="list-item" class="mb-2" />
+        <v-skeleton-loader type="list-item" />
+      </template>
+      <v-list v-else density="compact" class="bg-transparent">
+        <LazyMaintenanceAlertItem
           v-for="alert in alerts"
           :key="alert.vehicle"
           :vehicle="alert.vehicle"
