@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { MOCK_DATA_BY_PERIOD } from './useReportHelpers'
 import type {
   RevenueReport,
   VehicleUtilization,
@@ -15,6 +16,9 @@ export const useReports = () => {
       .split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
   })
+
+  // Get current period data
+  const currentPeriodData = computed(() => MOCK_DATA_BY_PERIOD[filters.value.period] || MOCK_DATA_BY_PERIOD.month)
 
   // Revenue data
   const revenueData = ref<RevenueReport[]>([
@@ -172,25 +176,10 @@ export const useReports = () => {
     },
   ])
 
-  const totalRevenue = computed(() => {
-    return revenueData.value.reduce((sum, item) => sum + item.revenue, 0)
-  })
-
-  const totalRentals = computed(() => {
-    return revenueData.value.reduce((sum, item) => sum + item.rentals, 0)
-  })
-
-  const avgUtilization = computed(() => {
-    const total = vehicleUtilization.value.reduce(
-      (sum, item) => sum + item.utilizationRate,
-      0
-    )
-    return Math.round(total / vehicleUtilization.value.length)
-  })
-
-  const totalMaintenanceCost = computed(() => {
-    return maintenanceSummary.value.reduce((sum, item) => sum + item.totalCost, 0)
-  })
+  const totalRevenue = computed(() => currentPeriodData.value.totalRevenue)
+  const totalRentals = computed(() => currentPeriodData.value.totalRentals)
+  const avgUtilization = computed(() => currentPeriodData.value.avgUtilization)
+  const totalMaintenanceCost = computed(() => currentPeriodData.value.totalMaintenanceCost)
 
   const { formatCurrency: formatCurrencyUtil } = useCurrency()
 
@@ -211,20 +200,11 @@ export const useReports = () => {
     { type: 'Luxury', count: 12, revenue: 4800, percentage: 8 },
   ])
 
-  // Rental Status Breakdown
-  const rentalStatusBreakdown = ref([
-    { status: 'Active', count: 24, percentage: 32 },
-    { status: 'Completed', count: 42, percentage: 56 },
-    { status: 'Reserved', count: 6, percentage: 8 },
-    { status: 'Cancelled', count: 3, percentage: 4 },
-  ])
+  // Rental Status Breakdown - reactive to period changes
+  const rentalStatusBreakdown = computed(() => currentPeriodData.value.rentalStatusBreakdown)
 
-  // Payment Status Overview
-  const paymentStatusOverview = ref([
-    { status: 'Paid', count: 48, amount: 28900, percentage: 64 },
-    { status: 'Partial', count: 15, amount: 8500, percentage: 20 },
-    { status: 'Pending', count: 12, amount: 6200, percentage: 16 },
-  ])
+  // Payment Status Overview - reactive to period changes
+  const paymentStatusOverview = computed(() => currentPeriodData.value.paymentStatusOverview)
 
   // Location Performance
   const locationPerformance = ref([

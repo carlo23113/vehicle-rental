@@ -7,6 +7,7 @@ export interface Payment {
   rentalId: number
   customerId: number
   customerName: string
+  customerEmail: string
   vehicleName: string
   licensePlate: string
   amount: number

@@ -31,6 +31,95 @@ export const CHART_DATA_BY_PERIOD: Record<string, { labels: string[], data: numb
   }
 }
 
+// Mock data variations by period
+export const MOCK_DATA_BY_PERIOD: Record<string, any> = {
+  week: {
+    totalRevenue: 125700,
+    totalRentals: 28,
+    avgUtilization: 72,
+    totalMaintenanceCost: 845.99,
+    rentalStatusBreakdown: [
+      { status: 'Active', count: 8, percentage: 29 },
+      { status: 'Completed', count: 18, percentage: 64 },
+      { status: 'Reserved', count: 1, percentage: 4 },
+      { status: 'Cancelled', count: 1, percentage: 4 },
+    ],
+    paymentStatusOverview: [
+      { status: 'Paid', count: 22, amount: 12200, percentage: 79 },
+      { status: 'Partial', count: 4, amount: 2100, percentage: 14 },
+      { status: 'Pending', count: 2, amount: 900, percentage: 7 },
+    ],
+  },
+  month: {
+    totalRevenue: 207000,
+    totalRentals: 128,
+    avgUtilization: 69,
+    totalMaintenanceCost: 2094.99,
+    rentalStatusBreakdown: [
+      { status: 'Active', count: 24, percentage: 32 },
+      { status: 'Completed', count: 42, percentage: 56 },
+      { status: 'Reserved', count: 6, percentage: 8 },
+      { status: 'Cancelled', count: 3, percentage: 4 },
+    ],
+    paymentStatusOverview: [
+      { status: 'Paid', count: 48, amount: 28900, percentage: 64 },
+      { status: 'Partial', count: 15, amount: 8500, percentage: 20 },
+      { status: 'Pending', count: 12, amount: 6200, percentage: 16 },
+    ],
+  },
+  quarter: {
+    totalRevenue: 540000,
+    totalRentals: 385,
+    avgUtilization: 71,
+    totalMaintenanceCost: 5850.50,
+    rentalStatusBreakdown: [
+      { status: 'Active', count: 68, percentage: 30 },
+      { status: 'Completed', count: 125, percentage: 55 },
+      { status: 'Reserved', count: 18, percentage: 8 },
+      { status: 'Cancelled', count: 12, percentage: 5 },
+    ],
+    paymentStatusOverview: [
+      { status: 'Paid', count: 142, amount: 85400, percentage: 62 },
+      { status: 'Partial', count: 48, amount: 24200, percentage: 21 },
+      { status: 'Pending', count: 35, amount: 18900, percentage: 15 },
+    ],
+  },
+  year: {
+    totalRevenue: 2625000,
+    totalRentals: 1542,
+    avgUtilization: 74,
+    totalMaintenanceCost: 28450.75,
+    rentalStatusBreakdown: [
+      { status: 'Active', count: 285, percentage: 31 },
+      { status: 'Completed', count: 512, percentage: 56 },
+      { status: 'Reserved', count: 75, percentage: 8 },
+      { status: 'Cancelled', count: 48, percentage: 5 },
+    ],
+    paymentStatusOverview: [
+      { status: 'Paid', count: 598, amount: 342000, percentage: 65 },
+      { status: 'Partial', count: 195, amount: 98500, percentage: 21 },
+      { status: 'Pending', count: 142, amount: 72800, percentage: 15 },
+    ],
+  },
+  custom: {
+    totalRevenue: 115000,
+    totalRentals: 68,
+    avgUtilization: 66,
+    totalMaintenanceCost: 1250.00,
+    rentalStatusBreakdown: [
+      { status: 'Active', count: 12, percentage: 28 },
+      { status: 'Completed', count: 22, percentage: 51 },
+      { status: 'Reserved', count: 3, percentage: 7 },
+      { status: 'Cancelled', count: 2, percentage: 5 },
+    ],
+    paymentStatusOverview: [
+      { status: 'Paid', count: 28, amount: 15400, percentage: 58 },
+      { status: 'Partial', count: 8, amount: 4200, percentage: 17 },
+      { status: 'Pending', count: 6, amount: 3100, percentage: 12 },
+    ],
+  },
+}
+
 export const getRevenueChartConfig = (period: string) => ({
   labels: CHART_DATA_BY_PERIOD[period]?.labels || CHART_DATA_BY_PERIOD.month.labels,
   data: CHART_DATA_BY_PERIOD[period]?.data || CHART_DATA_BY_PERIOD.month.data,

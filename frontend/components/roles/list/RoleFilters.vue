@@ -1,19 +1,25 @@
 <template>
-  <v-row>
+  <v-row class="mb-6">
     <v-col cols="12">
-      <v-card elevation="0" class="border border-gray-200/12 rounded-xl bg-surface pa-3">
+      <CommonPageFilters
+        title="Filters"
+        subtitle="Refine your role search"
+        icon="mdi-filter-variant"
+      >
         <v-row dense>
           <v-col cols="12" md="8">
             <v-text-field
               :model-value="search"
               @update:model-value="$emit('update:search', $event)"
               variant="outlined"
-              density="compact"
+              density="comfortable"
               placeholder="Search roles by name or description..."
               prepend-inner-icon="mdi-magnify"
               clearable
               hide-details
-            ></v-text-field>
+              rounded="lg"
+              class="search-field"
+            />
           </v-col>
           <v-col cols="12" md="4">
             <v-select
@@ -21,13 +27,15 @@
               @update:model-value="$emit('update:module', $event)"
               :items="moduleOptions"
               variant="outlined"
-              density="compact"
+              density="comfortable"
               label="Filter by Module"
+              prepend-inner-icon="mdi-folder-outline"
               hide-details
-            ></v-select>
+              rounded="lg"
+            />
           </v-col>
         </v-row>
-      </v-card>
+      </CommonPageFilters>
     </v-col>
   </v-row>
 </template>
