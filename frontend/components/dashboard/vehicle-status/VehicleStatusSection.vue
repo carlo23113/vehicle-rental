@@ -33,16 +33,16 @@ const chartData = computed(() =>
       <v-skeleton-loader type="list-item" />
     </template>
     <template v-else>
-      <LazyVehicleStatusChart :data="chartData" />
+      <LazyCommonChartsDoughnutChart :data="chartData" />
       <div class="mt-4">
-        <LazyVehicleStatusItem
+        <CommonUiProgressItem
           v-for="status in statuses"
           :key="status.label"
           :label="status.label"
           :value="status.value"
           :percentage="status.percentage"
-          :color="status.color"
-          :theme-color="status.themeColor"
+          :color="status.themeColor"
+          :dot-color="status.color"
         />
       </div>
     </template>

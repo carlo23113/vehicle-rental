@@ -29,92 +29,69 @@
 
 <style scoped>
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  padding: 1rem 0;
+  @apply flex justify-between items-center flex-wrap gap-6 py-4;
 }
 
 .header-content {
-  flex: 1;
-  min-width: 250px;
+  @apply flex-1 min-w-[250px];
 }
 
 .title-wrapper {
-  display: inline-block;
-  position: relative;
-  margin-bottom: 0.5rem;
+  @apply inline-block relative mb-2;
 }
 
 .page-title {
-  font-size: 2rem;
-  font-weight: 800;
+  @apply text-3xl font-extrabold m-0;
   background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-secondary)) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.5px;
-  margin: 0;
 }
 
 .title-underline {
-  height: 4px;
+  @apply h-1 rounded mt-2 w-[60px];
   background: linear-gradient(90deg, rgb(var(--v-theme-primary)) 0%, transparent 100%);
-  border-radius: 2px;
-  margin-top: 0.5rem;
-  width: 60px;
   animation: expand 0.6s ease-out;
 }
 
 @keyframes expand {
   from {
-    width: 0;
-    opacity: 0;
+    @apply w-0 opacity-0;
   }
   to {
-    width: 60px;
-    opacity: 1;
+    @apply w-[60px] opacity-100;
   }
 }
 
 .page-subtitle {
+  @apply opacity-70 text-[0.95rem] font-normal m-0;
   color: rgb(var(--v-theme-on-surface));
-  opacity: 0.7;
-  font-size: 0.95rem;
-  font-weight: 400;
-  margin: 0;
   letter-spacing: 0.2px;
 }
 
 .action-btn {
+  @apply relative font-semibold px-6;
   border-radius: 14px;
   text-transform: none;
   letter-spacing: 0.3px;
-  font-weight: 600;
-  padding: 0 24px;
   box-shadow: 0 4px 16px rgba(var(--v-theme-primary), 0.25);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
 }
 
 .action-btn::after {
+  @apply absolute inset-0 opacity-0 pointer-events-none;
   content: '';
-  position: absolute;
-  inset: 0;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
-  opacity: 0;
   transition: opacity 0.3s ease;
-  pointer-events: none;
 }
 
 .action-btn:hover::after {
-  opacity: 1;
+  @apply opacity-100;
 }
 
 .action-btn:hover {
-  transform: translateY(-2px);
+  @apply -translate-y-0.5;
   box-shadow: 0 8px 24px rgba(var(--v-theme-primary), 0.35);
 }
 </style>

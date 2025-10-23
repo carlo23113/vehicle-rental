@@ -62,6 +62,7 @@ const showTrendChip = computed(() => props.change && props.trend)
 
 <style scoped>
 .stat-card {
+  @apply relative h-full overflow-hidden;
   border: 1px solid rgba(var(--v-border-color), 0.06);
   border-radius: 20px;
   background: linear-gradient(
@@ -70,18 +71,12 @@ const showTrendChip = computed(() => props.change && props.trend)
     rgba(var(--v-theme-surface), 0.95) 100%
   );
   backdrop-filter: blur(10px);
-  height: 100%;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  position: relative;
 }
 
 .stat-card::before {
+  @apply absolute top-0 left-0 right-0 opacity-0;
   content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
   height: 4px;
   background: linear-gradient(
     90deg,
@@ -90,12 +85,11 @@ const showTrendChip = computed(() => props.change && props.trend)
     rgb(var(--v-theme-primary)) 100%
   );
   background-size: 200% 100%;
-  opacity: 0;
   transition: all 0.4s ease;
 }
 
 .stat-card:hover::before {
-  opacity: 1;
+  @apply opacity-100;
   animation: shimmer 2s infinite;
 }
 
@@ -109,24 +103,22 @@ const showTrendChip = computed(() => props.change && props.trend)
 }
 
 .stat-card::after {
+  @apply absolute inset-0 opacity-0;
   content: '';
-  position: absolute;
-  inset: 0;
   background: radial-gradient(
     circle at top right,
     rgba(var(--v-theme-primary), 0.03) 0%,
     transparent 60%
   );
-  opacity: 0;
   transition: opacity 0.4s ease;
 }
 
 .stat-card:hover::after {
-  opacity: 1;
+  @apply opacity-100;
 }
 
 .stat-card:hover {
-  transform: translateY(-8px) scale(1.02);
+  @apply -translate-y-2 scale-[1.02];
   box-shadow:
     0 20px 48px -16px rgba(var(--v-theme-primary), 0.2),
     0 0 0 1px rgba(var(--v-theme-primary), 0.1);
@@ -134,39 +126,30 @@ const showTrendChip = computed(() => props.change && props.trend)
 }
 
 .stat-icon-wrapper {
-  width: 48px;
-  height: 48px;
+  @apply w-12 h-12 flex items-center justify-center relative overflow-hidden;
   border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stat-card:hover .stat-icon-wrapper {
-  transform: rotate(-5deg) scale(1.05);
+  @apply -rotate-[5deg] scale-105;
 }
 
 .stat-icon-wrapper::before {
+  @apply absolute inset-0;
   content: '';
-  position: absolute;
-  inset: 0;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
   opacity: 0.8;
 }
 
 .stat-icon-wrapper::after {
+  @apply absolute inset-0;
   content: '';
-  position: absolute;
-  inset: 0;
   background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 60%);
 }
 
 .stat-icon-wrapper.detailed {
-  width: 68px;
-  height: 68px;
+  @apply w-[68px] h-[68px];
   border-radius: 18px;
   box-shadow:
     0 10px 28px -8px rgba(0, 0, 0, 0.3),
@@ -174,18 +157,15 @@ const showTrendChip = computed(() => props.change && props.trend)
 }
 
 .letter-spacing {
-  letter-spacing: 1px;
+  @apply tracking-wide;
 }
 
 .stat-label {
-  font-size: 0.7rem;
-  opacity: 0.8;
+  @apply text-[0.7rem] opacity-80;
 }
 
 .stat-value {
-  font-size: 2.25rem;
-  font-weight: 800;
-  line-height: 1.2;
+  @apply text-4xl font-extrabold leading-tight;
   background: linear-gradient(
     135deg,
     rgb(var(--v-theme-on-surface)) 0%,
@@ -197,13 +177,10 @@ const showTrendChip = computed(() => props.change && props.trend)
 }
 
 .stat-subtitle {
-  opacity: 0.6;
-  font-size: 0.7rem;
+  @apply opacity-60 text-[0.7rem];
 }
 
 .trend-chip {
-  border-radius: 12px;
-  padding: 0 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  @apply rounded-xl px-2.5 shadow-md;
 }
 </style>

@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 type FilterType = 'week' | 'month' | 'year'
 
-defineProps<{
+const props = defineProps<{
   filter: FilterType
 }>()
 
@@ -14,6 +16,28 @@ const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'month', label: 'Month' },
   { value: 'year', label: 'Year' },
 ]
+
+interface ChartDataConfig {
+  labels: string[]
+  data: number[]
+}
+
+const CHART_DATA_MAP: Record<string, ChartDataConfig> = {
+  week: {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    data: [12500, 15200, 18400, 14800, 21000, 24500, 19800]
+  },
+  month: {
+    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    data: [45000, 52000, 48000, 62000]
+  },
+  year: {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    data: [95000, 88000, 102000, 115000, 125000, 118000, 132000, 128000, 145000, 138000, 142000, 155000]
+  }
+}
+
+const chartConfig = computed(() => CHART_DATA_MAP[props.filter] || { labels: [], data: [] })
 </script>
 
 <template>
@@ -39,6 +63,15 @@ const filterOptions: { value: FilterType; label: string }[] = [
         </v-btn>
       </v-btn-toggle>
     </template>
-    <LazyRevenueChart :filter="filter" />
+    <LazyCommonChartsLineChart
+      :labels="chartConfig.labels"
+      :data="chartConfig.data"
+      label="Revenue"
+      y-axis-prefix="$"
+      y-axis-suffix="K"
+      tooltip-prefix="$"
+      :y-axis-divider="1000"
+      :height="320"
+    />
   </CommonUiDetailCard>
 </template>

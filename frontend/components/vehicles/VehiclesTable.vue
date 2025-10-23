@@ -48,7 +48,12 @@
           </v-chip>
         </div>
         <div class="rate-row mt-1">
-          <v-chip size="small" variant="tonal" color="secondary" prepend-icon="mdi-map-marker-distance">
+          <v-chip
+            size="small"
+            variant="tonal"
+            color="secondary"
+            prepend-icon="mdi-map-marker-distance"
+          >
             {{ formatCurrency(item.rates.provinceRate) }}/day
           </v-chip>
         </div>

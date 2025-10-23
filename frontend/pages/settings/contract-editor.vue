@@ -13,26 +13,11 @@
 
     <!-- Tabs -->
     <div class="px-8 bg-surface border-b border-border/[0.08]">
-      <v-tabs
-        v-model="activeTab"
-        bg-color="transparent"
-        color="primary"
-        density="comfortable"
-      >
-        <v-tab
-          v-for="tab in tabs"
-          :key="tab.value"
-          :value="tab.value"
-        >
+      <v-tabs v-model="activeTab" bg-color="transparent" color="primary" density="comfortable">
+        <v-tab v-for="tab in tabs" :key="tab.value" :value="tab.value">
           <v-icon size="18" start>{{ tab.icon }}</v-icon>
           {{ tab.label }}
-          <v-badge
-            v-if="tab.badge"
-            color="warning"
-            dot
-            inline
-            class="ml-2"
-          />
+          <v-badge v-if="tab.badge" color="warning" dot inline class="ml-2" />
         </v-tab>
       </v-tabs>
     </div>
@@ -84,10 +69,10 @@
     </div>
 
     <!-- Dialogs -->
-    <ContractHelpDialog v-model="showHelp" />
-    <ContractContractDialog v-model="showPreview" @print="handlePrint">
+    <HelpDialog v-model="showHelp" />
+    <ContractDialog v-model="showPreview" @print="handlePrint">
       <RentalContract :rental="mockRental" />
-    </ContractContractDialog>
+    </ContractDialog>
 
     <!-- Snackbar -->
     <CommonUiSnackbar v-model="snackbar" />

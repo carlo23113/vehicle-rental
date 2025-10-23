@@ -1,3 +1,11 @@
+<template>
+  <ClientOnly>
+    <div class="relative w-full flex items-center justify-center" :style="{ height: height + 'px' }">
+      <Doughnut :data="chartData" :options="chartOptions" />
+    </div>
+  </ClientOnly>
+</template>
+
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Doughnut } from 'vue-chartjs'
@@ -12,17 +20,28 @@ import {
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
-interface VehicleStatus {
+interface ChartDataItem {
   label: string
   value: number
   color: string
 }
 
-const props = defineProps<{
-  data: VehicleStatus[]
-}>()
+interface Props {
+  data: ChartDataItem[]
+  cutout?: string
+  height?: number
+  showLegend?: boolean
+  showPercentage?: boolean
+}
 
-const totalVehicles = computed(() => props.data.reduce((sum, item) => sum + item.value, 0))
+const props = withDefaults(defineProps<Props>(), {
+  cutout: '70%',
+  height: 240,
+  showLegend: false,
+  showPercentage: true
+})
+
+const totalValue = computed(() => props.data.reduce((sum, item) => sum + item.value, 0))
 
 const chartData = computed(() => ({
   labels: props.data.map(item => item.label),
@@ -39,9 +58,12 @@ const chartData = computed(() => ({
 const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
   responsive: true,
   maintainAspectRatio: true,
-  cutout: '70%',
+  cutout: props.cutout,
   plugins: {
-    legend: { display: false },
+    legend: {
+      display: props.showLegend,
+      position: 'bottom'
+    },
     tooltip: {
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
       padding: 12,
@@ -55,19 +77,14 @@ const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
         label: (context: TooltipItem<'doughnut'>) => {
           const label = context.label || ''
           const value = context.parsed || 0
-          const percentage = ((value / totalVehicles.value) * 100).toFixed(1)
-          return `${label}: ${value} (${percentage}%)`
+          if (props.showPercentage) {
+            const percentage = ((value / totalValue.value) * 100).toFixed(1)
+            return `${label}: ${value} (${percentage}%)`
+          }
+          return `${label}: ${value}`
         },
       },
     },
   },
 }))
 </script>
-
-<template>
-  <ClientOnly>
-    <div class="relative w-full h-60 flex items-center justify-center">
-      <Doughnut :data="chartData" :options="chartOptions" />
-    </div>
-  </ClientOnly>
-</template>

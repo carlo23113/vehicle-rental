@@ -26,8 +26,8 @@ defineProps<Props>()
 
 <style scoped>
 .detail-card {
+  @apply rounded-2xl;
   border: 1px solid rgba(var(--v-border-color), 0.08);
-  border-radius: 16px;
   background: rgb(var(--v-theme-surface));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -38,12 +38,7 @@ defineProps<Props>()
 }
 
 .icon-wrapper {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  @apply w-10 h-10 rounded-xl flex items-center justify-center;
   background: rgba(var(--v-theme-primary), 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 </style>

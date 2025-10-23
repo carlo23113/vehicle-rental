@@ -203,6 +203,44 @@ export const useReports = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   }
 
+  // Revenue by Vehicle Type
+  const revenueByType = ref([
+    { type: 'Sedan', count: 45, revenue: 15750, percentage: 26 },
+    { type: 'SUV', count: 38, revenue: 22800, percentage: 38 },
+    { type: 'Truck', count: 28, revenue: 16800, percentage: 28 },
+    { type: 'Luxury', count: 12, revenue: 4800, percentage: 8 },
+  ])
+
+  // Rental Status Breakdown
+  const rentalStatusBreakdown = ref([
+    { status: 'Active', count: 24, percentage: 32 },
+    { status: 'Completed', count: 42, percentage: 56 },
+    { status: 'Reserved', count: 6, percentage: 8 },
+    { status: 'Cancelled', count: 3, percentage: 4 },
+  ])
+
+  // Payment Status Overview
+  const paymentStatusOverview = ref([
+    { status: 'Paid', count: 48, amount: 28900, percentage: 64 },
+    { status: 'Partial', count: 15, amount: 8500, percentage: 20 },
+    { status: 'Pending', count: 12, amount: 6200, percentage: 16 },
+  ])
+
+  // Location Performance
+  const locationPerformance = ref([
+    { location: 'Downtown Branch', rentals: 42, revenue: 18900, utilization: 85 },
+    { location: 'Airport Location', rentals: 38, revenue: 22400, utilization: 78 },
+    { location: 'Suburban Office', rentals: 28, revenue: 12200, utilization: 65 },
+    { location: 'North Branch', rentals: 20, remain: 8400, utilization: 52 },
+  ])
+
+  // Monthly Comparison
+  const monthlyComparison = ref({
+    currentMonth: { rentals: 128, revenue: 60900, avgDuration: 4.2 },
+    lastMonth: { rentals: 115, revenue: 54200, avgDuration: 4.5 },
+    growth: { rentals: 11.3, revenue: 12.4, avgDuration: -6.7 }
+  })
+
   return {
     filters,
     revenueData,
@@ -213,6 +251,11 @@ export const useReports = () => {
     totalRentals,
     avgUtilization,
     totalMaintenanceCost,
+    revenueByType,
+    rentalStatusBreakdown,
+    paymentStatusOverview,
+    locationPerformance,
+    monthlyComparison,
     formatCurrency,
     formatDate,
   }
