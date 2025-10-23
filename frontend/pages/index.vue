@@ -1,31 +1,31 @@
 <template>
   <div class="landing-page">
     <!-- Hero Section - Load immediately (above the fold) -->
-    <LandingHeroSection />
+    <HeroSection />
 
     <!-- Stats Section - Lazy load with hydration -->
-    <LazyLandingStatsSection />
+    <StatsSection />
 
     <!-- Features Section - Lazy load with hydration -->
-    <LazyLandingFeaturesSection />
+    <FeaturesSection />
 
     <!-- Featured Vehicles Section - Lazy load with hydration -->
-    <LazyLandingVehiclesSection />
+    <VehiclesSection />
 
     <!-- How It Works Section - Lazy load with hydration -->
-    <LazyLandingHowItWorksSection />
+    <HowItWorksSection />
 
     <!-- Testimonials Section - Lazy load with hydration -->
-    <LazyLandingTestimonialsSection />
+    <TestimonialsSection />
 
     <!-- FAQ Section - Lazy load with hydration -->
-    <LazyLandingFAQSection />
+    <FAQSection />
 
     <!-- Newsletter Section - Lazy load with hydration -->
-    <LazyLandingNewsletterSection />
+    <NewsletterSection />
 
     <!-- CTA Section - Lazy load with hydration -->
-    <LazyLandingCTASection />
+    <CTASection />
   </div>
 </template>
 
