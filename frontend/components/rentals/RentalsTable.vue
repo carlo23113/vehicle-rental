@@ -45,15 +45,27 @@
     </template>
 
     <template #item.status="{ item }">
-      <v-chip
-        :color="getStatusColor(item.status)"
-        size="small"
-        variant="flat"
-        class="status-chip"
-      >
-        <v-icon :icon="getStatusIcon(item.status)" start size="14" />
-        {{ item.status }}
-      </v-chip>
+      <div class="status-container">
+        <v-chip
+          :color="getStatusColor(item.status)"
+          size="small"
+          variant="flat"
+          class="status-chip"
+        >
+          <v-icon :icon="getStatusIcon(item.status)" start size="14" />
+          {{ item.status }}
+        </v-chip>
+        <v-chip
+          v-if="item.paymentStatus"
+          :color="getPaymentStatusColor(item.paymentStatus)"
+          size="x-small"
+          variant="tonal"
+          class="payment-chip"
+        >
+          <v-icon icon="mdi-cash" start size="12" />
+          {{ item.paymentStatus }}
+        </v-chip>
+      </div>
     </template>
 
     <template #item.totalAmount="{ item }">
@@ -101,6 +113,7 @@ defineProps<{
   rentals: any[]
   formatDate: (date: string) => string
   getStatusColor: (status: string) => string
+  getPaymentStatusColor: (status: string) => string
 }>()
 
 defineEmits<{
@@ -162,6 +175,19 @@ const getStatusIcon = (status: string) => {
 .status-chip {
   text-transform: capitalize;
   font-weight: 600;
+}
+
+.payment-chip {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.status-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-start;
+  width: fit-content;
 }
 
 .amount-display {

@@ -19,7 +19,7 @@
           @update:model-value="$emit('update:search', $event)"
         />
       </v-col>
-      <v-col cols="12" sm="6" md="4">
+      <v-col cols="12" sm="4" md="3">
         <v-select
           :model-value="filters.status"
           :items="statusOptions"
@@ -32,7 +32,20 @@
           @update:model-value="$emit('update:status', $event)"
         />
       </v-col>
-      <v-col cols="12" sm="6" md="4">
+      <v-col cols="12" sm="4" md="2">
+        <v-select
+          :model-value="filters.paymentStatus"
+          :items="paymentStatusOptions"
+          variant="outlined"
+          density="comfortable"
+          label="Payment"
+          prepend-inner-icon="mdi-cash"
+          hide-details
+          rounded="lg"
+          @update:model-value="$emit('update:paymentStatus', $event)"
+        />
+      </v-col>
+      <v-col cols="12" sm="4" md="3">
         <v-select
           :model-value="filters.dateRange"
           :items="dateRangeOptions"
@@ -53,18 +66,21 @@
 interface Filters {
   search: string
   status: string
+  paymentStatus: string
   dateRange: string
 }
 
 defineProps<{
   filters: Filters
   statusOptions: Array<{ title: string; value: string }>
+  paymentStatusOptions: Array<{ title: string; value: string }>
   dateRangeOptions: Array<{ title: string; value: string }>
 }>()
 
 defineEmits<{
   'update:search': [value: string]
   'update:status': [value: string]
+  'update:paymentStatus': [value: string]
   'update:dateRange': [value: string]
 }>()
 </script>

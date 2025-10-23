@@ -28,6 +28,8 @@ export const useRentalForm = (isEditMode = false) => {
     returnTime: '08:00',
     rateType: 'city',
     status: 'reserved',
+    paymentStatus: 'pending',
+    depositAmount: 0,
     mileageLimit: null,
     notes: ''
   })
@@ -112,7 +114,9 @@ export const useRentalForm = (isEditMode = false) => {
         pickupTime: '09:00',
         returnTime: '09:00',
         rateType: 'city',
-        status: 'active',
+        status: 'reserved',
+        paymentStatus: 'partial',
+        depositAmount: 150,
         mileageLimit: 500,
         notes: 'Customer requested GPS navigation'
       }

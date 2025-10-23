@@ -1,4 +1,5 @@
-export type RentalStatus = 'active' | 'completed' | 'reserved' | 'cancelled'
+export type RentalStatus = 'reserved' | 'active' | 'completed' | 'cancelled'
+export type PaymentStatus = 'pending' | 'partial' | 'paid'
 
 export interface Rental {
   id: number
@@ -11,7 +12,11 @@ export interface Rental {
   licensePlate: string
   startDate: string
   endDate: string
+  startTime?: string
+  endTime?: string
   status: RentalStatus
+  paymentStatus?: PaymentStatus
+  depositAmount?: number
   totalAmount: number
   dailyRate: number
   numberOfDays: number
@@ -24,5 +29,6 @@ export interface Rental {
 export interface RentalFilters {
   search: string
   status: RentalStatus | 'all'
+  paymentStatus: PaymentStatus | 'all'
   dateRange: string | 'all'
 }

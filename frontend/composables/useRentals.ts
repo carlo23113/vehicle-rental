@@ -73,7 +73,11 @@ export const useRentals = () => {
       licensePlate: 'GHI-3456',
       startDate: '2025-01-25',
       endDate: '2025-02-01',
+      startTime: '09:00',
+      endTime: '09:00',
       status: 'reserved',
+      paymentStatus: 'pending',
+      depositAmount: 200,
       dailyRate: 95,
       numberOfDays: 7,
       totalAmount: 665,
@@ -112,7 +116,11 @@ export const useRentals = () => {
       licensePlate: 'MNO-2468',
       startDate: '2025-01-22',
       endDate: '2025-01-29',
+      startTime: '10:00',
+      endTime: '10:00',
       status: 'reserved',
+      paymentStatus: 'partial',
+      depositAmount: 150,
       dailyRate: 85,
       numberOfDays: 7,
       totalAmount: 595,
@@ -165,6 +173,7 @@ export const useRentals = () => {
   const filters = ref<RentalFilters>({
     search: '',
     status: 'all',
+    paymentStatus: 'all',
     dateRange: 'all',
   })
 
@@ -178,10 +187,13 @@ export const useRentals = () => {
 
       const matchesStatus = filters.value.status === 'all' || rental.status === filters.value.status
 
+      const matchesPaymentStatus =
+        filters.value.paymentStatus === 'all' || rental.paymentStatus === filters.value.paymentStatus
+
       // Simple date range filtering - can be enhanced
       const matchesDateRange = filters.value.dateRange === 'all'
 
-      return matchesSearch && matchesStatus && matchesDateRange
+      return matchesSearch && matchesStatus && matchesPaymentStatus && matchesDateRange
     })
   })
 
@@ -215,6 +227,15 @@ export const useRentals = () => {
     return colors[status] || 'default'
   }
 
+  const getPaymentStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      pending: 'warning',
+      partial: 'info',
+      paid: 'success',
+    }
+    return colors[status] || 'default'
+  }
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -228,6 +249,7 @@ export const useRentals = () => {
     updateRental,
     deleteRental,
     getStatusColor,
+    getPaymentStatusColor,
     formatDate,
   }
 }

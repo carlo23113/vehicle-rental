@@ -153,12 +153,6 @@ const navigationItems = [
     to: '/locations',
   },
   {
-    title: 'Reservations',
-    icon: 'mdi-calendar-clock',
-    value: 'reservations',
-    to: '/reservations',
-  },
-  {
     title: 'Maintenance',
     icon: 'mdi-tools',
     value: 'maintenance',

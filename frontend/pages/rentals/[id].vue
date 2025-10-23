@@ -40,6 +40,8 @@
           :rate-type="rental.rateType"
           :mileage-limit="rental.mileageLimit"
           :total="rental.totalAmount"
+          :payment-status="rental.paymentStatus"
+          :deposit-amount="rental.depositAmount"
           class="mb-6"
         />
 
@@ -102,7 +104,9 @@ const showContractDialog = ref(false)
 // Mock rental data - replace with actual API call
 const rental = ref({
   id: String(route.params.id),
-  status: 'active',
+  status: 'reserved',
+  paymentStatus: 'partial',
+  depositAmount: 150,
   startDate: '2025-01-15',
   endDate: '2025-01-16',
   amountOfDays: 1,

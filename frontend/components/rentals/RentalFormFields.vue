@@ -307,6 +307,63 @@
         </v-col>
       </v-row>
     </CommonFormSection>
+
+    <!-- Payment Information (for reserved status) -->
+    <CommonFormSection v-if="localForm.status === 'reserved'" title="Payment Information" icon="mdi-cash">
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-select
+            v-model="localForm.paymentStatus"
+            label="Payment Status"
+            variant="outlined"
+            density="comfortable"
+            :items="paymentStatusOptions"
+            :rules="[rules.required]"
+            prepend-inner-icon="mdi-credit-card-outline"
+          />
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model.number="localForm.depositAmount"
+            :label="localForm.paymentStatus === 'paid' ? 'Amount Paid' : 'Deposit Amount'"
+            placeholder="0.00"
+            variant="outlined"
+            density="comfortable"
+            type="number"
+            prefix="$"
+            step="0.01"
+            min="0"
+            :max="rentalSummary.total"
+            prepend-inner-icon="mdi-currency-usd"
+            :hint="getPaymentHint"
+            persistent-hint
+          />
+        </v-col>
+      </v-row>
+
+      <!-- Payment Summary Alert -->
+      <v-alert
+        v-if="localForm.paymentStatus && localForm.depositAmount && rentalSummary.total > 0"
+        :type="getPaymentAlertType"
+        variant="tonal"
+        class="mt-4"
+        border="start"
+      >
+        <template #text>
+          <div class="d-flex justify-space-between align-center">
+            <div>
+              <div class="text-subtitle-2 font-weight-bold mb-1">{{ getPaymentSummaryTitle }}</div>
+              <div class="text-caption">
+                {{ getPaymentSummaryMessage }}
+              </div>
+            </div>
+            <div v-if="remainingBalance > 0" class="text-h6 font-weight-bold">
+              {{ formatCurrency(remainingBalance) }}
+            </div>
+          </div>
+        </template>
+      </v-alert>
+    </CommonFormSection>
   </div>
 </template>
 
@@ -334,6 +391,8 @@ export interface RentalFormData {
   returnTime: string
   rateType: 'city' | 'province'
   status: string
+  paymentStatus?: string
+  depositAmount?: number
   mileageLimit: number | null
   notes: string
 }
@@ -375,6 +434,12 @@ const rateTypeOptions = [
 const statusOptions = [
   { title: 'Reserved', value: 'reserved' },
   { title: 'Active', value: 'active' },
+]
+
+const paymentStatusOptions = [
+  { title: 'Pending', value: 'pending' },
+  { title: 'Partial', value: 'partial' },
+  { title: 'Paid', value: 'paid' },
 ]
 
 const pickupLocationHint = 'Pickup location is automatically set based on vehicle location'
@@ -544,6 +609,60 @@ const returnTimeHint = computed(() =>
     ? `${localForm.value.amountOfDays} day${localForm.value.amountOfDays !== 1 ? 's' : ''} rental: Same time as pickup on return date`
     : 'Auto-calculated: Same time as pickup (24-hour periods)'
 )
+
+// Payment-related computeds
+const remainingBalance = computed(() => {
+  if (!localForm.value.depositAmount || !rentalSummary.value.total) return 0
+  return Math.max(0, rentalSummary.value.total - localForm.value.depositAmount)
+})
+
+const getPaymentHint = computed(() => {
+  if (!rentalSummary.value.total) return 'Calculate rental cost first'
+
+  if (localForm.value.paymentStatus === 'paid') {
+    return `Enter full amount: ${formatCurrency(rentalSummary.value.total)}`
+  } else if (localForm.value.paymentStatus === 'partial') {
+    return `Enter partial payment (Total: ${formatCurrency(rentalSummary.value.total)})`
+  }
+  return `Total rental cost: ${formatCurrency(rentalSummary.value.total)}`
+})
+
+const getPaymentAlertType = computed(() => {
+  if (localForm.value.paymentStatus === 'paid' && localForm.value.depositAmount >= rentalSummary.value.total) {
+    return 'success'
+  } else if (localForm.value.paymentStatus === 'partial') {
+    return 'info'
+  } else if (localForm.value.paymentStatus === 'pending') {
+    return 'warning'
+  }
+  return 'info'
+})
+
+const getPaymentSummaryTitle = computed(() => {
+  if (localForm.value.paymentStatus === 'paid') {
+    return 'Fully Paid'
+  } else if (localForm.value.paymentStatus === 'partial') {
+    return 'Partial Payment - Balance Due'
+  }
+  return 'Payment Pending'
+})
+
+const getPaymentSummaryMessage = computed(() => {
+  const paid = localForm.value.depositAmount || 0
+  const total = rentalSummary.value.total
+
+  if (localForm.value.paymentStatus === 'paid' && paid >= total) {
+    return `Full payment of ${formatCurrency(paid)} received`
+  } else if (localForm.value.paymentStatus === 'partial') {
+    return `Paid: ${formatCurrency(paid)} of ${formatCurrency(total)}`
+  } else if (localForm.value.paymentStatus === 'pending') {
+    if (paid > 0) {
+      return `Deposit: ${formatCurrency(paid)} | Remaining: ${formatCurrency(remainingBalance.value)}`
+    }
+    return `No payment received yet. Total due: ${formatCurrency(total)}`
+  }
+  return ''
+})
 </script>
 
 <style scoped>

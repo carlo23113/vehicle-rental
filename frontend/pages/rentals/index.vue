@@ -14,9 +14,11 @@
         <RentalFilters
           :filters="filters"
           :status-options="statusOptions"
+          :payment-status-options="paymentStatusOptions"
           :date-range-options="dateRangeOptions"
           @update:search="(val: string) => filters.search = val"
           @update:status="(val: any) => filters.status = val"
+          @update:payment-status="(val: any) => filters.paymentStatus = val"
           @update:date-range="(val: string) => filters.dateRange = val"
         />
       </v-col>
@@ -36,6 +38,7 @@
           :rentals="filteredRentals"
           :format-date="formatDate"
           :get-status-color="getStatusColor"
+          :get-payment-status-color="getPaymentStatusColor"
           @view="handleViewRental"
           @edit="handleEditRental"
           @delete="handleDeleteRental"
@@ -70,7 +73,7 @@ import { useSnackbar } from '~/composables/useSnackbar'
 
 const router = useRouter()
 const route = useRoute()
-const { rentals, filters, filteredRentals, getStatusColor, formatDate } = useRentals()
+const { rentals, filters, filteredRentals, getStatusColor, getPaymentStatusColor, formatDate } = useRentals()
 const { customers, getFullName } = useCustomers()
 const { formatCurrency } = useCurrency()
 const { snackbar, showSuccess, showError } = useSnackbar()
@@ -83,10 +86,17 @@ const deleting = ref(false)
 // Filter options
 const statusOptions = [
   { title: 'All Statuses', value: 'all' },
-  { title: 'Active', value: 'active' },
   { title: 'Reserved', value: 'reserved' },
+  { title: 'Active', value: 'active' },
   { title: 'Completed', value: 'completed' },
   { title: 'Cancelled', value: 'cancelled' },
+]
+
+const paymentStatusOptions = [
+  { title: 'All Payment', value: 'all' },
+  { title: 'Pending', value: 'pending' },
+  { title: 'Partial', value: 'partial' },
+  { title: 'Paid', value: 'paid' },
 ]
 
 const dateRangeOptions = [
