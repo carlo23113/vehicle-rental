@@ -15,7 +15,7 @@
             <div
               class="icon-ring absolute w-[72px] h-[72px] border-2 rounded-full animate-[pulseRing_2s_cubic-bezier(0.4,0,0.6,1)_infinite]"
             />
-            <v-icon icon="mdi-alert-circle-outline" size="48" color="error" />
+            <v-icon :icon="iconName" size="48" :color="color" />
           </div>
         </div>
 
@@ -54,7 +54,7 @@
           <slot name="content" />
 
           <!-- Warning Message -->
-          <v-alert color="error" variant="tonal" density="compact" class="mt-5" border="start">
+          <v-alert :color="color" variant="tonal" density="compact" class="mt-5" border="start">
             {{ message }}
           </v-alert>
         </div>
@@ -74,11 +74,12 @@
           {{ cancelText }}
         </v-btn>
         <v-btn
-          color="error"
+          :color="color"
           variant="flat"
           size="large"
           :loading="loading"
-          class="flex-1 !normal-case !font-semibold !tracking-[0.25px] !rounded-[10px] !h-11 !shadow-[0_2px_8px_rgba(var(--v-theme-error),0.25)] transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:!shadow-[0_4px_12px_rgba(var(--v-theme-error),0.35)] hover:-translate-y-px active:translate-y-0"
+          class="flex-1 !normal-case !font-semibold !tracking-[0.25px] !rounded-[10px] !h-11 transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-px active:translate-y-0"
+          :class="`!shadow-[0_2px_8px_rgba(var(--v-theme-${color}),0.25)] hover:!shadow-[0_4px_12px_rgba(var(--v-theme-${color}),0.35)]`"
           @click="handleConfirm"
         >
           {{ confirmText }}
@@ -95,19 +96,23 @@ interface Props {
   itemName?: string
   itemDetails?: string
   icon?: string
+  iconName?: string
   message?: string
   confirmText?: string
   cancelText?: string
   loading?: boolean
+  color?: 'success' | 'error' | 'warning' | 'info' | 'primary'
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: 'Delete Item?',
-  message: 'This action is permanent and cannot be undone',
-  confirmText: 'Delete',
+  title: 'Confirm Action?',
+  message: 'Please confirm to proceed with this action',
+  confirmText: 'Confirm',
   cancelText: 'Cancel',
   loading: false,
   icon: 'mdi-help-circle-outline',
+  iconName: 'mdi-alert-circle-outline',
+  color: 'primary',
 })
 
 const emit = defineEmits<{
@@ -129,11 +134,11 @@ const handleCancel = () => {
 <style scoped>
 /* Icon Section */
 .icon-section {
-  background: linear-gradient(180deg, rgba(var(--v-theme-error), 0.03), transparent);
+  background: linear-gradient(180deg, v-bind('`rgba(var(--v-theme-${color}), 0.03)`'), transparent);
 }
 
 .icon-ring {
-  border-color: rgb(var(--v-theme-error));
+  border-color: v-bind('`rgb(var(--v-theme-${color}))`');
   opacity: 0.15;
 }
 
