@@ -87,5 +87,12 @@ export default defineNuxtConfig({
   // Performance optimizations
   nitro: {
     compressPublicAssets: true,
+  },
+
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
   }
 })
