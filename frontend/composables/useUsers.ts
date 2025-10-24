@@ -205,6 +205,16 @@ export const useUsers = () => {
     return icons[role] || 'mdi-account'
   }
 
+  const getRoleLabel = (role: string) => {
+    const labels: Record<string, string> = {
+      admin: 'Administrator',
+      manager: 'Manager',
+      agent: 'Agent',
+      technician: 'Technician',
+    }
+    return labels[role] || role
+  }
+
   return {
     users,
     filters,
@@ -218,5 +228,6 @@ export const useUsers = () => {
     getInitials,
     formatDate,
     getRoleIcon,
+    getRoleLabel,
   }
 }

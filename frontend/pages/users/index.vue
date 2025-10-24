@@ -253,8 +253,7 @@ const stats = computed(() => {
 })
 
 const viewUser = (user: any) => {
-  console.log('View user:', user)
-  // TODO: Implement view details
+  navigateTo(`/users/${user.id}`)
 }
 
 const editUser = (user: any) => {
