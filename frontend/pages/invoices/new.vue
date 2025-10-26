@@ -97,74 +97,15 @@
             </v-btn>
           </div>
 
-          <div v-for="(item, index) in form.items" :key="index" class="item-card mb-4 pa-4 rounded-lg">
-            <v-row>
-              <v-col cols="12" md="4">
-                <v-text-field
-                  v-model="item.description"
-                  label="Description"
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details="auto"
-                  :rules="[v => !!v || 'Description is required']"
-                />
-              </v-col>
-
-              <v-col cols="6" md="2">
-                <v-text-field
-                  v-model.number="item.quantity"
-                  label="Qty"
-                  type="number"
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details="auto"
-                  :rules="[v => v > 0 || 'Must be > 0']"
-                  @input="calculateItemTotal(item)"
-                />
-              </v-col>
-
-              <v-col cols="6" md="2">
-                <v-text-field
-                  v-model.number="item.unitPrice"
-                  label="Unit Price"
-                  type="number"
-                  variant="outlined"
-                  density="comfortable"
-                  :prefix="getCurrencySymbol()"
-                  hide-details="auto"
-                  :rules="[v => v >= 0 || 'Must be >= 0']"
-                  @input="calculateItemTotal(item)"
-                />
-              </v-col>
-
-              <v-col cols="6" md="2">
-                <v-text-field
-                  v-model.number="item.taxRate"
-                  label="Tax %"
-                  type="number"
-                  variant="outlined"
-                  density="comfortable"
-                  suffix="%"
-                  hide-details="auto"
-                  @input="calculateItemTotal(item)"
-                />
-              </v-col>
-
-              <v-col cols="6" md="2" class="d-flex align-center">
-                <div class="flex-grow-1">
-                  <p class="text-caption text-medium-emphasis mb-1">Total</p>
-                  <p class="text-h6 font-weight-bold">{{ formatCurrency(item.total) }}</p>
-                </div>
-                <v-btn
-                  icon="mdi-delete"
-                  variant="text"
-                  color="error"
-                  size="small"
-                  @click="removeItem(index)"
-                />
-              </v-col>
-            </v-row>
-          </div>
+          <InvoiceItemCard
+            v-for="(item, index) in form.items"
+            :key="index"
+            :item="item"
+            :currency-symbol="getCurrencySymbol()"
+            class="mb-4"
+            @update="updateItemField(index, $event)"
+            @remove="removeItem(index)"
+          />
 
           <v-alert v-if="form.items.length === 0" type="info" variant="tonal" class="mt-4">
             No items added. Click "Add Item" to add line items to the invoice.
@@ -184,7 +125,6 @@
               density="comfortable"
               :prefix="getCurrencySymbol()"
               hide-details="auto"
-              @input="calculateTotals"
             />
           </v-col>
 
@@ -199,33 +139,18 @@
               hide-details="auto"
               hint="Applied to items without individual tax"
               persistent-hint
-              @input="calculateTotals"
             />
           </v-col>
         </v-row>
 
         <!-- Totals Summary -->
-        <v-card elevation="0" class="totals-card mt-6 pa-6 rounded-lg">
-          <div class="total-row">
-            <span class="text-subtitle-1">Subtotal:</span>
-            <span class="text-h6 font-weight-bold">{{ formatCurrency(calculatedTotals.subtotal) }}</span>
-          </div>
-          <div v-if="form.discountAmount > 0" class="total-row text-success">
-            <span class="text-subtitle-1">Discount:</span>
-            <span class="text-h6 font-weight-bold">-{{ formatCurrency(form.discountAmount) }}</span>
-          </div>
-          <div class="total-row">
-            <span class="text-subtitle-1">Tax:</span>
-            <span class="text-h6 font-weight-bold">{{ formatCurrency(calculatedTotals.taxAmount) }}</span>
-          </div>
-          <v-divider class="my-3" />
-          <div class="total-row grand-total">
-            <span class="text-h6">Total:</span>
-            <span class="text-h4 font-weight-bold">{{
-              formatCurrency(calculatedTotals.totalAmount)
-            }}</span>
-          </div>
-        </v-card>
+        <InvoiceTotalsCard
+          :subtotal="calculatedTotals.subtotal"
+          :tax-amount="calculatedTotals.taxAmount"
+          :discount-amount="form.discountAmount"
+          :total-amount="calculatedTotals.totalAmount"
+          class="mt-6"
+        />
 
         <!-- Notes & Terms -->
         <v-row class="mt-4">
@@ -314,13 +239,30 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { Invoice, CompanyInfo, InvoiceItem } from '~/types/invoice'
+import type { Invoice, InvoiceItem } from '~/types/invoice'
+import { INVOICE_STATUS_OPTIONS, DEFAULT_PAYMENT_TERMS, DEFAULT_TAX_RATE, DUE_DATE_DAYS } from '~/constants/invoice'
+import { getTodayISO, addDays } from '~/utils/date'
+
+interface InvoiceForm {
+  customerName: string
+  customerEmail: string
+  issueDate: string
+  dueDate: string
+  status: 'draft' | 'sent' | 'paid'
+  items: InvoiceItem[]
+  discountAmount: number
+  globalTaxRate: number
+  notes: string
+  terms: string
+}
 
 definePageMeta({
   layout: 'default',
 })
 
-const { formatCurrency, getCurrencySymbol } = useCurrency()
+const { getCurrencySymbol } = useCurrency()
+const { companyInfo } = useCompanyInfo()
+const { calculateItemTotal, calculateInvoiceTotals, applyGlobalTaxRate } = useInvoiceCalculations()
 
 // State
 const formRef = ref()
@@ -334,54 +276,24 @@ const snackbar = ref({
   icon: 'mdi-check-circle',
 })
 
-const form = ref({
+const form = ref<InvoiceForm>({
   customerName: 'John Doe',
   customerEmail: 'john@example.com',
-  issueDate: new Date().toISOString().split('T')[0],
-  dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  status: 'draft' as const,
-  items: [] as InvoiceItem[],
+  issueDate: getTodayISO(),
+  dueDate: addDays(DUE_DATE_DAYS),
+  status: 'draft',
+  items: [],
   discountAmount: 0,
-  globalTaxRate: 8.5,
-  notes: '' as string,
-  terms: 'Payment is due within 30 days. Late payments may incur additional fees.' as string,
+  globalTaxRate: DEFAULT_TAX_RATE,
+  notes: '',
+  terms: DEFAULT_PAYMENT_TERMS,
 })
 
-const statusOptions = [
-  { title: 'Draft', value: 'draft' },
-  { title: 'Sent', value: 'sent' },
-  { title: 'Paid', value: 'paid' },
-]
+const statusOptions = INVOICE_STATUS_OPTIONS
 
-const calculatedTotals = computed(() => {
-  const subtotal = form.value.items.reduce((sum, item) => sum + item.amount, 0)
-  const taxAmount = form.value.items.reduce((sum, item) => sum + (item.taxAmount || 0), 0)
-  const totalAmount = subtotal + taxAmount - form.value.discountAmount
-
-  return {
-    subtotal,
-    taxAmount,
-    totalAmount,
-  }
-})
-
-// Company info (this should come from settings in a real app)
-const companyInfo: CompanyInfo = {
-  name: 'Vehicle Rental Company',
-  logo: '',
-  address: {
-    street: '123 Business St',
-    city: 'San Francisco',
-    state: 'CA',
-    zipCode: '94102',
-    country: 'USA',
-  },
-  phone: '+1 (555) 123-4567',
-  email: 'contact@vehiclerental.com',
-  website: 'www.vehiclerental.com',
-  taxId: '12-3456789',
-  registrationNumber: 'REG-2024-001',
-}
+const calculatedTotals = computed(() =>
+  calculateInvoiceTotals(form.value.items, form.value.discountAmount)
+)
 
 // Item operations
 const addItem = () => {
@@ -399,22 +311,14 @@ const addItem = () => {
 
 const removeItem = (index: number) => {
   form.value.items.splice(index, 1)
-  calculateTotals()
 }
 
-const calculateItemTotal = (item: InvoiceItem) => {
-  item.amount = item.quantity * item.unitPrice
-  item.taxAmount = item.taxRate ? (item.amount * item.taxRate) / 100 : 0
-  item.total = item.amount + item.taxAmount
-}
-
-const calculateTotals = () => {
-  form.value.items.forEach(item => {
-    if (!item.taxRate) {
-      item.taxRate = form.value.globalTaxRate
-    }
+const updateItemField = (index: number, [field, value]: [keyof InvoiceItem, any]) => {
+  const item = form.value.items[index]
+  if (item) {
+    ;(item as any)[field] = value
     calculateItemTotal(item)
-  })
+  }
 }
 
 const buildInvoiceData = (): Invoice => {
@@ -427,8 +331,8 @@ const buildInvoiceData = (): Invoice => {
     customerId: '1',
     customerName: form.value.customerName,
     customerEmail: form.value.customerEmail,
-    issueDate: form.value.issueDate || new Date().toISOString().split('T')[0],
-    dueDate: form.value.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    issueDate: form.value.issueDate,
+    dueDate: form.value.dueDate,
     items: form.value.items,
     subtotal: calculatedTotals.value.subtotal,
     taxRate: form.value.globalTaxRate,
@@ -538,31 +442,5 @@ if (!rentalId) {
 .items-section {
   background: transparent;
   border: 1px solid rgba(var(--v-border-color), 0.12);
-}
-
-.item-card {
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-border-color), 0.12);
-}
-
-.totals-card {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 0.05),
-    rgba(var(--v-theme-secondary), 0.05)
-  );
-  border: 1px solid rgba(var(--v-theme-primary), 0.2);
-}
-
-.total-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-}
-
-.total-row.grand-total {
-  color: rgb(var(--v-theme-primary));
-  padding-top: 8px;
 }
 </style>
