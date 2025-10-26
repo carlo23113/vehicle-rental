@@ -6,82 +6,41 @@
       subtitle="Manage payment transactions and billing"
       action-text="Record Payment"
       action-icon="mdi-plus"
-      @action-click="$router.push('/owner/payments/new')"
+      @action-click="handleAddPayment"
     />
 
     <!-- Filters -->
-    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
-      <v-row dense>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="filters.search"
-            variant="outlined"
-            density="comfortable"
-            placeholder="Search by customer or transaction..."
-            prepend-inner-icon="mdi-magnify"
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" sm="4" md="2">
-          <v-select
-            v-model="filters.status"
-            :items="statusOptions"
-            variant="outlined"
-            density="comfortable"
-            label="Status"
-            prepend-inner-icon="mdi-check-circle"
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" sm="4" md="2">
-          <v-select
-            v-model="filters.method"
-            :items="methodOptions"
-            variant="outlined"
-            density="comfortable"
-            label="Method"
-            prepend-inner-icon="mdi-credit-card"
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" sm="4" md="2">
-          <v-select
-            v-model="filters.dateRange"
-            :items="dateRangeOptions"
-            variant="outlined"
-            density="comfortable"
-            label="Date Range"
-            prepend-inner-icon="mdi-calendar-range"
-            clearable
-          />
-        </v-col>
-      </v-row>
-    </CommonFilterSection>
+    <LazyPaymentsFilters
+      v-if="showFilters || sectionsLoaded.stats"
+      v-model="showFilters"
+      v-model:filters="filters"
+      @clear="clearFilters"
+    />
 
     <!-- Statistics Cards -->
-    <v-row class="mb-6">
-      <v-col v-for="stat in stats" :key="stat.label" cols="12" sm="6" lg="3">
-        <CommonUiStatCard v-bind="stat" />
-      </v-col>
-    </v-row>
+    <div ref="statsSection">
+      <LazyPaymentsStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
+      <LazyPaymentsStatsSkeleton v-else />
+    </div>
 
     <!-- Payments Table -->
-    <v-row>
-      <v-col cols="12">
-        <PaymentsTable
-          :payments="filteredPayments"
-          :format-date="formatDate"
-          :format-currency="formatCurrency"
-          :get-status-color="getStatusColor"
-          :get-method-icon="getMethodIcon"
-          :get-method-label="getMethodLabel"
-          @process="handleProcess"
-          @refund="handleRefund"
-          @view="viewPayment"
-          @print="printReceipt"
-        />
-      </v-col>
-    </v-row>
+    <div ref="tableSection">
+      <LazyPaymentsTableSection
+        v-if="sectionsLoaded.table"
+        :displayed-items="displayedItems"
+        :is-loading-more="isLoadingMore"
+        :format-date="formatDate"
+        :format-currency="formatCurrency"
+        :get-status-color="getStatusColor"
+        :get-method-icon="getMethodIcon"
+        :get-method-label="getMethodLabel"
+        @process="handleProcess"
+        @refund="handleRefund"
+        @view="viewPayment"
+        @print="printReceipt"
+      />
+      <LazyPaymentsTableSkeleton v-else />
+    </div>
 
     <!-- Process Payment Dialog -->
     <PaymentProcessDialog
@@ -109,11 +68,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { usePayments } from '~/composables/usePayments'
 import { usePaymentActions } from '~/composables/usePaymentActions'
+import { useProgressiveTable } from '~/composables/useProgressiveTable'
+import { useDebouncedFilters } from '~/composables/useDebouncedFilters'
+import { usePaymentStats } from '~/composables/usePaymentStats'
 import { printReceipt as printReceiptUtil } from '~/utils/receiptPrint'
 import type { Payment } from '~/types/payment'
+
+const router = useRouter()
 
 const {
   payments,
@@ -146,71 +111,27 @@ const refundDialog = ref(false)
 const refundAmount = ref(0)
 const refundReason = ref('')
 
-const statusOptions = [
-  { title: 'All Statuses', value: 'all' },
-  { title: 'Pending', value: 'pending' },
-  { title: 'Completed', value: 'completed' },
-  { title: 'Failed', value: 'failed' },
-  { title: 'Refunded', value: 'refunded' },
-]
+// Progressive table loading with intersection observer
+const {
+  statsSection,
+  tableSection,
+  sectionsLoaded,
+  displayedItems,
+  isLoadingMore,
+  updateDisplayedItems
+} = useProgressiveTable(filteredPayments, { batchSize: 20 })
 
-const methodOptions = [
-  { title: 'All Methods', value: 'all' },
-  { title: 'Credit Card', value: 'credit-card' },
-  { title: 'Debit Card', value: 'debit-card' },
-  { title: 'Cash', value: 'cash' },
-  { title: 'Bank Transfer', value: 'bank-transfer' },
-  { title: 'Other', value: 'other' },
-]
-
-const dateRangeOptions = [
-  { title: 'All Time', value: 'all' },
-  { title: 'Today', value: 'today' },
-  { title: 'This Week', value: 'week' },
-  { title: 'This Month', value: 'month' },
-  { title: 'This Year', value: 'year' },
-]
-
-// Statistics
-const stats = computed(() => {
-  const completedTotal = payments.value
-    .filter(p => p.status === 'completed')
-    .reduce((sum, p) => sum + p.amount, 0)
-  const pendingTotal = payments.value
-    .filter(p => p.status === 'pending')
-    .reduce((sum, p) => sum + p.amount, 0)
-  const failedCount = payments.value.filter(p => p.status === 'failed').length
-  const refundedTotal = payments.value
-    .filter(p => p.status === 'refunded')
-    .reduce((sum, p) => sum + (p.refundAmount || 0), 0)
-
-  return [
-    {
-      icon: 'mdi-check-circle',
-      label: 'Completed',
-      value: formatCurrency(completedTotal),
-      color: 'success'
-    },
-    {
-      icon: 'mdi-clock-outline',
-      label: 'Pending',
-      value: formatCurrency(pendingTotal),
-      color: 'warning'
-    },
-    {
-      icon: 'mdi-alert-circle',
-      label: 'Failed',
-      value: failedCount,
-      color: 'error'
-    },
-    {
-      icon: 'mdi-keyboard-return',
-      label: 'Refunded',
-      value: formatCurrency(refundedTotal),
-      color: 'info'
-    }
-  ]
+// Debounced filters
+useDebouncedFilters(filters, {
+  searchDebounce: 300,
+  onSearchChange: updateDisplayedItems
 })
+
+// Single-pass stats calculation
+const { stats } = usePaymentStats(payments, formatCurrency)
+
+// DRY navigation helper
+const handleAddPayment = () => router.push('/owner/payments/new')
 
 const currentPayment = ref<Payment | null>(null)
 

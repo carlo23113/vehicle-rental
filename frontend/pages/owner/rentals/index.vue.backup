@@ -1,0 +1,452 @@
+<template>
+  <CommonPageContainer>
+    <!-- Header - Critical content (always visible) -->
+    <CommonPageHeader
+      title="Rentals"
+      subtitle="Track and manage rental bookings"
+      action-text="New Rental"
+      action-icon="mdi-plus"
+      @action-click="$router.push('/owner/rentals/add')"
+    />
+
+    <!-- Filters - Lazy load when toggled -->
+    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
+      <v-row dense>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="filters.search"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Search by customer or vehicle..."
+            prepend-inner-icon="mdi-magnify"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="2">
+          <v-select
+            v-model="filters.status"
+            :items="statusOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Status"
+            prepend-inner-icon="mdi-calendar-check"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="2">
+          <v-select
+            v-model="filters.paymentStatus"
+            :items="paymentStatusOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Payment"
+            :prepend-inner-icon="getCurrencyIcon()"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="2">
+          <v-select
+            v-model="filters.dateRange"
+            :items="dateRangeOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Date Range"
+            prepend-inner-icon="mdi-calendar-range"
+            clearable
+          />
+        </v-col>
+      </v-row>
+    </CommonFilterSection>
+
+    <!-- Statistics Cards - Load with intersection observer -->
+    <div ref="statsSection">
+      <v-row v-if="sectionsLoaded.stats" class="mb-6">
+        <v-col v-for="stat in stats" :key="stat.label" cols="12" sm="6" lg="3">
+          <CommonUiStatCard v-bind="stat" />
+        </v-col>
+      </v-row>
+      <v-row v-else class="mb-6">
+        <v-col v-for="i in 4" :key="i" cols="12" sm="6" lg="3">
+          <v-card>
+            <v-skeleton-loader type="list-item-avatar-two-line" />
+          </v-card>
+        </v-col>
+      </v-row>
+    </div>
+
+    <!-- Rentals Table - Progressive loading with intersection observer -->
+    <div ref="tableSection">
+      <v-row v-if="sectionsLoaded.table">
+        <v-col cols="12">
+          <LazyRentalsTable
+            :rentals="displayedRentals"
+            :format-date="formatDate"
+            :get-status-color="getStatusColor"
+            :get-payment-status-color="getPaymentStatusColor"
+            @view="handleViewRental"
+            @edit="handleEditRental"
+            @delete="handleDeleteRental"
+            @generate-invoice="handleGenerateInvoice"
+          />
+
+          <!-- Loading indicator for progressive loading -->
+          <div v-if="isLoadingMore" class="text-center py-4">
+            <v-progress-circular indeterminate color="primary" size="32" />
+            <p class="text-caption text-medium-emphasis mt-2">Loading more rentals...</p>
+          </div>
+        </v-col>
+      </v-row>
+
+      <!-- Skeleton loader while waiting for intersection -->
+      <v-row v-else>
+        <v-col cols="12">
+          <v-card>
+            <v-skeleton-loader type="table" />
+          </v-card>
+        </v-col>
+      </v-row>
+    </div>
+
+    <!-- Delete Confirmation Dialog - Lazy load when needed -->
+    <LazyCommonDialogDeleteConfirmation
+      v-if="showDeleteDialog"
+      v-model="showDeleteDialog"
+      title="Delete Rental?"
+      :item-name="rentalToDelete ? rentalToDelete.customerName : ''"
+      :item-details="rentalToDelete ? `${rentalToDelete.vehicleName} • ${formatDate(rentalToDelete.startDate)} - ${formatDate(rentalToDelete.endDate)}` : ''"
+      icon="mdi-calendar-remove"
+      message="This action is permanent and cannot be undone"
+      :loading="deleting"
+      @confirm="deleteRental"
+      @cancel="cancelDelete"
+    />
+
+    <CommonUiSnackbar v-model="snackbar" />
+  </CommonPageContainer>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useRentals } from '~/composables/useRentals'
+import { useCustomers } from '~/composables/useCustomers'
+import { useCurrency } from '~/composables/useCurrency'
+import { useSnackbar } from '~/composables/useSnackbar'
+
+const router = useRouter()
+const route = useRoute()
+const { rentals, filters, filteredRentals, getStatusColor, getPaymentStatusColor, formatDate } = useRentals()
+const { customers, getFullName } = useCustomers()
+const { formatCurrency, getCurrencyIcon } = useCurrency()
+const { snackbar, showSuccess, showError } = useSnackbar()
+
+// Lazy loading state
+const statsSection = ref<HTMLElement | null>(null)
+const tableSection = ref<HTMLElement | null>(null)
+const sectionsLoaded = ref({
+  stats: false,
+  table: false,
+})
+
+// Progressive loading for table
+// Note: For extremely large datasets (1000+ items), consider implementing
+// virtual scrolling with v-virtual-scroll or a library like vue-virtual-scroller
+const displayedRentals = ref<any[]>([])
+const isLoadingMore = ref(false)
+const batchSize = 20 // Adjust based on average row height and viewport size
+
+// Filter state
+const showFilters = ref(false)
+
+// Delete state
+const showDeleteDialog = ref(false)
+const rentalToDelete = ref<any>(null)
+const deleting = ref(false)
+
+// Filter options
+const statusOptions = [
+  { title: 'All Statuses', value: 'all' },
+  { title: 'Reserved', value: 'reserved' },
+  { title: 'Active', value: 'active' },
+  { title: 'Completed', value: 'completed' },
+  { title: 'Cancelled', value: 'cancelled' },
+]
+
+const paymentStatusOptions = [
+  { title: 'All Payment', value: 'all' },
+  { title: 'Pending', value: 'pending' },
+  { title: 'Partial', value: 'partial' },
+  { title: 'Paid', value: 'paid' },
+]
+
+const dateRangeOptions = [
+  { title: 'All Time', value: 'all' },
+  { title: 'Today', value: 'today' },
+  { title: 'This Week', value: 'week' },
+  { title: 'This Month', value: 'month' },
+  { title: 'This Year', value: 'year' },
+]
+
+// Optimized stats - single pass through data instead of multiple filters
+const stats = computed(() => {
+  // Use reduce for single-pass optimization
+  const aggregated = rentals.value.reduce(
+    (acc, rental) => {
+      // Count by status
+      if (rental.status === 'active') acc.activeCount++
+      else if (rental.status === 'reserved') acc.reservedCount++
+      else if (rental.status === 'completed') acc.completedCount++
+
+      // Calculate revenue (exclude cancelled)
+      if (rental.status !== 'cancelled') {
+        acc.totalRevenue += rental.totalAmount
+      }
+
+      return acc
+    },
+    { activeCount: 0, reservedCount: 0, completedCount: 0, totalRevenue: 0 }
+  )
+
+  return [
+    {
+      icon: 'mdi-check-circle',
+      label: 'Active Rentals',
+      value: aggregated.activeCount,
+      color: 'success'
+    },
+    {
+      icon: 'mdi-calendar-clock',
+      label: 'Reserved',
+      value: aggregated.reservedCount,
+      color: 'warning'
+    },
+    {
+      icon: 'mdi-check-all',
+      label: 'Completed',
+      value: aggregated.completedCount,
+      color: 'info'
+    },
+    {
+      icon: getCurrencyIcon(),
+      label: 'Total Revenue',
+      value: formatCurrency(aggregated.totalRevenue),
+      color: 'primary'
+    }
+  ]
+})
+
+// Progressive loading function
+const loadNextBatch = () => {
+  if (displayedRentals.value.length >= filteredRentals.value.length) {
+    isLoadingMore.value = false
+    return
+  }
+
+  isLoadingMore.value = true
+
+  setTimeout(() => {
+    const nextBatch = filteredRentals.value.slice(
+      displayedRentals.value.length,
+      displayedRentals.value.length + batchSize
+    )
+    displayedRentals.value.push(...nextBatch)
+    isLoadingMore.value = false
+  }, 200)
+}
+
+// Debounced filter watcher - prevents excessive re-renders during rapid typing
+let filterDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+watch(
+  () => filters.value.search,
+  () => {
+    if (filterDebounceTimer) {
+      clearTimeout(filterDebounceTimer)
+    }
+    filterDebounceTimer = setTimeout(() => {
+      if (sectionsLoaded.value.table) {
+        updateDisplayedRentals()
+      }
+    }, 300) // 300ms debounce for search
+  }
+)
+
+// Watch for non-search filter changes (immediate)
+watch(
+  () => [filters.value.status, filters.value.paymentStatus, filters.value.dateRange],
+  () => {
+    if (sectionsLoaded.value.table) {
+      updateDisplayedRentals()
+    }
+  }
+)
+
+// Watch for data changes (when rentals are added/removed)
+watch(
+  filteredRentals,
+  () => {
+    if (sectionsLoaded.value.table) {
+      updateDisplayedRentals()
+    }
+  },
+  { deep: true }
+)
+
+const updateDisplayedRentals = () => {
+  displayedRentals.value = filteredRentals.value.slice(0, batchSize)
+
+  if (displayedRentals.value.length < filteredRentals.value.length) {
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(() => loadNextBatch())
+    } else {
+      setTimeout(() => loadNextBatch(), 500)
+    }
+  }
+}
+
+// Intersection Observer for lazy loading
+let observer: IntersectionObserver | null = null
+
+const setupIntersectionObserver = () => {
+  if (typeof IntersectionObserver === 'undefined') {
+    // Fallback: load all sections immediately
+    sectionsLoaded.value = {
+      stats: true,
+      table: true,
+    }
+    displayedRentals.value = filteredRentals.value.slice(0, batchSize)
+    return
+  }
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          // Load section when it becomes visible
+          if (entry.target === statsSection.value && !sectionsLoaded.value.stats) {
+            sectionsLoaded.value.stats = true
+          } else if (entry.target === tableSection.value && !sectionsLoaded.value.table) {
+            sectionsLoaded.value.table = true
+            // Load first batch of rentals
+            displayedRentals.value = filteredRentals.value.slice(0, batchSize)
+
+            // Queue loading of remaining data
+            if (displayedRentals.value.length < filteredRentals.value.length) {
+              if ('requestIdleCallback' in window) {
+                window.requestIdleCallback(() => loadNextBatch())
+              } else {
+                setTimeout(() => loadNextBatch(), 500)
+              }
+            }
+          }
+
+          // Stop observing once loaded
+          if (entry.target instanceof Element) {
+            observer?.unobserve(entry.target)
+          }
+        }
+      })
+    },
+    {
+      root: null,
+      rootMargin: '100px', // Start loading 100px before visible
+      threshold: 0.01,
+    }
+  )
+
+  // Observe all sections
+  if (statsSection.value) observer.observe(statsSection.value)
+  if (tableSection.value) observer.observe(tableSection.value)
+}
+
+onMounted(() => {
+  // Setup progressive loading
+  setupIntersectionObserver()
+
+  // Check for customerId query parameter and populate search
+  const customerId = route.query.customerId
+  if (customerId) {
+    const customer = customers.value.find(c => c.id === Number(customerId))
+    if (customer) {
+      filters.value.search = getFullName(customer)
+    }
+  }
+})
+
+onUnmounted(() => {
+  // Cleanup observers
+  if (observer) {
+    observer.disconnect()
+  }
+
+  // Cleanup debounce timer
+  if (filterDebounceTimer) {
+    clearTimeout(filterDebounceTimer)
+  }
+})
+
+// Action handlers
+const handleViewRental = (rental: any) => {
+  router.push(`/owner/rentals/${rental.id}`)
+}
+
+const handleEditRental = (rental: any) => {
+  router.push(`/owner/rentals/edit/${rental.id}`)
+}
+
+const handleDeleteRental = (rental: any) => {
+  rentalToDelete.value = rental
+  showDeleteDialog.value = true
+}
+
+const handleGenerateInvoice = (rental: any) => {
+  router.push(`/owner/invoices/new?rentalId=${rental.id}`)
+}
+
+const deleteRental = async () => {
+  if (!rentalToDelete.value) return
+
+  deleting.value = true
+
+  try {
+    // TODO: Implement API call to delete rental
+    console.log('Deleting rental:', rentalToDelete.value)
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Remove rental from both lists
+    const index = rentals.value.findIndex(r => r.id === rentalToDelete.value.id)
+    if (index > -1) {
+      rentals.value.splice(index, 1)
+    }
+
+    const displayedIndex = displayedRentals.value.findIndex(r => r.id === rentalToDelete.value.id)
+    if (displayedIndex > -1) {
+      displayedRentals.value.splice(displayedIndex, 1)
+    }
+
+    showSuccess(`Rental for ${rentalToDelete.value.customerName} has been deleted successfully.`)
+    showDeleteDialog.value = false
+    rentalToDelete.value = null
+  } catch (error) {
+    console.error('Error deleting rental:', error)
+    showError('Failed to delete rental. Please try again.')
+  } finally {
+    deleting.value = false
+  }
+}
+
+const cancelDelete = () => {
+  rentalToDelete.value = null
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    status: 'all',
+    paymentStatus: 'all',
+    dateRange: 'all',
+  }
+}
+</script>

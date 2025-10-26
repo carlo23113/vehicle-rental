@@ -37,13 +37,72 @@ export default defineNuxtConfig({
       // Enable code splitting for better lazy loading
       rollupOptions: {
         output: {
-          manualChunks: {
+          manualChunks: (id) => {
             // Split vendor chunks for better caching
-            'vuetify': ['vuetify'],
-            'vue-vendor': ['vue', 'vue-router'],
+            if (id.includes('node_modules')) {
+              if (id.includes('vuetify')) {
+                return 'vuetify'
+              }
+              if (id.includes('vue-router')) {
+                return 'vue-router'
+              }
+              if (id.includes('@vue') || id.includes('vue')) {
+                return 'vue'
+              }
+              if (id.includes('pinia')) {
+                return 'pinia'
+              }
+              if (id.includes('chart.js')) {
+                return 'charts'
+              }
+              if (id.includes('@tiptap')) {
+                return 'tiptap'
+              }
+              return 'vendor'
+            }
+
+            // Split by feature/module
+            if (id.includes('/components/dashboard/')) {
+              return 'dashboard'
+            }
+            if (id.includes('/components/reports/')) {
+              return 'reports'
+            }
+            if (id.includes('/components/vehicles/')) {
+              return 'vehicles'
+            }
+            if (id.includes('/components/customers/')) {
+              return 'customers'
+            }
+            if (id.includes('/components/rentals/')) {
+              return 'rentals'
+            }
+            if (id.includes('/components/payments/')) {
+              return 'payments'
+            }
+            if (id.includes('/components/contract/')) {
+              return 'contract'
+            }
+            if (id.includes('/components/maintenance/')) {
+              return 'maintenance'
+            }
+            if (id.includes('/components/locations/')) {
+              return 'locations'
+            }
+            if (id.includes('/components/users/')) {
+              return 'users'
+            }
+            if (id.includes('/components/roles/')) {
+              return 'roles'
+            }
+            if (id.includes('/components/landing/')) {
+              return 'landing'
+            }
           }
         }
-      }
+      },
+      chunkSizeWarningLimit: 600,
+      cssCodeSplit: true,
     }
   },
 
@@ -74,6 +133,28 @@ export default defineNuxtConfig({
       pathPrefix: false,
     },
     {
+      path: '~/components/reports',
+      pathPrefix: false,
+      // Lazy load report components (heavy tables/charts)
+      global: false,
+    },
+    {
+      path: '~/components/contract',
+      pathPrefix: false,
+      // Lazy load contract editor (heavy editor component)
+      global: false,
+    },
+    {
+      path: '~/components/payments',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/maintenance',
+      pathPrefix: false,
+      global: false,
+    },
+    {
       path: '~/components',
       pathPrefix: false,
     }
@@ -82,11 +163,28 @@ export default defineNuxtConfig({
   // Optimize chunk loading
   experimental: {
     payloadExtraction: true,
+    componentIslands: true, // Enable component islands for better hydration
   },
 
   // Performance optimizations
   nitro: {
     compressPublicAssets: true,
+    prerender: {
+      crawlLinks: true,
+      routes: ['/'],
+    },
+  },
+
+  // Route rules for optimization
+  routeRules: {
+    // Static pages - pre-render at build time
+    '/': { prerender: true },
+
+    // SPA mode for dashboard pages (client-side only)
+    '/owner/**': { ssr: false },
+
+    // Cache static assets
+    '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
   },
 
   postcss: {

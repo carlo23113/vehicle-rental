@@ -15,10 +15,10 @@ export const useDashboardData = () => {
 
   // Quick actions - static data
   const quickActions = ref([
-    { title: "New Rental", icon: "mdi-plus-circle", action: "new-rental", color: "primary" },
-    { title: "Add Vehicle", icon: "mdi-car", action: "add-vehicle", color: "success" },
-    { title: "Add Customer", icon: "mdi-account-plus", action: "add-customer", color: "info" },
-    { title: "Generate Report", icon: "mdi-file-chart", action: "generate-report", color: "secondary" },
+    { title: "New Rental", icon: "mdi-plus-circle", action: "new-rental", color: "primary" as const },
+    { title: "Add Vehicle", icon: "mdi-car", action: "add-vehicle", color: "success" as const },
+    { title: "Add Customer", icon: "mdi-account-plus", action: "add-customer", color: "info" as const },
+    { title: "Generate Report", icon: "mdi-file-chart", action: "generate-report", color: "warning" as const },
   ])
 
   // Maintenance alerts - lazy loaded

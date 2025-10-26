@@ -6,107 +6,59 @@
       subtitle="Track vehicle maintenance and service records"
       action-text="Schedule Maintenance"
       action-icon="mdi-plus"
-      @action-click="$router.push('/owner/maintenance/add')"
+      @action-click="handleAddMaintenance"
     />
 
     <!-- Filters -->
-    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
-      <v-row dense>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="filters.search"
-            variant="outlined"
-            density="comfortable"
-            placeholder="Search by vehicle or description..."
-            prepend-inner-icon="mdi-magnify"
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" sm="4" md="2">
-          <v-select
-            v-model="filters.type"
-            :items="typeOptions"
-            variant="outlined"
-            density="comfortable"
-            label="Type"
-            prepend-inner-icon="mdi-wrench"
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" sm="4" md="2">
-          <v-select
-            v-model="filters.status"
-            :items="statusOptions"
-            variant="outlined"
-            density="comfortable"
-            label="Status"
-            prepend-inner-icon="mdi-check-circle"
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" sm="4" md="2">
-          <v-select
-            v-model="filters.priority"
-            :items="priorityOptions"
-            variant="outlined"
-            density="comfortable"
-            label="Priority"
-            prepend-inner-icon="mdi-alert"
-            clearable
-          />
-        </v-col>
-      </v-row>
-    </CommonFilterSection>
+    <LazyMaintenanceFilters
+      v-if="showFilters || sectionsLoaded.stats"
+      v-model="showFilters"
+      v-model:filters="filters"
+      @clear="clearFilters"
+    />
 
     <!-- Statistics Cards -->
-    <v-row class="mb-6">
-      <v-col v-for="stat in stats" :key="stat.label" cols="12" sm="6" lg="3">
-        <CommonUiStatCard v-bind="stat" />
-      </v-col>
-    </v-row>
+    <div ref="statsSection">
+      <LazyMaintenanceStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
+      <LazyMaintenanceStatsSkeleton v-else />
+    </div>
 
     <!-- Maintenance Table -->
-    <v-row>
-      <v-col cols="12">
-        <MaintenanceTable
-          :records="filteredRecords"
-          :format-date="formatDate"
-          :get-status-color="getStatusColor"
-          :get-priority-color="getPriorityColor"
-          :get-type-label="getTypeLabel"
-          @view="viewRecord"
-          @edit="editRecord"
-          @delete="openDeleteDialog"
-          @complete="openCompleteDialog"
-        />
-      </v-col>
-    </v-row>
+    <div ref="tableSection">
+      <LazyMaintenanceTableSection
+        v-if="sectionsLoaded.table"
+        :displayed-items="displayedItems"
+        :is-loading-more="isLoadingMore"
+        :format-date="formatDate"
+        :get-status-color="getStatusColor"
+        :get-priority-color="getPriorityColor"
+        :get-type-label="getTypeLabel"
+        @view="handleViewRecord"
+        @edit="handleEditRecord"
+        @delete="openDeleteDialog"
+        @complete="openCompleteDialog"
+      />
+      <LazyMaintenanceTableSkeleton v-else />
+    </div>
 
     <!-- Complete Confirmation Dialog -->
-    <CommonDialogConfirmationDialog
+    <LazyMaintenanceCompleteDialog
       v-model="showCompleteDialog"
-      title="Mark Maintenance as Complete?"
-      :item-name="`${recordToComplete?.vehicleName} - ${recordToComplete ? getTypeLabel(recordToComplete.type) : ''}`"
-      :item-details="recordToComplete ? `Scheduled: ${formatDate(recordToComplete.scheduledDate)}` : ''"
-      icon="mdi-wrench"
-      icon-name="mdi-check-circle-outline"
-      message="This will update the status to completed"
-      confirm-text="Mark Complete"
-      color="success"
+      :record="recordToComplete"
       :loading="completing"
+      :format-date="formatDate"
+      :get-type-label="getTypeLabel"
       @confirm="handleComplete"
       @cancel="cancelComplete"
     />
 
     <!-- Delete Confirmation Dialog -->
-    <CommonDialogDeleteConfirmation
+    <LazyMaintenanceDeleteDialog
       v-model="showDeleteDialog"
-      title="Delete Maintenance Record?"
-      :item-name="`${recordToDelete?.vehicleName} - ${recordToDelete ? getTypeLabel(recordToDelete.type) : ''}`"
-      :item-details="recordToDelete ? `Scheduled: ${formatDate(recordToDelete.scheduledDate)}` : ''"
-      icon="mdi-delete"
-      message="This action is permanent and cannot be undone"
+      :record="recordToDelete"
       :loading="deleting"
+      :format-date="formatDate"
+      :get-type-label="getTypeLabel"
       @confirm="handleDelete"
       @cancel="cancelDelete"
     />
@@ -117,11 +69,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMaintenance } from '~/composables/useMaintenance'
 import { useCurrency } from '~/composables/useCurrency'
-import type { MaintenanceType, MaintenanceStatus, MaintenancePriority } from '~/types/maintenance'
+import { useProgressiveTable } from '~/composables/useProgressiveTable'
+import { useDebouncedFilters } from '~/composables/useDebouncedFilters'
+import { useMaintenanceStats } from '~/composables/useMaintenanceStats'
 
 const router = useRouter()
 const { formatCurrency, getCurrencyIcon } = useCurrency()
@@ -141,76 +95,35 @@ const {
 // Filter state
 const showFilters = ref(false)
 
-// Optimized stats - compute once instead of filtering multiple times
-const stats = computed(() => {
-  const scheduledCount = maintenanceRecords.value.filter(r => r.status === 'scheduled').length
-  const inProgressCount = maintenanceRecords.value.filter(r => r.status === 'in-progress').length
-  const completedCount = maintenanceRecords.value.filter(r => r.status === 'completed').length
-  const totalCost = maintenanceRecords.value
-    .filter(r => r.status === 'completed')
-    .reduce((sum, r) => sum + r.cost, 0)
+// Progressive table loading with intersection observer
+const {
+  statsSection,
+  tableSection,
+  sectionsLoaded,
+  displayedItems,
+  isLoadingMore,
+  updateDisplayedItems
+} = useProgressiveTable(filteredRecords, { batchSize: 20 })
 
-  return [
-    {
-      icon: 'mdi-calendar-clock',
-      label: 'Scheduled',
-      value: scheduledCount,
-      color: 'info',
-    },
-    {
-      icon: 'mdi-tools',
-      label: 'In Progress',
-      value: inProgressCount,
-      color: 'warning',
-    },
-    {
-      icon: 'mdi-check-circle',
-      label: 'Completed',
-      value: completedCount,
-      color: 'success',
-    },
-    {
-      icon: getCurrencyIcon(),
-      label: 'Total Cost',
-      value: formatCurrency(totalCost),
-      color: 'primary',
-    },
-  ]
+// Debounced filters
+useDebouncedFilters(filters, {
+  searchDebounce: 300,
+  onSearchChange: updateDisplayedItems
 })
 
-const typeOptions = [
-  { title: 'All Types', value: 'all' },
-  { title: 'Oil Change', value: 'oil-change' },
-  { title: 'Tire Rotation', value: 'tire-rotation' },
-  { title: 'Brake Service', value: 'brake-service' },
-  { title: 'Inspection', value: 'inspection' },
-  { title: 'Repair', value: 'repair' },
-  { title: 'Cleaning', value: 'cleaning' },
-  { title: 'Other', value: 'other' },
-]
+// Single-pass stats calculation
+const { stats } = useMaintenanceStats(maintenanceRecords, formatCurrency, getCurrencyIcon)
 
-const statusOptions = [
-  { title: 'All Statuses', value: 'all' },
-  { title: 'Scheduled', value: 'scheduled' },
-  { title: 'In Progress', value: 'in-progress' },
-  { title: 'Completed', value: 'completed' },
-  { title: 'Cancelled', value: 'cancelled' },
-]
+// DRY navigation helper
+const navigateToRoute = (path: string) => router.push(path)
+const handleAddMaintenance = () => navigateToRoute('/owner/maintenance/add')
+const handleViewRecord = (record: any) => navigateToRoute(`/owner/maintenance/${record.id}`)
+const handleEditRecord = (record: any) => navigateToRoute(`/owner/maintenance/edit/${record.id}`)
 
-const priorityOptions = [
-  { title: 'All Priorities', value: 'all' },
-  { title: 'Low', value: 'low' },
-  { title: 'Medium', value: 'medium' },
-  { title: 'High', value: 'high' },
-  { title: 'Urgent', value: 'urgent' },
-]
-
-const viewRecord = (record: any) => {
-  router.push(`/owner/maintenance/${record.id}`)
-}
-
-const editRecord = (record: any) => {
-  router.push(`/owner/maintenance/edit/${record.id}`)
+// DRY list removal helper
+const removeFromList = (list: any[], id: number | string) => {
+  const index = list.findIndex(r => r.id === id)
+  if (index > -1) list.splice(index, 1)
 }
 
 // Complete functionality
@@ -291,6 +204,10 @@ const handleDelete = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     deleteMaintenanceRecord(recordToDelete.value.id)
+
+    // Remove from both lists
+    removeFromList(maintenanceRecords.value, recordToDelete.value.id)
+    removeFromList(displayedItems.value, recordToDelete.value.id)
 
     snackbar.value = {
       show: true,

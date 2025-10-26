@@ -5,14 +5,14 @@
       subtitle="Manage all customer, rental, and vehicle documents"
       action-text="Upload Document"
       action-icon="mdi-upload"
-      @action-click="showUploadDialog = true"
+      @action-click="handleUploadClick"
     />
 
-    <v-row class="mb-6">
-      <v-col v-for="stat in statsCards" :key="stat.label" cols="12" sm="6" lg="3">
-        <CommonUiStatCard v-bind="stat" />
-      </v-col>
-    </v-row>
+    <!-- Statistics Cards -->
+    <div ref="statsSection">
+      <LazyDocumentsStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
+      <LazyDocumentsStatsSkeleton v-else />
+    </div>
 
     <DocumentFilters v-model="showFilters" :filters="filters" @clear="clearFilters" />
 
@@ -25,33 +25,29 @@
       @view-all="viewExpiringDocuments"
     />
 
-    <v-row v-if="viewMode === 'grid'">
-      <v-col cols="12">
-        <ClientOnly>
-          <DocumentList
-            :documents="displayedDocuments"
-            :can-upload="false"
-            :can-verify="true"
-            :can-delete="true"
-            @upload="handleDocumentUpload"
-            @verify="handleDocumentVerify"
-            @reject="handleDocumentReject"
-            @delete="handleDocumentDelete"
-          />
-        </ClientOnly>
-      </v-col>
-    </v-row>
+    <!-- Document View Section -->
+    <div ref="contentSection">
+      <LazyDocumentsGridSection
+        v-if="viewMode === 'grid' && sectionsLoaded.content"
+        :displayed-items="displayedItems"
+        :is-loading-more="isLoadingMore"
+        @upload="handleDocumentUpload"
+        @verify="handleDocumentVerify"
+        @reject="handleDocumentReject"
+        @delete="handleDocumentDelete"
+      />
+      <LazyDocumentsGridSkeleton v-else-if="viewMode === 'grid'" />
 
-    <v-row v-else>
-      <v-col cols="12">
-        <DocumentsTable
-          :documents="displayedDocuments"
-          @view="viewDocument"
-          @verify="handleDocumentVerify"
-          @download="downloadDocument"
-        />
-      </v-col>
-    </v-row>
+      <LazyDocumentsTableSection
+        v-else-if="viewMode === 'table' && sectionsLoaded.content"
+        :displayed-items="displayedItems"
+        :is-loading-more="isLoadingMore"
+        @view="viewDocument"
+        @verify="handleDocumentVerify"
+        @download="downloadDocument"
+      />
+      <LazyDocumentsTableSkeleton v-else />
+    </div>
 
     <v-dialog v-model="showUploadDialog" max-width="800">
       <DocumentTypeSelector @select="handleDocumentTypeSelect" @cancel="showUploadDialog = false" />
@@ -86,7 +82,11 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import type { Document, DocumentType } from '~/types/document'
+import { useProgressiveTable } from '~/composables/useProgressiveTable'
+import { useDebouncedFilters } from '~/composables/useDebouncedFilters'
+import { useDocumentStats } from '~/composables/useDocumentStats'
 
 definePageMeta({
   layout: 'default',
@@ -125,45 +125,46 @@ const snackbar = ref<{
   icon: '',
 })
 
+// Computed documents list based on filter mode
+const documentsToDisplay = computed(() =>
+  showExpiringOnly.value ? expiringSoonDocuments.value : filteredDocuments.value
+)
+
+// Progressive table loading with intersection observer
+const {
+  statsSection,
+  tableSection: contentSection,
+  sectionsLoaded: sectionsLoadedBase,
+  displayedItems,
+  isLoadingMore,
+  updateDisplayedItems
+} = useProgressiveTable(documentsToDisplay, { batchSize: 20 })
+
+// Debounced filters
+useDebouncedFilters(filters, {
+  searchDebounce: 300,
+  onSearchChange: updateDisplayedItems
+})
+
+// Stats calculation using composable
+const { stats } = useDocumentStats(getDocumentStats)
+
+// Rename sectionsLoaded.table to sectionsLoaded.content for clarity
+const sectionsLoaded = computed(() => ({
+  stats: sectionsLoadedBase.value.stats,
+  content: sectionsLoadedBase.value.table
+}))
+
 const clearFilters = () => {
   filters.value.status = 'all'
   filters.value.type = 'all'
   filters.value.search = ''
 }
 
-const statsCards = computed(() => {
-  const docStats = getDocumentStats()
-  return [
-    {
-      icon: 'mdi-file-document',
-      label: 'Total Documents',
-      value: docStats.total,
-      color: 'primary',
-    },
-    {
-      icon: 'mdi-clock-alert',
-      label: 'Pending Review',
-      value: docStats.pending,
-      color: 'warning',
-    },
-    {
-      icon: 'mdi-check-circle',
-      label: 'Verified',
-      value: docStats.verified,
-      color: 'success',
-    },
-    {
-      icon: 'mdi-alert-circle',
-      label: 'Expiring Soon',
-      value: docStats.expiringSoon,
-      color: 'error',
-    },
-  ]
-})
-
-const displayedDocuments = computed(() =>
-  showExpiringOnly.value ? expiringSoonDocuments.value : filteredDocuments.value
-)
+// DRY helper
+const handleUploadClick = () => {
+  showUploadDialog.value = true
+}
 
 const viewDocument = (document: Document) => {
   selectedDocument.value = document

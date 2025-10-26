@@ -48,100 +48,46 @@
     </CommonFilterSection>
 
     <!-- Statistics Cards -->
-    <v-row class="mb-6">
-      <v-col v-for="stat in stats" :key="stat.label" cols="12" sm="6" lg="3">
-        <CommonUiStatCard v-bind="stat" />
-      </v-col>
-    </v-row>
+    <div ref="statsSection">
+      <LazyReportsStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
+      <LazyReportsStatsSkeleton v-else />
+    </div>
 
-    <!-- Revenue Chart -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <CommonUiDetailCard title="Revenue Trends" icon="mdi-chart-line">
-          <LazyCommonChartsLineChart v-bind="revenueChartConfig" />
-        </CommonUiDetailCard>
-      </v-col>
-    </v-row>
+    <!-- Charts Section -->
+    <div ref="chartsSection">
+      <LazyReportsChartsSection
+        v-if="sectionsLoaded.charts"
+        :revenue-chart-config="revenueChartConfig"
+        :vehicle-utilization="vehicleUtilization"
+        :top-customers-items="topCustomersItems"
+        :revenue-by-type-items="revenueByTypeItems"
+        :rental-status-breakdown="rentalStatusBreakdown"
+        :payment-status-items="paymentStatusItems"
+        :format-currency="formatCurrency"
+        :get-utilization-color="getUtilizationColor"
+        :get-rank-color="getRankColor"
+        :get-rental-status-icon="getRentalStatusIcon"
+        :get-rental-status-color="getRentalStatusColor"
+      />
+      <LazyReportsChartsSkeleton v-else />
+    </div>
 
-    <!-- Vehicle Utilization & Top Customers -->
-    <v-row class="mb-6">
-      <!-- Vehicle Utilization -->
-      <v-col cols="12" lg="7">
-        <CommonUiDetailCard title="Vehicle Utilization" icon="mdi-car-multiple" class="h-full">
-          <VehicleUtilizationTable
-            :items="vehicleUtilization"
-            :format-currency="formatCurrency"
-            :get-utilization-color="getUtilizationColor"
-          />
-        </CommonUiDetailCard>
-      </v-col>
-
-      <!-- Top Customers -->
-      <v-col cols="12" lg="5">
-        <CommonUiDetailCard title="Top Customers" icon="mdi-account-star" class="h-full">
-          <CommonUiRankingList :items="topCustomersItems" :get-rank-color="getRankColor" />
-        </CommonUiDetailCard>
-      </v-col>
-    </v-row>
-
-    <!-- Revenue by Type & Status Breakdown -->
-    <v-row class="mb-6">
-      <!-- Revenue by Vehicle Type -->
-      <v-col cols="12" lg="6">
-        <CommonUiDetailCard title="Revenue by Vehicle Type" icon="mdi-car-settings" class="h-full">
-          <CommonUiProgressList :items="revenueByTypeItems" />
-        </CommonUiDetailCard>
-      </v-col>
-
-      <!-- Rental & Payment Status -->
-      <v-col cols="12" lg="6">
-        <v-row>
-          <v-col cols="12">
-            <CommonUiDetailCard title="Rental Status" icon="mdi-calendar-check">
-              <CommonUiStatusGrid
-                :items="rentalStatusBreakdown"
-                :get-icon="getRentalStatusIcon"
-                :get-color="getRentalStatusColor"
-              />
-            </CommonUiDetailCard>
-          </v-col>
-          <v-col cols="12">
-            <CommonUiDetailCard title="Payment Status" icon="mdi-credit-card-check">
-              <CommonUiProgressList :items="paymentStatusItems" :height="6" />
-            </CommonUiDetailCard>
-          </v-col>
-        </v-row>
-      </v-col>
-    </v-row>
-
-    <!-- Location Performance -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <CommonUiDetailCard title="Location Performance" icon="mdi-map-marker-multiple">
-          <LocationPerformanceTable
-            :items="locationPerformance"
-            :format-currency="formatCurrency"
-            :get-utilization-color="getUtilizationColor"
-          />
-        </CommonUiDetailCard>
-      </v-col>
-    </v-row>
-
-    <!-- Maintenance Summary -->
-    <v-row>
-      <v-col cols="12">
-        <CommonUiDetailCard title="Maintenance Summary" icon="mdi-wrench-clock">
-          <MaintenanceSummaryTable
-            :items="maintenanceSummary"
-            :format-currency="formatCurrency"
-            :format-date="formatDate"
-          />
-        </CommonUiDetailCard>
-      </v-col>
-    </v-row>
+    <!-- Tables Section -->
+    <div ref="tablesSection">
+      <LazyReportsTablesSection
+        v-if="sectionsLoaded.tables"
+        :location-performance="locationPerformance"
+        :maintenance-summary="maintenanceSummary"
+        :format-currency="formatCurrency"
+        :format-date="formatDate"
+        :get-utilization-color="getUtilizationColor"
+      />
+      <LazyReportsTablesSkeleton v-else />
+    </div>
 
     <!-- Export Dialog -->
-    <ExportReportDialog
+    <LazyExportReportDialog
+      v-if="showExportDialog"
       v-model="showExportDialog"
       v-model:format="exportFormat"
       :start-date="filters.startDate"
@@ -153,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useReports } from '~/composables/useReports'
 import { useCurrency } from '~/composables/useCurrency'
 import { useReportExport } from '~/composables/useReportExport'
@@ -192,6 +138,46 @@ const {
 // Filter state
 const showFilters = ref(false)
 
+// Progressive section loading with intersection observer
+const statsSection = ref<HTMLElement | null>(null)
+const chartsSection = ref<HTMLElement | null>(null)
+const tablesSection = ref<HTMLElement | null>(null)
+
+const sectionsLoaded = ref({
+  stats: false,
+  charts: false,
+  tables: false,
+})
+
+let observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  // Immediate load stats
+  sectionsLoaded.value.stats = true
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (entry.target === chartsSection.value) {
+            sectionsLoaded.value.charts = true
+          } else if (entry.target === tablesSection.value) {
+            sectionsLoaded.value.tables = true
+          }
+        }
+      })
+    },
+    { rootMargin: '100px' }
+  )
+
+  if (chartsSection.value) observer.observe(chartsSection.value)
+  if (tablesSection.value) observer.observe(tablesSection.value)
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
+})
+
 // Export functionality
 const showExportDialog = ref(false)
 const exporting = ref(false)
@@ -212,15 +198,19 @@ const { exportToCSV, exportToExcel, exportToPDF } = useReportExport({
   formatDate,
 })
 
+// DRY export helper
+const exportHandlers: Record<string, () => Promise<void>> = {
+  csv: exportToCSV,
+  excel: exportToExcel,
+  pdf: exportToPDF,
+}
+
 const handleExport = async () => {
   exporting.value = true
   try {
-    if (exportFormat.value === 'csv') {
-      await exportToCSV()
-    } else if (exportFormat.value === 'excel') {
-      await exportToExcel()
-    } else {
-      await exportToPDF()
+    const handler = exportHandlers[exportFormat.value]
+    if (handler) {
+      await handler()
     }
   } catch (error) {
     console.error('Export failed:', error)
@@ -273,12 +263,14 @@ const revenueByTypeItems = computed(() =>
 )
 
 const paymentStatusItems = computed(() =>
-  paymentStatusOverview.value.map((item: { status: string; count: number; amount: number; percentage: number }) => ({
-    label: item.status,
-    value: formatCurrency(item.amount),
-    percentage: item.percentage,
-    color: getPaymentStatusColor(item.status),
-  }))
+  paymentStatusOverview.value.map(
+    (item: { status: string; count: number; amount: number; percentage: number }) => ({
+      label: item.status,
+      value: formatCurrency(item.amount),
+      percentage: item.percentage,
+      color: getPaymentStatusColor(item.status),
+    })
+  )
 )
 
 const topCustomersItems = computed(() =>

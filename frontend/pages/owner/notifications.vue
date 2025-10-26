@@ -17,7 +17,7 @@
     </CommonPageHeader>
 
     <!-- Filters -->
-    <NotificationFilters
+    <LazyNotificationFilters
       v-model="showFilters"
       :filters="filter"
       @update:type="filter.type = $event"
@@ -26,16 +26,25 @@
       @clear="clearFilters"
     />
 
+    <!-- Statistics -->
+    <div ref="statsSection">
+      <LazyNotificationsStatsCards
+        v-if="sectionsLoaded.stats"
+        v-bind="notificationStats"
+      />
+      <LazyNotificationsStatsSkeleton v-else />
+    </div>
+
     <!-- Notifications List -->
-    <v-row>
-      <v-col cols="12">
-        <NotificationsList
-          :notifications="filteredNotifications"
-          @click="handleNotificationClick"
-          @menu="showMenu"
-        />
-      </v-col>
-    </v-row>
+    <div ref="listSection">
+      <LazyNotificationsListSection
+        v-if="sectionsLoaded.list"
+        :notifications="filteredNotifications"
+        @click="handleNotificationClick"
+        @menu="showMenu"
+      />
+      <LazyNotificationsListSkeleton v-else />
+    </div>
 
     <!-- Action Menu -->
     <v-menu v-model="menuOpen" :activator="menuActivator" location="bottom end">
@@ -52,8 +61,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useNotifications } from '~/composables/useNotifications'
+import { useNotificationStats } from '~/composables/useNotificationStats'
 
 definePageMeta({
   layout: 'default',
@@ -63,6 +73,41 @@ const showFilters = ref(false)
 const menuOpen = ref(false)
 const menuActivator = ref<any>(null)
 const selectedNotification = ref<any>(null)
+
+// Progressive section loading with intersection observer
+const statsSection = ref<HTMLElement | null>(null)
+const listSection = ref<HTMLElement | null>(null)
+
+const sectionsLoaded = ref({
+  stats: false,
+  list: false,
+})
+
+let observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  // Immediate load stats
+  sectionsLoaded.value.stats = true
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (entry.target === listSection.value) {
+            sectionsLoaded.value.list = true
+          }
+        }
+      })
+    },
+    { rootMargin: '100px' }
+  )
+
+  if (listSection.value) observer.observe(listSection.value)
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
+})
 
 const filter = ref({
   type: null as string | null,
@@ -147,6 +192,9 @@ const {
   clearFilters,
 } = useNotifications(notifications, filter)
 
+// Notification stats
+const notificationStats = useNotificationStats(notifications)
+
 const handleNotificationClick = (notification: any) => {
   markAsRead(notification)
   // TODO: Navigate to related page or show detail
@@ -158,18 +206,26 @@ const showMenu = (notification: any) => {
   menuOpen.value = true
 }
 
-const handleMarkAsRead = () => {
-  if (selectedNotification.value) {
-    markAsRead(selectedNotification.value)
-  }
+// DRY menu action helper
+const handleMenuAction = (action: () => void) => {
+  action()
   menuOpen.value = false
 }
 
+const handleMarkAsRead = () => {
+  handleMenuAction(() => {
+    if (selectedNotification.value) {
+      markAsRead(selectedNotification.value)
+    }
+  })
+}
+
 const handleDeleteNotification = () => {
-  if (selectedNotification.value) {
-    deleteNotification(selectedNotification.value.id)
-  }
-  menuOpen.value = false
+  handleMenuAction(() => {
+    if (selectedNotification.value) {
+      deleteNotification(selectedNotification.value.id)
+    }
+  })
 }
 </script>
 

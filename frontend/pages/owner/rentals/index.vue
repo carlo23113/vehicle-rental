@@ -1,94 +1,52 @@
 <template>
   <CommonPageContainer>
+    <!-- Header - Critical content (always visible) -->
     <CommonPageHeader
       title="Rentals"
       subtitle="Track and manage rental bookings"
       action-text="New Rental"
       action-icon="mdi-plus"
-      @action-click="$router.push('/owner/rentals/add')"
+      @action-click="handleAddRental"
     />
 
-    <!-- Filters -->
-    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
-      <v-row dense>
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="filters.search"
-            variant="outlined"
-            density="comfortable"
-            placeholder="Search by customer or vehicle..."
-            prepend-inner-icon="mdi-magnify"
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" sm="6" md="2">
-          <v-select
-            v-model="filters.status"
-            :items="statusOptions"
-            variant="outlined"
-            density="comfortable"
-            label="Status"
-            prepend-inner-icon="mdi-calendar-check"
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" sm="6" md="2">
-          <v-select
-            v-model="filters.paymentStatus"
-            :items="paymentStatusOptions"
-            variant="outlined"
-            density="comfortable"
-            label="Payment"
-            :prepend-inner-icon="getCurrencyIcon()"
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" sm="6" md="2">
-          <v-select
-            v-model="filters.dateRange"
-            :items="dateRangeOptions"
-            variant="outlined"
-            density="comfortable"
-            label="Date Range"
-            prepend-inner-icon="mdi-calendar-range"
-            clearable
-          />
-        </v-col>
-      </v-row>
-    </CommonFilterSection>
+    <!-- Filters - Code-split lazy loaded component -->
+    <LazyRentalsFilters
+      v-if="showFilters || sectionsLoaded.stats"
+      v-model:show-filters="showFilters"
+      v-model:filters="filters"
+      @clear="clearFilters"
+    />
 
-    <!-- Statistics Cards -->
-    <v-row class="mb-6">
-      <v-col v-for="stat in stats" :key="stat.label" cols="12" sm="6" lg="3">
-        <CommonUiStatCard v-bind="stat" />
-      </v-col>
-    </v-row>
+    <!-- Statistics Cards - Code-split with intersection observer -->
+    <div ref="statsSection">
+      <LazyRentalsStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
+      <RentalsStatsSkeleton v-else />
+    </div>
 
-    <!-- Rentals Table -->
-    <v-row>
-      <v-col cols="12">
-        <RentalsTable
-          :rentals="filteredRentals"
-          :format-date="formatDate"
-          :get-status-color="getStatusColor"
-          :get-payment-status-color="getPaymentStatusColor"
-          @view="handleViewRental"
-          @edit="handleEditRental"
-          @delete="handleDeleteRental"
-          @generate-invoice="handleGenerateInvoice"
-        />
-      </v-col>
-    </v-row>
+    <!-- Rentals Table - Code-split with progressive loading -->
+    <div ref="tableSection">
+      <LazyRentalsTableSection
+        v-if="sectionsLoaded.table"
+        :rentals="displayedItems"
+        :is-loading-more="isLoadingMore"
+        :format-date="formatDate"
+        :get-status-color="getStatusColor"
+        :get-payment-status-color="getPaymentStatusColor"
+        @view="handleViewRental"
+        @edit="handleEditRental"
+        @delete="handleDeleteRental"
+        @generate-invoice="handleGenerateInvoice"
+      />
+      <RentalsTableSkeleton v-else />
+    </div>
 
-    <!-- Delete Confirmation Dialog -->
-    <CommonDialogDeleteConfirmation
+    <!-- Delete Dialog - Code-split lazy loaded -->
+    <LazyRentalsDeleteDialog
+      v-if="showDeleteDialog"
       v-model="showDeleteDialog"
-      title="Delete Rental?"
-      :item-name="rentalToDelete ? rentalToDelete.customerName : ''"
-      :item-details="rentalToDelete ? `${rentalToDelete.vehicleName} • ${formatDate(rentalToDelete.startDate)} - ${formatDate(rentalToDelete.endDate)}` : ''"
-      icon="mdi-calendar-remove"
-      message="This action is permanent and cannot be undone"
-      :loading="deleting"
+      :rental="rentalToDelete"
+      :deleting="deleting"
+      :format-date="formatDate"
       @confirm="deleteRental"
       @cancel="cancelDelete"
     />
@@ -98,105 +56,90 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useRentals } from '~/composables/useRentals'
 import { useCustomers } from '~/composables/useCustomers'
-import { useCurrency } from '~/composables/useCurrency'
 import { useSnackbar } from '~/composables/useSnackbar'
+import { useRentalStats } from '~/composables/useRentalStats'
+import { useProgressiveTable } from '~/composables/useProgressiveTable'
+import { useDebouncedFilters } from '~/composables/useDebouncedFilters'
 
 const router = useRouter()
 const route = useRoute()
-const { rentals, filters, filteredRentals, getStatusColor, getPaymentStatusColor, formatDate } = useRentals()
+
+// Core composables
+const { rentals, filters, filteredRentals, getStatusColor, getPaymentStatusColor, formatDate } =
+  useRentals()
 const { customers, getFullName } = useCustomers()
-const { formatCurrency, getCurrencyIcon } = useCurrency()
 const { snackbar, showSuccess, showError } = useSnackbar()
 
-// Filter state
-const showFilters = ref(false)
+// Stats calculation (DRY - extracted to composable)
+const { stats } = useRentalStats(rentals)
 
-// Delete state
+// Progressive table loading (DRY - extracted to composable)
+const {
+  statsSection,
+  tableSection,
+  sectionsLoaded,
+  displayedItems,
+  isLoadingMore,
+  updateDisplayedItems,
+} = useProgressiveTable(filteredRentals, { batchSize: 20 })
+
+// Debounced filters (DRY - extracted to composable)
+const { watchImmediateFilters } = useDebouncedFilters(filters, {
+  searchDebounce: 300,
+  onSearchChange: () => {
+    if (sectionsLoaded.value.table) {
+      updateDisplayedItems()
+    }
+  },
+  onFilterChange: () => {
+    if (sectionsLoaded.value.table) {
+      updateDisplayedItems()
+    }
+  },
+})
+
+// Watch immediate filters (status, payment, dateRange)
+watchImmediateFilters(['status', 'paymentStatus', 'dateRange'])
+
+// UI state
+const showFilters = ref(false)
 const showDeleteDialog = ref(false)
 const rentalToDelete = ref<any>(null)
 const deleting = ref(false)
 
-// Filter options
-const statusOptions = [
-  { title: 'All Statuses', value: 'all' },
-  { title: 'Reserved', value: 'reserved' },
-  { title: 'Active', value: 'active' },
-  { title: 'Completed', value: 'completed' },
-  { title: 'Cancelled', value: 'cancelled' },
-]
-
-const paymentStatusOptions = [
-  { title: 'All Payment', value: 'all' },
-  { title: 'Pending', value: 'pending' },
-  { title: 'Partial', value: 'partial' },
-  { title: 'Paid', value: 'paid' },
-]
-
-const dateRangeOptions = [
-  { title: 'All Time', value: 'all' },
-  { title: 'Today', value: 'today' },
-  { title: 'This Week', value: 'week' },
-  { title: 'This Month', value: 'month' },
-  { title: 'This Year', value: 'year' },
-]
-
-// Optimized stats - compute once instead of filtering multiple times
-const stats = computed(() => {
-  const activeCount = rentals.value.filter(r => r.status === 'active').length
-  const reservedCount = rentals.value.filter(r => r.status === 'reserved').length
-  const completedCount = rentals.value.filter(r => r.status === 'completed').length
-  const totalRevenue = rentals.value
-    .filter(r => r.status !== 'cancelled')
-    .reduce((sum, r) => sum + r.totalAmount, 0)
-
-  return [
-    {
-      icon: 'mdi-check-circle',
-      label: 'Active Rentals',
-      value: activeCount,
-      color: 'success'
-    },
-    {
-      icon: 'mdi-calendar-clock',
-      label: 'Reserved',
-      value: reservedCount,
-      color: 'warning'
-    },
-    {
-      icon: 'mdi-check-all',
-      label: 'Completed',
-      value: completedCount,
-      color: 'info'
-    },
-    {
-      icon: getCurrencyIcon(),
-      label: 'Total Revenue',
-      value: formatCurrency(totalRevenue),
-      color: 'primary'
+// Initialize with customer filter if provided
+onMounted(() => {
+  const customerId = route.query.customerId
+  if (customerId) {
+    const customer = customers.value.find(c => c.id === Number(customerId))
+    if (customer) {
+      filters.value.search = getFullName(customer)
     }
-  ]
+  }
 })
 
-// Action handlers
-const handleViewRental = (rental: any) => {
-  router.push(`/owner/rentals/${rental.id}`)
-}
+// Action handlers (DRY - using helper function)
+const navigateToRoute = (path: string) => router.push(path)
 
-const handleEditRental = (rental: any) => {
-  router.push(`/owner/rentals/edit/${rental.id}`)
-}
+const handleAddRental = () => navigateToRoute('/owner/rentals/add')
+const handleViewRental = (rental: any) => navigateToRoute(`/owner/rentals/${rental.id}`)
+const handleEditRental = (rental: any) => navigateToRoute(`/owner/rentals/edit/${rental.id}`)
+const handleGenerateInvoice = (rental: any) =>
+  navigateToRoute(`/owner/invoices/new?rentalId=${rental.id}`)
 
 const handleDeleteRental = (rental: any) => {
   rentalToDelete.value = rental
   showDeleteDialog.value = true
 }
 
-const handleGenerateInvoice = (rental: any) => {
-  router.push(`/owner/invoices/new?rentalId=${rental.id}`)
+// Delete handler (DRY - extracted helper for list removal)
+const removeFromList = (list: any[], id: number) => {
+  const index = list.findIndex(r => r.id === id)
+  if (index > -1) list.splice(index, 1)
 }
 
 const deleteRental = async () => {
@@ -205,17 +148,12 @@ const deleteRental = async () => {
   deleting.value = true
 
   try {
-    // TODO: Implement API call to delete rental
-    console.log('Deleting rental:', rentalToDelete.value)
-
-    // Simulate API call
+    // TODO: Implement API call
     await new Promise(resolve => setTimeout(resolve, 1000))
 
-    // Remove rental from the list
-    const index = rentals.value.findIndex(r => r.id === rentalToDelete.value.id)
-    if (index > -1) {
-      rentals.value.splice(index, 1)
-    }
+    // Remove from both lists (maintain consistency)
+    removeFromList(rentals.value, rentalToDelete.value.id)
+    removeFromList(displayedItems.value, rentalToDelete.value.id)
 
     showSuccess(`Rental for ${rentalToDelete.value.customerName} has been deleted successfully.`)
     showDeleteDialog.value = false
@@ -240,15 +178,4 @@ const clearFilters = () => {
     dateRange: 'all',
   }
 }
-
-// Check for customerId query parameter and populate search
-onMounted(() => {
-  const customerId = route.query.customerId
-  if (customerId) {
-    const customer = customers.value.find(c => c.id === Number(customerId))
-    if (customer) {
-      filters.value.search = getFullName(customer)
-    }
-  }
-})
 </script>

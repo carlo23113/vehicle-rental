@@ -67,11 +67,11 @@
     </div>
 
     <!-- Dialogs -->
-    <VariablesDialog v-model="showVariables" />
-    <HelpDialog v-model="showHelp" />
-    <ContractDialog v-model="showPreview" @print="handlePrint">
-      <RentalContract :rental="mockRental" />
-    </ContractDialog>
+    <LazyVariablesDialog v-if="showVariables" v-model="showVariables" />
+    <LazyHelpDialog v-if="showHelp" v-model="showHelp" />
+    <LazyContractDialog v-if="showPreview" v-model="showPreview" @print="handlePrint">
+      <LazyRentalContract :rental="mockRental" />
+    </LazyContractDialog>
 
     <!-- Snackbar -->
     <CommonUiSnackbar v-model="snackbar" />
@@ -158,11 +158,17 @@ const handlePrint = () => {
 }
 
 onMounted(async () => {
-  console.log('1. Before loadTemplate:', contractTemplate.value.fullContractTemplate?.substring(0, 100))
+  console.log(
+    '1. Before loadTemplate:',
+    contractTemplate.value.fullContractTemplate?.substring(0, 100)
+  )
 
   loadTemplate()
 
-  console.log('2. After loadTemplate:', contractTemplate.value.fullContractTemplate?.substring(0, 100))
+  console.log(
+    '2. After loadTemplate:',
+    contractTemplate.value.fullContractTemplate?.substring(0, 100)
+  )
 
   // Wait for next tick to ensure template is loaded
   await nextTick()
@@ -175,7 +181,7 @@ onMounted(async () => {
   console.log('5. Contract template loaded:', {
     hasFullTemplate: !!contractTemplate.value.fullContractTemplate,
     templateLength: contractTemplate.value.fullContractTemplate?.length || 0,
-    formTemplateLength: form.value.fullContractTemplate?.length || 0
+    formTemplateLength: form.value.fullContractTemplate?.length || 0,
   })
 })
 </script>

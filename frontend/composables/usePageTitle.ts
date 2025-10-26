@@ -9,13 +9,11 @@ export const usePageTitle = () => {
 
     // Define custom titles for specific routes
     const titleMap: Record<string, string> = {
-      '/': 'Dashboard',
       '/owner/dashboard': 'Dashboard',
       '/owner/vehicles': 'Vehicles',
       '/owner/vehicles/add': 'Add Vehicle',
       '/owner/customers': 'Customers',
       '/owner/rentals': 'Rentals',
-      '/reservations': 'Reservations',
       '/owner/payments': 'Payments',
       '/owner/maintenance': 'Maintenance',
       '/owner/reports': 'Reports',
@@ -31,21 +29,32 @@ export const usePageTitle = () => {
       return titleMap[path]
     }
 
-    // Handle dynamic routes (e.g., /roles/123, /vehicles/123)
+    // Handle dynamic routes (e.g., /owner/vehicles/123, /owner/roles/123)
     const segments = path.split('/').filter(Boolean)
     if (segments.length > 1) {
-      const baseRoute = `/${segments[0]}`
-      if (titleMap[baseRoute]) {
-        // Capitalize the action or ID
-        const lastSegment = segments[segments.length - 1]
-        if (lastSegment === 'add') {
-          return `Add ${titleMap[baseRoute].slice(0, -1)}`
+      // Build the base route by checking segments from start
+      // For /owner/vehicles/123, we want to match /owner/vehicles
+      for (let i = segments.length - 1; i >= 0; i--) {
+        const baseRoute = '/' + segments.slice(0, i + 1).join('/')
+        if (titleMap[baseRoute]) {
+          const lastSegment = segments[segments.length - 1]
+          const secondLastSegment = segments.length > 1 ? segments[segments.length - 2] : ''
+
+          // Handle /owner/vehicles/edit/123
+          if (secondLastSegment === 'edit') {
+            return `Edit ${titleMap[baseRoute].slice(0, -1)}`
+          }
+
+          // Handle /owner/vehicles/add
+          if (lastSegment === 'add') {
+            return `Add ${titleMap[baseRoute].slice(0, -1)}`
+          }
+
+          // Handle /owner/vehicles/123 (view/detail page)
+          if (lastSegment !== 'edit' && lastSegment !== 'add') {
+            return `${titleMap[baseRoute].slice(0, -1)} Details`
+          }
         }
-        if (lastSegment === 'edit') {
-          return `Edit ${titleMap[baseRoute].slice(0, -1)}`
-        }
-        // If it's a numeric ID or other segment, return "View {Entity}"
-        return `View ${titleMap[baseRoute].slice(0, -1)}`
       }
     }
 
@@ -59,6 +68,6 @@ export const usePageTitle = () => {
   })
 
   return {
-    pageTitle
+    pageTitle,
   }
 }

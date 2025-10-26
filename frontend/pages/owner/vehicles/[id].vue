@@ -1,6 +1,6 @@
 <template>
   <CommonPageContainer>
-    <!-- Header with Breadcrumbs and Actions -->
+    <!-- Header - Critical content (always visible) -->
     <CommonPageDetailPageHeader
       :title="`${vehicle.make} ${vehicle.model}`"
       :subtitle="`${vehicle.year} • ${vehicle.licensePlate}`"
@@ -17,24 +17,48 @@
     <v-row>
       <!-- Left Column: Photos and Main Info -->
       <v-col cols="12" lg="8">
-        <!-- Photo Gallery -->
-        <CommonUiDetailCard title="Vehicle Photos" icon="mdi-camera" class="mb-6">
-          <CommonUiPhotoGallery :photos="vehicle.photos" />
-        </CommonUiDetailCard>
+        <!-- Photo Gallery - Load with intersection observer -->
+        <div ref="photoSection">
+          <CommonUiDetailCard
+            v-if="sectionsLoaded.photos"
+            title="Vehicle Photos"
+            icon="mdi-camera"
+            class="mb-6"
+          >
+            <LazyCommonUiPhotoGallery :photos="vehicle.photos" />
+          </CommonUiDetailCard>
+          <v-card v-else class="mb-6">
+            <v-skeleton-loader type="image, article" />
+          </v-card>
+        </div>
 
-        <!-- Vehicle Information -->
-        <VehicleInfoCard :vehicle="vehicle" class="mb-6" />
+        <!-- Vehicle Information - Deferred load -->
+        <div ref="infoSection">
+          <LazyVehicleInfoCard v-if="sectionsLoaded.info" :vehicle="vehicle" class="mb-6" />
+          <v-card v-else class="mb-6">
+            <v-skeleton-loader type="card" />
+          </v-card>
+        </div>
 
-        <!-- Identification -->
-        <VehicleIdentificationCard :vehicle="vehicle" class="mb-6" />
+        <!-- Identification - Deferred load -->
+        <div ref="identificationSection">
+          <LazyVehicleIdentificationCard
+            v-if="sectionsLoaded.identification"
+            :vehicle="vehicle"
+            class="mb-6"
+          />
+          <v-card v-else class="mb-6">
+            <v-skeleton-loader type="card" />
+          </v-card>
+        </div>
       </v-col>
 
       <!-- Right Column: Stats and Details -->
       <v-col cols="12" lg="4">
-        <!-- Pricing -->
-        <VehiclePricingCard :vehicle="vehicle" class="mb-6" />
+        <!-- Pricing - Load immediately (important info) -->
+        <LazyVehiclePricingCard :vehicle="vehicle" class="mb-6" />
 
-        <!-- Mileage -->
+        <!-- Mileage - Load immediately -->
         <CommonUiStatDisplayCard
           title="Mileage"
           icon="mdi-speedometer"
@@ -44,13 +68,19 @@
           class="mb-6"
         />
 
-        <!-- Quick Stats -->
-        <VehicleStatsCard :stats="vehicleStats" class="mb-6" />
+        <!-- Quick Stats - Deferred load -->
+        <div ref="statsSection">
+          <LazyVehicleStatsCard v-if="sectionsLoaded.stats" :stats="vehicleStats" class="mb-6" />
+          <v-card v-else class="mb-6">
+            <v-skeleton-loader type="card" />
+          </v-card>
+        </div>
       </v-col>
     </v-row>
 
-    <!-- Delete Confirmation Dialog -->
-    <CommonDialogDeleteConfirmation
+    <!-- Delete Confirmation Dialog - Lazy load when needed -->
+    <LazyCommonDialogDeleteConfirmation
+      v-if="deleteDialog"
       v-model="deleteDialog"
       :title="`Delete ${vehicle.make} ${vehicle.model}?`"
       message="This action cannot be undone. This vehicle and all its associated data will be permanently removed."
@@ -64,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useVehicles } from '~/composables/useVehicles'
 
@@ -72,6 +102,21 @@ const route = useRoute()
 const router = useRouter()
 const { getStatusColor, deleteVehicle: deleteVehicleFromStore } = useVehicles()
 
+// Refs for intersection observer
+const photoSection = ref<HTMLElement | null>(null)
+const infoSection = ref<HTMLElement | null>(null)
+const identificationSection = ref<HTMLElement | null>(null)
+const statsSection = ref<HTMLElement | null>(null)
+
+// Track which sections have been loaded
+const sectionsLoaded = ref({
+  photos: false,
+  info: false,
+  identification: false,
+  stats: false,
+})
+
+// Dialog state
 const deleteDialog = ref(false)
 const deleteLoading = ref(false)
 const snackbar = ref({
@@ -132,6 +177,85 @@ const headerActions = [
     color: 'error',
   },
 ]
+
+// Intersection Observer for progressive loading
+let observer: IntersectionObserver | null = null
+
+const setupIntersectionObserver = () => {
+  if (typeof IntersectionObserver === 'undefined') {
+    // Fallback: load all sections immediately
+    sectionsLoaded.value = {
+      photos: true,
+      info: true,
+      identification: true,
+      stats: true,
+    }
+    return
+  }
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          // Load section when it becomes visible
+          if (entry.target === photoSection.value) {
+            sectionsLoaded.value.photos = true
+          } else if (entry.target === infoSection.value) {
+            sectionsLoaded.value.info = true
+          } else if (entry.target === identificationSection.value) {
+            sectionsLoaded.value.identification = true
+          } else if (entry.target === statsSection.value) {
+            sectionsLoaded.value.stats = true
+          }
+
+          // Stop observing once loaded
+          if (entry.target instanceof Element) {
+            observer?.unobserve(entry.target)
+          }
+        }
+      })
+    },
+    {
+      root: null,
+      rootMargin: '150px', // Start loading 150px before visible
+      threshold: 0.01,
+    }
+  )
+
+  // Observe all sections
+  if (photoSection.value) observer.observe(photoSection.value)
+  if (infoSection.value) observer.observe(infoSection.value)
+  if (identificationSection.value) observer.observe(identificationSection.value)
+  if (statsSection.value) observer.observe(statsSection.value)
+}
+
+onMounted(() => {
+  // Load header and critical content immediately
+  // Then setup progressive loading for below-the-fold content
+  setupIntersectionObserver()
+
+  // Alternatively, load all sections after a short delay if user is on fast connection
+  if ('connection' in navigator) {
+    const conn = (navigator as any).connection
+    if (conn && (conn.effectiveType === '4g' || conn.downlink > 5)) {
+      // Fast connection: preload everything after a delay
+      setTimeout(() => {
+        sectionsLoaded.value = {
+          photos: true,
+          info: true,
+          identification: true,
+          stats: true,
+        }
+      }, 500)
+    }
+  }
+})
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect()
+  }
+})
 
 const handleAction = (key: string) => {
   if (key === 'edit') {

@@ -4,28 +4,28 @@
     <HeroSection />
 
     <!-- Stats Section - Lazy load with hydration -->
-    <StatsSection />
+    <LazyStatsSection />
 
     <!-- Features Section - Lazy load with hydration -->
-    <FeaturesSection />
+    <LazyFeaturesSection />
 
     <!-- Featured Vehicles Section - Lazy load with hydration -->
-    <VehiclesSection />
+    <LazyVehiclesSection />
 
     <!-- How It Works Section - Lazy load with hydration -->
-    <HowItWorksSection />
+    <LazyHowItWorksSection />
 
     <!-- Testimonials Section - Lazy load with hydration -->
-    <TestimonialsSection />
+    <LazyTestimonialsSection />
 
     <!-- FAQ Section - Lazy load with hydration -->
-    <FAQSection />
+    <LazyFAQSection />
 
     <!-- Newsletter Section - Lazy load with hydration -->
-    <NewsletterSection />
+    <LazyNewsletterSection />
 
     <!-- CTA Section - Lazy load with hydration -->
-    <CTASection />
+    <LazyCTASection />
   </div>
 </template>
 

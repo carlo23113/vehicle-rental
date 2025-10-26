@@ -7,11 +7,10 @@
     />
 
     <!-- Statistics Cards -->
-    <v-row class="mb-6">
-      <v-col v-for="stat in statsCards" :key="stat.label" cols="12" sm="6" lg="3">
-        <CommonUiStatCard v-bind="stat" />
-      </v-col>
-    </v-row>
+    <div ref="statsSection">
+      <LazyInvoicesStatsCards v-if="sectionsLoaded.stats" :stats="statsCards" />
+      <LazyInvoicesStatsSkeleton v-else />
+    </div>
 
     <InvoiceFilters
       v-model="showFilters"
@@ -21,17 +20,19 @@
       @update:date-range="dateRange = $event"
     />
 
-    <v-row>
-      <v-col cols="12">
-        <InvoicesTable
-          :invoices="mockInvoices"
-          @view="viewInvoice"
-          @download="downloadInvoice"
-          @send="sendInvoice"
-          @mark-paid="markAsPaidDialog"
-        />
-      </v-col>
-    </v-row>
+    <!-- Invoices Table -->
+    <div ref="tableSection">
+      <LazyInvoicesTableSection
+        v-if="sectionsLoaded.table"
+        :displayed-items="displayedItems"
+        :is-loading-more="isLoadingMore"
+        @view="viewInvoice"
+        @download="downloadInvoice"
+        @send="sendInvoice"
+        @mark-paid="markAsPaidDialog"
+      />
+      <LazyInvoicesTableSkeleton v-else />
+    </div>
 
     <!-- Hidden Invoice Template for Printing -->
     <div style="position: absolute; left: -9999px; top: -9999px;">
@@ -64,9 +65,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useInvoices } from '~/composables/useInvoices'
 import { useInvoiceStats } from '~/composables/useInvoiceStats'
+import { useProgressiveTable } from '~/composables/useProgressiveTable'
+import { useDebouncedFilters } from '~/composables/useDebouncedFilters'
 import { DEFAULT_COMPANY_INFO } from '~/types/invoice'
 import { exportToPDF } from '~/utils/pdfExport'
 import type { Invoice } from '~/types/invoice'
@@ -142,7 +145,29 @@ const mockInvoices = ref<Invoice[]>([
   },
 ])
 
+// Progressive table loading with intersection observer
+const invoicesAsComputed = computed(() => mockInvoices.value)
+const {
+  statsSection,
+  tableSection,
+  sectionsLoaded,
+  displayedItems,
+  isLoadingMore,
+  updateDisplayedItems
+} = useProgressiveTable(invoicesAsComputed, { batchSize: 20 })
+
+// Debounced filters
+useDebouncedFilters(filters, {
+  searchDebounce: 300,
+  onSearchChange: updateDisplayedItems
+})
+
 const { statsCards } = useInvoiceStats(mockInvoices)
+
+// DRY snackbar helper
+const showSnackbar = (message: string, color: 'success' | 'error' | 'warning' | 'info', icon: string) => {
+  snackbar.value = { show: true, message, color, icon }
+}
 
 const paymentMethods = ['Credit Card', 'Debit Card', 'Cash', 'Bank Transfer', 'Check', 'Other']
 
@@ -159,23 +184,13 @@ const printInvoice = () => {
   // Use the hidden invoice template for printing
   const printContents = document.getElementById('invoice-for-print')
   if (!printContents || !selectedInvoice.value) {
-    snackbar.value = {
-      show: true,
-      message: 'Invoice not available for printing',
-      color: 'error',
-      icon: 'mdi-alert-circle',
-    }
+    showSnackbar('Invoice not available for printing', 'error', 'mdi-alert-circle')
     return
   }
 
   const printWindow = window.open('', '', 'width=800,height=600')
   if (!printWindow) {
-    snackbar.value = {
-      show: true,
-      message: 'Failed to open print window',
-      color: 'error',
-      icon: 'mdi-alert-circle',
-    }
+    showSnackbar('Failed to open print window', 'error', 'mdi-alert-circle')
     return
   }
 
@@ -244,23 +259,13 @@ const printInvoice = () => {
       printWindow.focus()
       printWindow.print()
       printWindow.close()
-      snackbar.value = {
-        show: true,
-        message: 'Invoice sent to printer',
-        color: 'success',
-        icon: 'mdi-check-circle',
-      }
+      showSnackbar('Invoice sent to printer', 'success', 'mdi-check-circle')
     }, 500)
   }
 }
 
 const sendInvoice = (invoice: any) => {
-  snackbar.value = {
-    show: true,
-    message: `Invoice ${invoice.invoiceNumber} sent to ${invoice.customerEmail}`,
-    color: 'success',
-    icon: 'mdi-check-circle',
-  }
+  showSnackbar(`Invoice ${invoice.invoiceNumber} sent to ${invoice.customerEmail}`, 'success', 'mdi-check-circle')
 }
 
 const markAsPaidDialog = (invoice: any) => {
@@ -276,12 +281,7 @@ const confirmMarkAsPaid = (data: { paymentMethod: string; paymentReference: stri
     selectedInvoice.value.amountPaid = data.amountPaid
     selectedInvoice.value.amountDue = 0
 
-    snackbar.value = {
-      show: true,
-      message: `Invoice ${selectedInvoice.value.invoiceNumber} marked as paid`,
-      color: 'success',
-      icon: 'mdi-check-circle',
-    }
+    showSnackbar(`Invoice ${selectedInvoice.value.invoiceNumber} marked as paid`, 'success', 'mdi-check-circle')
   }
 }
 </script>

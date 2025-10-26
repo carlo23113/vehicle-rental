@@ -42,6 +42,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  NOTIFICATION_TYPE_OPTIONS,
+  NOTIFICATION_STATUS_OPTIONS,
+  NOTIFICATION_PRIORITY_OPTIONS,
+} from '~/constants/filterOptions'
+
 defineProps<{
   modelValue: boolean
   filters: {
@@ -59,22 +65,7 @@ defineEmits<{
   clear: []
 }>()
 
-const typeOptions = [
-  { title: 'Rental', value: 'rental' },
-  { title: 'Maintenance', value: 'maintenance' },
-  { title: 'Customer', value: 'customer' },
-  { title: 'Payment', value: 'payment' },
-  { title: 'System', value: 'system' },
-]
-
-const statusOptions = [
-  { title: 'Unread', value: 'unread' },
-  { title: 'Read', value: 'read' },
-]
-
-const priorityOptions = [
-  { title: 'High', value: 'high' },
-  { title: 'Medium', value: 'medium' },
-  { title: 'Low', value: 'low' },
-]
+const typeOptions = NOTIFICATION_TYPE_OPTIONS
+const statusOptions = NOTIFICATION_STATUS_OPTIONS
+const priorityOptions = NOTIFICATION_PRIORITY_OPTIONS
 </script>

@@ -10,56 +10,53 @@
     />
 
     <!-- Filters -->
-    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
-      <v-row dense>
-        <v-col cols="12" md="8">
-          <v-text-field
-            v-model="filters.search"
-            variant="outlined"
-            density="comfortable"
-            placeholder="Search by role name or description..."
-            prepend-inner-icon="mdi-magnify"
-            clearable
-          />
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-select
-            v-model="filters.module"
-            :items="moduleFilterOptions"
-            variant="outlined"
-            density="comfortable"
-            label="Module"
-            prepend-inner-icon="mdi-view-module"
-            clearable
-          />
-        </v-col>
-      </v-row>
-    </CommonFilterSection>
+    <LazyRolesFilters
+      v-model="showFilters"
+      :filters="filters"
+      :module-filter-options="moduleFilterOptions"
+      @clear="clearFilters"
+    />
 
     <!-- Statistics -->
-    <RoleStats
-      :total-roles="roles.length"
-      :total-users="totalUsers"
-      :total-permissions="permissions.length"
-      :custom-roles="customRolesCount"
-    />
+    <div ref="statsSection">
+      <LazyRolesStatsCards
+        v-if="sectionsLoaded.stats"
+        :total-roles="roles.length"
+        :total-users="totalUsers"
+        :total-permissions="permissions.length"
+        :custom-roles="customRolesCount"
+      />
+      <LazyRolesStatsSkeleton v-else />
+    </div>
 
     <!-- Roles Grid -->
-    <RoleGrid
-      :roles="filteredRoles"
-      @view="viewRole"
-      @edit="editRole"
-      @duplicate="duplicateRole"
-      @delete="confirmDelete"
-    />
+    <div ref="gridSection">
+      <LazyRolesGridSection
+        v-if="sectionsLoaded.grid"
+        :roles="filteredRoles"
+        @view="viewRole"
+        @edit="editRole"
+        @duplicate="duplicateRole"
+        @delete="confirmDelete"
+      />
+      <LazyRolesGridSkeleton v-else />
+    </div>
 
     <!-- Create/Edit Role Dialog -->
-    <RoleFormDialog v-model="showEditDialog" :role="editingRole" @save="handleSaveRole" />
+    <LazyRoleFormDialog v-model="showEditDialog" :role="editingRole" @save="handleSaveRole" />
+
+    <!-- Delete Confirmation Dialog -->
+    <LazyRolesDeleteDialog
+      v-model="showDeleteDialog"
+      :role="roleToDelete"
+      :loading="deleting"
+      @confirm="handleDeleteRole"
+    />
   </CommonPageContainer>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRolesPermissions } from '~/composables/useRolesPermissions'
 import type { Role } from '~/types/role'
@@ -74,6 +71,7 @@ const {
   duplicateRole,
   addRole,
   updateRole,
+  deleteRole,
   totalUsers,
   customRolesCount
 } = useRolesPermissions()
@@ -81,8 +79,47 @@ const {
 // Filter state
 const showFilters = ref(false)
 
+// Dialog states
 const showEditDialog = ref(false)
 const editingRole = ref<Role | null>(null)
+const showDeleteDialog = ref(false)
+const roleToDelete = ref<Role | null>(null)
+const deleting = ref(false)
+
+// Progressive section loading with intersection observer
+const statsSection = ref<HTMLElement | null>(null)
+const gridSection = ref<HTMLElement | null>(null)
+
+const sectionsLoaded = ref({
+  stats: false,
+  grid: false,
+})
+
+let observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  // Immediate load stats
+  sectionsLoaded.value.stats = true
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (entry.target === gridSection.value) {
+            sectionsLoaded.value.grid = true
+          }
+        }
+      })
+    },
+    { rootMargin: '100px' }
+  )
+
+  if (gridSection.value) observer.observe(gridSection.value)
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
+})
 
 const moduleFilterOptions = computed(() => [
   { title: 'All Modules', value: 'all' },
@@ -102,8 +139,21 @@ const editRole = (role: Role) => {
 }
 
 const confirmDelete = (role: Role) => {
-  // TODO: Implement delete confirmation dialog
-  console.log('Delete role:', role)
+  roleToDelete.value = role
+  showDeleteDialog.value = true
+}
+
+const handleDeleteRole = (role: Role) => {
+  deleting.value = true
+  try {
+    deleteRole(role.id)
+    showDeleteDialog.value = false
+    roleToDelete.value = null
+  } catch (error) {
+    console.error('Failed to delete role:', error)
+  } finally {
+    deleting.value = false
+  }
 }
 
 const handleSaveRole = (data: { name: string; description: string; permissions: string[] }) => {
