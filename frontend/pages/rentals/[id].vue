@@ -18,7 +18,11 @@
       <!-- Left Column: Main Info -->
       <v-col cols="12" lg="8">
         <RentalInfoCard :rental="rental" class="mb-6" />
-        <RentalCustomerCard :customer="rental.customer" :customer-id="rental.customerId" class="mb-6" />
+        <RentalCustomerCard
+          :customer="rental.customer"
+          :customer-id="rental.customerId"
+          class="mb-6"
+        />
         <RentalVehicleCard :vehicle="rental.vehicle" :vehicle-id="rental.vehicleId" class="mb-6" />
         <RentalLocationCard
           :pickup-location="rental.pickupLocation"
@@ -30,6 +34,19 @@
         <CommonUiDetailCard v-if="rental.notes" title="Notes" icon="mdi-note-text" class="mb-6">
           <p class="text-body-2">{{ rental.notes }}</p>
         </CommonUiDetailCard>
+
+        <!-- Documents Section -->
+        <DocumentList
+          :documents="rentalDocuments"
+          :can-upload="true"
+          :can-verify="true"
+          :can-delete="true"
+          class="mb-6"
+          @upload="handleDocumentUpload"
+          @verify="handleDocumentVerify"
+          @reject="handleDocumentReject"
+          @delete="handleDocumentDelete"
+        />
       </v-col>
 
       <!-- Right Column: Pricing and Stats -->
@@ -71,17 +88,44 @@
       <RentalContract :rental="rental" />
     </ContractDialog>
 
+    <!-- Generate Invoice Dialog -->
+    <v-dialog v-model="showInvoiceDialog" max-width="900px" scrollable>
+      <v-card>
+        <v-card-title class="d-flex align-center justify-space-between pa-4">
+          <div class="d-flex align-center">
+            <v-icon icon="mdi-file-document-outline" class="mr-2" />
+            <span class="text-h6">Generate Invoice</span>
+          </div>
+          <v-btn icon="mdi-close" variant="text" @click="showInvoiceDialog = false" />
+        </v-card-title>
+        <v-divider />
+        <v-card-text class="pa-6">
+          <InvoiceGenerator
+            :customer="invoiceCustomerData"
+            :vehicle="invoiceVehicleData"
+            :rental-id="rentalId"
+            @save="handleInvoiceSave"
+            @cancel="showInvoiceDialog = false"
+          />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
     <!-- Snackbar -->
     <CommonUiSnackbar v-model="snackbar" />
   </CommonPageContainer>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { printContract as printContractUtil } from '~/utils/contractPrint'
 import { useRentalActions } from '~/composables/useRentalActions'
 import { useRentalTimeline } from '~/composables/useRentalTimeline'
+import { useDocuments } from '~/composables/useDocuments'
+import { useInvoices } from '~/composables/useInvoices'
+import type { DocumentType, Document } from '~/types/document'
+import type { Invoice } from '~/types/invoice'
 
 const route = useRoute()
 const router = useRouter()
@@ -99,11 +143,26 @@ const {
 
 const { timeline } = useRentalTimeline()
 
+// Documents functionality
+const {
+  uploadDocument,
+  verifyDocument,
+  rejectDocument,
+  deleteDocument: removeDocument,
+  getDocumentsByRental,
+} = useDocuments()
+
+// Invoice functionality
+const { createInvoice } = useInvoices()
+
 const showContractDialog = ref(false)
+const showInvoiceDialog = ref(false)
+const rentalId = String(route.params.id)
+const rentalDocuments = computed(() => getDocumentsByRental(rentalId))
 
 // Mock rental data - replace with actual API call
 const rental = ref({
-  id: String(route.params.id),
+  id: rentalId,
   status: 'reserved',
   paymentStatus: 'partial',
   depositAmount: 150,
@@ -140,6 +199,23 @@ const rental = ref({
   },
 })
 
+// Prepare invoice data from rental
+const invoiceCustomerData = computed(() => ({
+  id: rental.value.customerId,
+  name: rental.value.customer.name,
+  email: rental.value.customer.email,
+  phone: rental.value.customer.phone,
+  address: '', // Add if available in rental data
+}))
+
+const invoiceVehicleData = computed(() => ({
+  id: rental.value.vehicleId,
+  make: rental.value.vehicle.make,
+  model: rental.value.vehicle.model,
+  year: rental.value.vehicle.year,
+  licensePlate: rental.value.vehicle.licensePlate,
+}))
+
 const headerActions = [
   {
     key: 'edit',
@@ -155,6 +231,13 @@ const headerActions = [
     variant: 'outlined' as const,
     color: 'primary',
   },
+  {
+    key: 'invoice',
+    label: 'Generate Invoice',
+    icon: 'mdi-file-document-outline',
+    variant: 'outlined' as const,
+    color: 'success',
+  },
 ]
 
 const handleAction = (key: string) => {
@@ -162,10 +245,82 @@ const handleAction = (key: string) => {
     router.push(`/rentals/edit/${rental.value.id}`)
   } else if (key === 'print') {
     showContractDialog.value = true
+  } else if (key === 'invoice') {
+    showInvoiceDialog.value = true
+  }
+}
+
+const handleInvoiceSave = async (invoiceData: Invoice) => {
+  const success = await createInvoice(invoiceData)
+  if (success) {
+    showInvoiceDialog.value = false
+    snackbar.value = {
+      show: true,
+      message: 'Invoice created successfully',
+      color: 'success',
+      icon: 'mdi-check-circle',
+    }
+    // Optionally navigate to the invoice page
+    // router.push('/invoices')
+  } else {
+    snackbar.value = {
+      show: true,
+      message: 'Failed to create invoice',
+      color: 'error',
+      icon: 'mdi-alert-circle',
+    }
   }
 }
 
 const printContract = () => {
   printContractUtil({ title: `Rental Contract - ${rental.value.id}` })
+}
+
+// Document handlers
+const handleDocumentUpload = (type: DocumentType) => {
+  console.log('Upload document type:', type)
+  // This would open the DocumentUpload component in a dialog
+}
+
+const handleDocumentVerify = async (document: Document) => {
+  const success = await verifyDocument(
+    document.id,
+    'Current User',
+    'Document verified successfully'
+  )
+  if (success) {
+    snackbar.value = {
+      show: true,
+      message: 'Document verified successfully',
+      color: 'success',
+    }
+  }
+}
+
+const handleDocumentReject = async (document: Document) => {
+  const reason = prompt('Please provide a reason for rejection:')
+  if (reason) {
+    const success = await rejectDocument(document.id, 'Current User', reason)
+    if (success) {
+      snackbar.value = {
+        show: true,
+        message: 'Document rejected',
+        color: 'warning',
+      }
+    }
+  }
+}
+
+const handleDocumentDelete = async (document: Document) => {
+  if (confirm(`Are you sure you want to delete "${document.name}"?`)) {
+    const success = await removeDocument(document.id)
+    if (success) {
+      snackbar.value = {
+        show: true,
+        message: 'Document deleted successfully',
+        color: 'success',
+      }
+    }
+  }
 }
 </script>

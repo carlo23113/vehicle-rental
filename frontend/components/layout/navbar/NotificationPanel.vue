@@ -48,7 +48,7 @@
       </v-list>
       <v-divider></v-divider>
       <v-card-actions class="pa-3">
-        <v-btn variant="text" color="primary" block>
+        <v-btn variant="text" color="primary" block @click="viewAllNotifications">
           View all notifications
         </v-btn>
       </v-card-actions>
@@ -60,6 +60,11 @@
 import { ref } from 'vue'
 
 const isOpen = ref(false)
+
+const viewAllNotifications = () => {
+  isOpen.value = false
+  navigateTo('/notifications')
+}
 
 const notifications = ref([
   {

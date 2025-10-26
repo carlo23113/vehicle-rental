@@ -6,24 +6,46 @@
       subtitle="Manage system users and permissions"
       action-text="Add User"
       action-icon="mdi-plus"
-      @action-click="showAddDialog = true"
+      @action-click="navigateTo('/users/add')"
     />
 
     <!-- Filters -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <UserFilters
-          :filters="filters"
-          :role-options="roleOptions"
-          :status-options="statusOptions"
-          :department-options="departmentOptions"
-          @update:search="(val: string) => filters.search = val"
-          @update:role="(val: any) => filters.role = val"
-          @update:status="(val: any) => filters.status = val"
-          @update:department="(val: any) => filters.department = val"
-        />
-      </v-col>
-    </v-row>
+    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
+      <v-row dense>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="filters.search"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Search by name, email, or phone..."
+            prepend-inner-icon="mdi-magnify"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+          <v-select
+            v-model="filters.role"
+            :items="roleOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Role"
+            prepend-inner-icon="mdi-account-tie"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+          <v-select
+            v-model="filters.status"
+            :items="statusOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Status"
+            prepend-inner-icon="mdi-check-circle"
+            clearable
+          />
+        </v-col>
+      </v-row>
+    </CommonFilterSection>
 
     <!-- Statistics Cards -->
     <v-row class="mb-6">
@@ -45,129 +67,50 @@
           :format-date="formatDate"
           @view="viewUser"
           @edit="editUser"
-          @delete="confirmDelete"
+          @activate="handleActivate"
+          @deactivate="handleDeactivate"
+          @suspend="handleSuspend"
         />
       </v-col>
     </v-row>
 
-    <!-- Add User Dialog -->
-    <v-dialog v-model="showAddDialog" max-width="900">
-      <v-card>
-        <v-card-title class="pa-6">
-          <h2 class="text-h5 font-weight-bold">Add New User</h2>
-        </v-card-title>
-        <v-divider></v-divider>
-        <v-card-text class="pa-6">
-          <v-form>
-            <h3 class="text-h6 font-weight-bold mb-4">Personal Information</h3>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  label="First Name"
-                  variant="outlined"
-                  density="comfortable"
-                  placeholder="John"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  label="Last Name"
-                  variant="outlined"
-                  density="comfortable"
-                  placeholder="Doe"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  label="Email"
-                  variant="outlined"
-                  density="comfortable"
-                  type="email"
-                  placeholder="john.doe@vrms.com"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  label="Phone"
-                  variant="outlined"
-                  density="comfortable"
-                  placeholder="(555) 123-4567"
-                ></v-text-field>
-              </v-col>
-            </v-row>
+    <!-- Confirmation Dialogs -->
+    <CommonDialogDeleteConfirmation
+      v-model="activateDialog"
+      title="Activate User?"
+      :message="`Are you sure you want to activate ${selectedUser?.firstName} ${selectedUser?.lastName}? They will regain access to the system.`"
+      :loading="actionLoading"
+      confirm-text="Activate User"
+      confirm-color="success"
+      @confirm="confirmActivate"
+    />
 
-            <v-divider class="my-6"></v-divider>
+    <CommonDialogDeleteConfirmation
+      v-model="deactivateDialog"
+      title="Deactivate User?"
+      :message="`Are you sure you want to deactivate ${selectedUser?.firstName} ${selectedUser?.lastName}? They will lose access to the system.`"
+      :loading="actionLoading"
+      confirm-text="Deactivate User"
+      confirm-color="warning"
+      @confirm="confirmDeactivate"
+    />
 
-            <h3 class="text-h6 font-weight-bold mb-4">Role & Access</h3>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  :items="roleOptions.filter(r => r.value !== 'all')"
-                  label="Role"
-                  variant="outlined"
-                  density="comfortable"
-                ></v-select>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-select
-                  :items="departmentOptions.filter(d => d.value !== 'all')"
-                  label="Department"
-                  variant="outlined"
-                  density="comfortable"
-                ></v-select>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-select
-                  :items="statusOptions.filter(s => s.value !== 'all')"
-                  label="Status"
-                  variant="outlined"
-                  density="comfortable"
-                ></v-select>
-              </v-col>
-              <v-col cols="12">
-                <v-select
-                  :items="permissionOptions"
-                  label="Permissions"
-                  variant="outlined"
-                  density="comfortable"
-                  multiple
-                  chips
-                  closable-chips
-                ></v-select>
-              </v-col>
-            </v-row>
-
-            <v-divider class="my-6"></v-divider>
-
-            <v-row>
-              <v-col cols="12">
-                <v-textarea
-                  label="Notes"
-                  variant="outlined"
-                  density="comfortable"
-                  rows="3"
-                  placeholder="Additional notes about the user..."
-                ></v-textarea>
-              </v-col>
-            </v-row>
-          </v-form>
-        </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions class="pa-6">
-          <v-spacer></v-spacer>
-          <v-btn variant="text" @click="showAddDialog = false">Cancel</v-btn>
-          <v-btn color="primary" variant="flat" @click="showAddDialog = false">
-            Add User
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <CommonDialogDeleteConfirmation
+      v-model="suspendDialog"
+      title="Suspend User?"
+      :message="`Are you sure you want to suspend ${selectedUser?.firstName} ${selectedUser?.lastName}? This is a temporary restriction of access.`"
+      :loading="actionLoading"
+      confirm-text="Suspend User"
+      confirm-color="error"
+      @confirm="confirmSuspend"
+    />
   </CommonPageContainer>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useUsers } from '~/composables/useUsers'
+import type { User } from '~/types/user'
 
 const {
   users,
@@ -179,9 +122,18 @@ const {
   getInitials,
   formatDate,
   getRoleIcon,
+  updateUser,
 } = useUsers()
 
-const showAddDialog = ref(false)
+// Filter state
+const showFilters = ref(false)
+
+// Dialog states
+const activateDialog = ref(false)
+const deactivateDialog = ref(false)
+const suspendDialog = ref(false)
+const actionLoading = ref(false)
+const selectedUser = ref<User | null>(null)
 
 const roleOptions = [
   { title: 'All Roles', value: 'all' },
@@ -196,25 +148,6 @@ const statusOptions = [
   { title: 'Active', value: 'active' },
   { title: 'Inactive', value: 'inactive' },
   { title: 'Suspended', value: 'suspended' },
-]
-
-const departmentOptions = [
-  { title: 'All Departments', value: 'all' },
-  { title: 'Management', value: 'Management' },
-  { title: 'Operations', value: 'Operations' },
-  { title: 'Customer Service', value: 'Customer Service' },
-  { title: 'Maintenance', value: 'Maintenance' },
-  { title: 'Finance', value: 'Finance' },
-]
-
-const permissionOptions = [
-  { title: 'Rentals', value: 'rentals' },
-  { title: 'Customers', value: 'customers' },
-  { title: 'Vehicles', value: 'vehicles' },
-  { title: 'Reservations', value: 'reservations' },
-  { title: 'Maintenance', value: 'maintenance' },
-  { title: 'Payments', value: 'payments' },
-  { title: 'Reports', value: 'reports' },
 ]
 
 // Statistics
@@ -257,13 +190,75 @@ const viewUser = (user: any) => {
 }
 
 const editUser = (user: any) => {
-  console.log('Edit user:', user)
-  // TODO: Implement edit functionality
+  navigateTo(`/users/edit/${user.id}`)
 }
 
-const confirmDelete = (user: any) => {
-  console.log('Delete user:', user)
-  // TODO: Implement delete confirmation
+const handleActivate = (user: User) => {
+  selectedUser.value = user
+  activateDialog.value = true
+}
+
+const handleDeactivate = (user: User) => {
+  selectedUser.value = user
+  deactivateDialog.value = true
+}
+
+const handleSuspend = (user: User) => {
+  selectedUser.value = user
+  suspendDialog.value = true
+}
+
+const confirmActivate = async () => {
+  if (!selectedUser.value) return
+
+  actionLoading.value = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 500))
+    updateUser(selectedUser.value.id, { status: 'active' })
+    activateDialog.value = false
+  } catch (error) {
+    console.error('Failed to activate user:', error)
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+const confirmDeactivate = async () => {
+  if (!selectedUser.value) return
+
+  actionLoading.value = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 500))
+    updateUser(selectedUser.value.id, { status: 'inactive' })
+    deactivateDialog.value = false
+  } catch (error) {
+    console.error('Failed to deactivate user:', error)
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+const confirmSuspend = async () => {
+  if (!selectedUser.value) return
+
+  actionLoading.value = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 500))
+    updateUser(selectedUser.value.id, { status: 'suspended' })
+    suspendDialog.value = false
+  } catch (error) {
+    console.error('Failed to suspend user:', error)
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    role: 'all',
+    status: 'all',
+  }
 }
 </script>
 

@@ -13,7 +13,7 @@
         :height="height"
         :class="tableClass"
         :items-per-page-options="itemsPerPageOptions"
-        @click:row="(event, { item }) => $emit('row-click', item)"
+        @click:row="(_event: any, { item }: any) => $emit('row-click', item)"
       >
         <!-- Pass through all slots -->
         <template v-for="(_, slot) in $slots" #[slot]="scope">

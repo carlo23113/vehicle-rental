@@ -10,20 +10,53 @@
     />
 
     <!-- Filters -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <PaymentFilters
-          :filters="filters"
-          :status-options="statusOptions"
-          :method-options="methodOptions"
-          :date-range-options="dateRangeOptions"
-          @update:search="(val: string) => filters.search = val"
-          @update:status="(val: any) => filters.status = val"
-          @update:method="(val: any) => filters.method = val"
-          @update:date-range="(val: string) => filters.dateRange = val"
-        />
-      </v-col>
-    </v-row>
+    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
+      <v-row dense>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="filters.search"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Search by customer or transaction..."
+            prepend-inner-icon="mdi-magnify"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="4" md="2">
+          <v-select
+            v-model="filters.status"
+            :items="statusOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Status"
+            prepend-inner-icon="mdi-check-circle"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="4" md="2">
+          <v-select
+            v-model="filters.method"
+            :items="methodOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Method"
+            prepend-inner-icon="mdi-credit-card"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="4" md="2">
+          <v-select
+            v-model="filters.dateRange"
+            :items="dateRangeOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Date Range"
+            prepend-inner-icon="mdi-calendar-range"
+            clearable
+          />
+        </v-col>
+      </v-row>
+    </CommonFilterSection>
 
     <!-- Statistics Cards -->
     <v-row class="mb-6">
@@ -93,6 +126,9 @@ const {
   showSuccess,
   showError,
 } = usePaymentActions()
+
+// Filter state
+const showFilters = ref(false)
 
 const statusOptions = [
   { title: 'All Statuses', value: 'all' },
@@ -201,6 +237,15 @@ const printReceipt = (payment: any) => {
     formatDate,
     getMethodLabel,
   })
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    status: 'all',
+    method: 'all',
+    dateRange: 'all',
+  }
 }
 </script>
 

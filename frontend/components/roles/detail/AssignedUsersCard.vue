@@ -23,7 +23,7 @@ defineEmits<{
     <v-divider />
     <v-card-text class="pa-0">
       <div v-if="users.length > 0" class="flex flex-col">
-        <UsersUserListItem
+        <UserListItem
           v-for="user in users"
           :key="user.id"
           :user="user"

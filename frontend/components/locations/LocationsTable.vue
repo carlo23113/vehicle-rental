@@ -8,21 +8,17 @@
     empty-title="No locations found"
     empty-message="Try adjusting your filters or add a new location"
   >
-    <!-- Location & Type Column -->
     <template #item.location="{ item }">
       <div class="flex items-center py-3">
-        <v-avatar
+        <CommonUiIconAvatar
+          :icon="item.type === 'main' ? 'mdi-office-building' : 'mdi-map-marker'"
           :color="item.type === 'main' ? 'primary' : 'info'"
-          size="48"
-          class="location-avatar"
-        >
-          <v-icon
-            :icon="item.type === 'main' ? 'mdi-office-building' : 'mdi-map-marker'"
-            size="24"
-          />
-        </v-avatar>
-        <div class="ml-3">
-          <div class="font-bold text-base">{{ item.name }}</div>
+          :size="40"
+          :icon-size="20"
+          avatar-class="location-avatar mr-3"
+        />
+        <div>
+          <div class="font-bold">{{ item.name }}</div>
           <div class="text-xs text-medium-emphasis">
             {{ item.type === 'main' ? 'Main Office' : 'Branch Location' }}
           </div>
@@ -30,7 +26,6 @@
       </div>
     </template>
 
-    <!-- Address Column -->
     <template #item.address="{ item }">
       <div>
         <div class="text-body-2">{{ item.address }}</div>
@@ -40,7 +35,6 @@
       </div>
     </template>
 
-    <!-- Contact Column -->
     <template #item.contact="{ item }">
       <div>
         <div class="text-body-2">{{ item.phone }}</div>
@@ -48,48 +42,25 @@
       </div>
     </template>
 
-    <!-- Status Column -->
     <template #item.status="{ item }">
-      <v-chip :color="getStatusColor(item.status)" size="small" variant="flat" class="status-chip">
-        {{ item.status }}
-      </v-chip>
+      <CommonUiTableChip
+        :color="getStatusColor(item.status)"
+        :label="item.status"
+        chip-class="status-chip"
+      />
     </template>
 
-    <!-- Capacity Column -->
     <template #item.capacity="{ item }">
-      <div>
-        <div class="font-bold text-base">{{ item.capacity }} vehicles</div>
-      </div>
+      <div class="font-bold text-base">{{ item.capacity }} vehicles</div>
     </template>
 
-    <!-- Actions Column -->
     <template #item.actions="{ item }">
-      <div class="flex gap-2" @click.stop>
-        <v-btn
-          icon="mdi-eye"
-          size="small"
-          variant="tonal"
-          color="info"
-          class="action-btn"
-          @click="$emit('view', item)"
-        />
-        <v-btn
-          icon="mdi-pencil"
-          size="small"
-          variant="tonal"
-          color="primary"
-          class="action-btn"
-          @click="$emit('edit', item)"
-        />
-        <v-btn
-          icon="mdi-delete"
-          size="small"
-          variant="tonal"
-          color="error"
-          class="action-btn"
-          @click="$emit('delete', item)"
-        />
-      </div>
+      <CommonUiTableActionButtons
+        edit-tooltip="Edit Location"
+        @view="$emit('view', item)"
+        @edit="$emit('edit', item)"
+        @delete="$emit('delete', item)"
+      />
     </template>
   </CommonUiDataTable>
 </template>
@@ -119,29 +90,7 @@ const headers = [
 </script>
 
 <style lang="scss" scoped>
-.location-avatar {
-  @apply transition-all duration-300;
-  box-shadow:
-    0 6px 16px rgba(0, 0, 0, 0.18),
-    0 0 0 3px rgba(255, 255, 255, 0.1);
-}
-
-.locations-table :deep(tbody tr:hover) .location-avatar {
-  @apply scale-105;
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.25),
-    0 0 0 3px rgba(var(--v-theme-primary), 0.2);
-}
-
 .status-chip {
   @apply rounded-lg font-bold;
-}
-
-.action-btn {
-  @apply transition-all duration-200;
-
-  &:hover {
-    @apply scale-110;
-  }
 }
 </style>

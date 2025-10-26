@@ -9,20 +9,53 @@
     />
 
     <!-- Filters -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <RentalFilters
-          :filters="filters"
-          :status-options="statusOptions"
-          :payment-status-options="paymentStatusOptions"
-          :date-range-options="dateRangeOptions"
-          @update:search="(val: string) => filters.search = val"
-          @update:status="(val: any) => filters.status = val"
-          @update:payment-status="(val: any) => filters.paymentStatus = val"
-          @update:date-range="(val: string) => filters.dateRange = val"
-        />
-      </v-col>
-    </v-row>
+    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
+      <v-row dense>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="filters.search"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Search by customer or vehicle..."
+            prepend-inner-icon="mdi-magnify"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="2">
+          <v-select
+            v-model="filters.status"
+            :items="statusOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Status"
+            prepend-inner-icon="mdi-calendar-check"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="2">
+          <v-select
+            v-model="filters.paymentStatus"
+            :items="paymentStatusOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Payment"
+            prepend-inner-icon="mdi-currency-usd"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="2">
+          <v-select
+            v-model="filters.dateRange"
+            :items="dateRangeOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Date Range"
+            prepend-inner-icon="mdi-calendar-range"
+            clearable
+          />
+        </v-col>
+      </v-row>
+    </CommonFilterSection>
 
     <!-- Statistics Cards -->
     <v-row class="mb-6">
@@ -77,6 +110,9 @@ const { rentals, filters, filteredRentals, getStatusColor, getPaymentStatusColor
 const { customers, getFullName } = useCustomers()
 const { formatCurrency } = useCurrency()
 const { snackbar, showSuccess, showError } = useSnackbar()
+
+// Filter state
+const showFilters = ref(false)
 
 // Delete state
 const showDeleteDialog = ref(false)
@@ -189,6 +225,15 @@ const deleteRental = async () => {
 
 const cancelDelete = () => {
   rentalToDelete.value = null
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    status: 'all',
+    paymentStatus: 'all',
+    dateRange: 'all',
+  }
 }
 
 // Check for customerId query parameter and populate search

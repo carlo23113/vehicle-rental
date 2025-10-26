@@ -69,6 +69,20 @@ const actions = ref([
     color: 'info',
   },
   {
+    title: 'Upload Document',
+    subtitle: 'Upload customer/rental document',
+    icon: 'mdi-file-upload',
+    action: 'upload-document',
+    color: 'warning',
+  },
+  {
+    title: 'Create Invoice',
+    subtitle: 'Generate new invoice',
+    icon: 'mdi-receipt-text',
+    action: 'create-invoice',
+    color: 'info',
+  },
+  {
     title: 'Generate Report',
     subtitle: 'Create financial report',
     icon: 'mdi-file-chart',
@@ -89,6 +103,12 @@ const handleClick = (action: string) => {
       break
     case 'add-customer':
       router.push('/customers?action=new')
+      break
+    case 'upload-document':
+      router.push('/documents?action=upload')
+      break
+    case 'create-invoice':
+      router.push('/invoices?action=create')
       break
     case 'generate-report':
       router.push('/reports')

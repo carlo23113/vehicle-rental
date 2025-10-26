@@ -10,11 +10,31 @@
     />
 
     <!-- Filters -->
-    <RoleFilters
-      v-model:search="filters.search"
-      v-model:module="filters.module"
-      :module-options="moduleFilterOptions"
-    />
+    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
+      <v-row dense>
+        <v-col cols="12" md="8">
+          <v-text-field
+            v-model="filters.search"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Search by role name or description..."
+            prepend-inner-icon="mdi-magnify"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-select
+            v-model="filters.module"
+            :items="moduleFilterOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Module"
+            prepend-inner-icon="mdi-view-module"
+            clearable
+          />
+        </v-col>
+      </v-row>
+    </CommonFilterSection>
 
     <!-- Statistics -->
     <RoleStats
@@ -58,6 +78,9 @@ const {
   customRolesCount
 } = useRolesPermissions()
 
+// Filter state
+const showFilters = ref(false)
+
 const showEditDialog = ref(false)
 const editingRole = ref<Role | null>(null)
 
@@ -88,6 +111,13 @@ const handleSaveRole = (data: { name: string; description: string; permissions: 
     ? updateRole(editingRole.value.id, data)
     : addRole({ ...data, isSystem: false })
   showEditDialog.value = false
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    module: 'all',
+  }
 }
 </script>
 

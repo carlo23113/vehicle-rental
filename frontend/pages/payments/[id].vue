@@ -108,6 +108,43 @@
       @confirm="confirmRetry"
     />
 
+    <!-- Generate Receipt Dialog -->
+    <v-dialog v-model="showReceiptDialog" max-width="800px" scrollable>
+      <v-card>
+        <v-card-title class="d-flex align-center justify-space-between pa-4">
+          <div class="d-flex align-center">
+            <v-icon class="mr-2">mdi-receipt-text-outline</v-icon>
+            <span class="text-h6">Payment Receipt</span>
+          </div>
+          <div>
+            <v-btn variant="text" @click="downloadReceipt" class="mr-2">
+              <v-icon>mdi-download</v-icon>
+            </v-btn>
+            <v-btn variant="text" @click="showReceiptDialog = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </div>
+        </v-card-title>
+        <v-divider />
+        <v-card-text class="pa-6" id="receipt-preview">
+          <ReceiptTemplate v-if="receiptData" :receipt="receiptData" />
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn variant="text" @click="showReceiptDialog = false"> Close </v-btn>
+          <v-btn
+            color="primary"
+            variant="flat"
+            prepend-icon="mdi-download"
+            @click="downloadReceipt"
+          >
+            Download PDF
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Snackbar -->
     <CommonUiSnackbar v-model="snackbar" />
   </CommonPageContainer>
@@ -118,8 +155,11 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePayments } from '~/composables/usePayments'
 import { usePaymentActions } from '~/composables/usePaymentActions'
+import { useInvoices } from '~/composables/useInvoices'
 import { printReceipt as printReceiptUtil } from '~/utils/receiptPrint'
+import { exportToPDF } from '~/utils/pdfExport'
 import type { Payment } from '~/types/payment'
+import type { Receipt } from '~/types/invoice'
 
 const route = useRoute()
 const router = useRouter()
@@ -155,10 +195,43 @@ const {
   showError,
 } = usePaymentActions()
 
+const { createReceipt } = useInvoices()
+
 // Find payment by ID
 const paymentId = Number(route.params.id)
 const payment = computed((): Payment => {
   return payments.value.find(p => p.id === paymentId) ?? payments.value[0]!
+})
+
+// Receipt generation
+const showReceiptDialog = ref(false)
+const receiptData = computed<Receipt | null>(() => {
+  if (!payment.value || payment.value.status !== 'completed' || !payment.value.paymentDate) return null
+
+  return {
+    id: `R-${payment.value.id}`,
+    receiptNumber: `REC-${String(payment.value.id).padStart(5, '0')}`,
+    paymentId: payment.value.id.toString(),
+    invoiceId: payment.value.rentalId.toString(),
+    rentalId: payment.value.rentalId.toString(),
+    customerId: '1', // Get from payment if available
+    customerName: payment.value.customerName,
+    customerEmail: payment.value.customerEmail || 'customer@example.com',
+    paymentDate: payment.value.paymentDate,
+    paymentMethod: payment.value.paymentMethod,
+    paymentReference: payment.value.transactionId || '',
+    amount: payment.value.amount,
+    currency: 'USD',
+    items: [
+      {
+        description: `Payment for ${payment.value.vehicleName} (${payment.value.licensePlate})`,
+        amount: payment.value.amount,
+      },
+    ],
+    notes: payment.value.notes,
+    createdAt: new Date().toISOString(),
+    createdBy: 'Admin', // Current user
+  }
 })
 
 // Timeline data
@@ -196,21 +269,39 @@ const headerActions = computed(() => {
   const actions = []
 
   if (payment.value.status === 'completed') {
-    actions.push({
-      key: 'print',
-      label: 'Print Receipt',
-      icon: 'mdi-printer',
-      variant: 'outlined' as const,
-      color: 'primary',
-    })
+    actions.push(
+      {
+        key: 'receipt',
+        label: 'Generate Receipt',
+        icon: 'mdi-receipt-text-outline',
+        variant: 'outlined' as const,
+        color: 'success',
+      },
+      {
+        key: 'print',
+        label: 'Print Receipt',
+        icon: 'mdi-printer',
+        variant: 'outlined' as const,
+        color: 'primary',
+      }
+    )
   }
 
   return actions
 })
 
 const handleAction = (key: string) => {
-  if (key === 'print') {
+  if (key === 'receipt') {
+    showReceiptDialog.value = true
+  } else if (key === 'print') {
     printReceipt()
+  }
+}
+
+const downloadReceipt = () => {
+  if (receiptData.value) {
+    exportToPDF('receipt-preview', `receipt-${receiptData.value.receiptNumber}.pdf`)
+    showSuccess('Receipt downloaded successfully')
   }
 }
 

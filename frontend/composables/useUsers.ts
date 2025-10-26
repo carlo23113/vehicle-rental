@@ -14,7 +14,6 @@ export const useUsers = () => {
       status: 'active',
       joinDate: '2022-01-01',
       lastLogin: '2024-10-22',
-      department: 'Management',
       permissions: ['all'],
     },
     {
@@ -28,7 +27,6 @@ export const useUsers = () => {
       status: 'active',
       joinDate: '2022-06-15',
       lastLogin: '2024-10-21',
-      department: 'Operations',
       permissions: ['rentals', 'customers', 'vehicles', 'reports'],
     },
     {
@@ -42,7 +40,6 @@ export const useUsers = () => {
       status: 'active',
       joinDate: '2023-02-20',
       lastLogin: '2024-10-22',
-      department: 'Customer Service',
       permissions: ['rentals', 'customers', 'reservations'],
     },
     {
@@ -56,7 +53,6 @@ export const useUsers = () => {
       status: 'active',
       joinDate: '2023-03-10',
       lastLogin: '2024-10-21',
-      department: 'Maintenance',
       permissions: ['vehicles', 'maintenance'],
     },
     {
@@ -70,7 +66,6 @@ export const useUsers = () => {
       status: 'active',
       joinDate: '2023-05-18',
       lastLogin: '2024-10-22',
-      department: 'Customer Service',
       permissions: ['rentals', 'customers', 'reservations'],
     },
     {
@@ -84,7 +79,6 @@ export const useUsers = () => {
       status: 'active',
       joinDate: '2022-08-01',
       lastLogin: '2024-10-20',
-      department: 'Finance',
       permissions: ['payments', 'reports'],
     },
     {
@@ -98,7 +92,6 @@ export const useUsers = () => {
       status: 'inactive',
       joinDate: '2023-01-15',
       lastLogin: '2024-09-10',
-      department: 'Operations',
       permissions: ['rentals', 'reservations'],
       notes: 'On leave',
     },
@@ -113,7 +106,6 @@ export const useUsers = () => {
       status: 'active',
       joinDate: '2022-11-20',
       lastLogin: '2024-10-22',
-      department: 'Operations',
       permissions: ['rentals', 'customers', 'vehicles', 'maintenance', 'reports'],
     },
   ])
@@ -122,7 +114,6 @@ export const useUsers = () => {
     search: '',
     role: 'all',
     status: 'all',
-    department: 'all',
   })
 
   const filteredUsers = computed(() => {
@@ -132,14 +123,12 @@ export const useUsers = () => {
         !filters.value.search ||
         fullName.includes(filters.value.search.toLowerCase()) ||
         user.email.toLowerCase().includes(filters.value.search.toLowerCase()) ||
-        user.phone.includes(filters.value.search) ||
-        (user.department?.toLowerCase().includes(filters.value.search.toLowerCase()))
+        user.phone.includes(filters.value.search)
 
       const matchesRole = filters.value.role === 'all' || user.role === filters.value.role
       const matchesStatus = filters.value.status === 'all' || user.status === filters.value.status
-      const matchesDepartment = filters.value.department === 'all' || user.department === filters.value.department
 
-      return matchesSearch && matchesRole && matchesStatus && matchesDepartment
+      return matchesSearch && matchesRole && matchesStatus
     })
   })
 

@@ -23,36 +23,25 @@
     </template>
 
     <template #item.contact="{ item }">
-      <div>
-        <div class="text-body-2 font-medium">{{ item.phone }}</div>
-        <div v-if="item.department" class="text-xs text-medium-emphasis mt-1">
-          {{ item.department }}
-        </div>
-      </div>
+      <div class="text-body-2 font-medium">{{ item.phone }}</div>
     </template>
 
     <template #item.role="{ item }">
-      <v-chip
+      <CommonUiTableChip
         :color="getRoleColor(item.role)"
-        size="small"
-        variant="flat"
-        class="role-chip"
-      >
-        <v-icon :icon="getRoleIcon(item.role)" start size="14" />
-        {{ item.role }}
-      </v-chip>
+        :icon="getRoleIcon(item.role)"
+        :label="item.role"
+        chip-class="role-chip"
+      />
     </template>
 
     <template #item.status="{ item }">
-      <v-chip
+      <CommonUiTableChip
         :color="getStatusColor(item.status)"
-        size="small"
-        variant="flat"
-        class="status-chip"
-      >
-        <v-icon :icon="getStatusIcon(item.status)" start size="14" />
-        {{ item.status }}
-      </v-chip>
+        :icon="getStatusIcon(item.status)"
+        :label="item.status"
+        chip-class="status-chip"
+      />
     </template>
 
     <template #item.permissions="{ item }">
@@ -93,33 +82,45 @@
     </template>
 
     <template #item.actions="{ item }">
-      <div class="flex gap-2" @click.stop>
-        <v-btn
-          icon="mdi-eye"
-          size="small"
-          variant="tonal"
-          color="info"
-          class="action-btn"
-          @click="$emit('view', item)"
-        />
-        <v-btn
-          icon="mdi-pencil"
-          size="small"
-          variant="tonal"
-          color="primary"
-          class="action-btn"
-          @click="$emit('edit', item)"
-        />
-        <v-btn
-          icon="mdi-delete"
-          size="small"
-          variant="tonal"
-          color="error"
-          class="action-btn"
-          :disabled="item.role === 'admin'"
-          @click="$emit('delete', item)"
-        />
-      </div>
+      <CommonUiTableActionButtons
+        edit-tooltip="Edit User"
+        :show-delete="false"
+        @view="$emit('view', item)"
+        @edit="$emit('edit', item)"
+      >
+        <template #append>
+          <CommonUiTableActionButton
+            v-if="item.status === 'active'"
+            icon="mdi-account-off"
+            tooltip="Deactivate"
+            color="warning"
+            :disabled="item.role === 'admin'"
+            @click="$emit('deactivate', item)"
+          />
+          <CommonUiTableActionButton
+            v-if="item.status === 'inactive'"
+            icon="mdi-account-check"
+            tooltip="Activate"
+            color="success"
+            @click="$emit('activate', item)"
+          />
+          <CommonUiTableActionButton
+            v-if="item.status !== 'suspended'"
+            icon="mdi-account-cancel"
+            tooltip="Suspend"
+            color="error"
+            :disabled="item.role === 'admin'"
+            @click="$emit('suspend', item)"
+          />
+          <CommonUiTableActionButton
+            v-if="item.status === 'suspended'"
+            icon="mdi-account-reactivate"
+            tooltip="Reactivate"
+            color="success"
+            @click="$emit('activate', item)"
+          />
+        </template>
+      </CommonUiTableActionButtons>
     </template>
   </CommonUiDataTable>
 </template>
@@ -138,7 +139,9 @@ defineProps<{
 defineEmits<{
   view: [user: any]
   edit: [user: any]
-  delete: [user: any]
+  activate: [user: any]
+  deactivate: [user: any]
+  suspend: [user: any]
 }>()
 
 const headers = [
@@ -184,13 +187,5 @@ const getStatusIcon = (status: string) => {
 .permission-chip {
   text-transform: capitalize;
   font-weight: 500;
-}
-
-.action-btn {
-  transition: all 0.2s ease;
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
 }
 </style>

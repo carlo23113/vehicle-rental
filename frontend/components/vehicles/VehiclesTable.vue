@@ -10,11 +10,9 @@
   >
     <template #item.vehicle="{ item }">
       <div class="flex items-center py-3">
-        <div class="vehicle-avatar">
-          <v-icon icon="mdi-car" size="24" color="primary" />
-        </div>
+        <CommonUiIconAvatar icon="mdi-car" :size="40" :icon-size="20" avatar-class="mr-3" />
         <div>
-          <div class="font-bold text-base">{{ item.make }} {{ item.model }}</div>
+          <div class="font-bold">{{ item.make }} {{ item.model }}</div>
           <div class="text-xs text-medium-emphasis">{{ item.year }}</div>
         </div>
       </div>
@@ -34,10 +32,12 @@
     </template>
 
     <template #item.status="{ item }">
-      <v-chip :color="getStatusColor(item.status)" size="small" variant="flat" class="status-chip">
-        <v-icon :icon="getStatusIcon(item.status)" start size="14" />
-        {{ item.status.replace('-', ' ') }}
-      </v-chip>
+      <CommonUiTableChip
+        :color="getStatusColor(item.status)"
+        :icon="getStatusIcon(item.status)"
+        :label="item.status.replace('-', ' ')"
+        chip-class="status-chip"
+      />
     </template>
 
     <template #item.rates="{ item }">
@@ -68,32 +68,12 @@
     </template>
 
     <template #item.actions="{ item }">
-      <div class="flex gap-2" @click.stop>
-        <v-btn
-          icon="mdi-eye"
-          size="small"
-          variant="tonal"
-          color="info"
-          class="action-btn"
-          @click="$emit('view', item)"
-        />
-        <v-btn
-          icon="mdi-pencil"
-          size="small"
-          variant="tonal"
-          color="primary"
-          class="action-btn"
-          @click="$emit('edit', item)"
-        />
-        <v-btn
-          icon="mdi-delete"
-          size="small"
-          variant="tonal"
-          color="error"
-          class="action-btn"
-          @click="$emit('delete', item)"
-        />
-      </div>
+      <CommonUiTableActionButtons
+        edit-tooltip="Edit Vehicle"
+        @view="$emit('view', item)"
+        @edit="$emit('edit', item)"
+        @delete="$emit('delete', item)"
+      />
     </template>
   </CommonUiDataTable>
 </template>
@@ -129,57 +109,28 @@ const headers = [
 ]
 </script>
 
-<style scoped>
-.vehicles-table :deep(tbody tr:hover) .vehicle-avatar {
-  transform: scale(1.05);
+<style scoped lang="scss">
+.vehicles-table :deep(tbody tr:hover) .icon-avatar {
+  @apply scale-105;
   box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.15);
 }
 
-.vehicle-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 0.1) 0%,
-    rgba(var(--v-theme-secondary), 0.1) 100%
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0.75rem;
-  transition: all 0.3s ease;
-}
-
 .license-chip {
-  font-family: 'Courier New', monospace;
-  font-weight: 700;
+  @apply font-mono font-bold;
   border: 2px solid rgba(var(--v-theme-primary), 0.2);
   background: rgba(var(--v-theme-primary), 0.05);
   color: rgb(var(--v-theme-primary));
 }
 
 .status-chip {
-  text-transform: capitalize;
-  font-weight: 600;
+  @apply capitalize font-semibold;
 }
 
 .rates-display {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  @apply flex flex-col gap-1;
 }
 
 .rate-row {
-  display: flex;
-  align-items: center;
-}
-
-.action-btn {
-  transition: all 0.2s ease;
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
+  @apply flex items-center;
 }
 </style>

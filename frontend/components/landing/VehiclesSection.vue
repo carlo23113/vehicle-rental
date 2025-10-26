@@ -6,10 +6,15 @@
         <div class="flex justify-center mb-4">
           <v-chip color="primary" variant="tonal" size="small" class="px-4"> Our Fleet </v-chip>
         </div>
-        <h2 class="text-[clamp(2rem,4vw,3rem)] font-extrabold -tracking-[0.02em] mb-4 md:text-[2rem]">
+        <h2
+          class="text-[clamp(2rem,4vw,3rem)] font-extrabold -tracking-[0.02em] mb-4 md:text-[2rem]"
+        >
           Featured Vehicles
         </h2>
-        <p class="text-[clamp(1rem,2vw,1.25rem)] opacity-70 max-w-[600px] mx-auto" style="color: rgb(var(--v-theme-on-surface))">
+        <p
+          class="text-[clamp(1rem,2vw,1.25rem)] opacity-70 max-w-[600px] mx-auto"
+          style="color: rgb(var(--v-theme-on-surface))"
+        >
           Discover our most popular and premium rentals
         </p>
       </div>
@@ -21,8 +26,11 @@
           v-for="(vehicle, index) in featuredVehicles"
           :key="vehicle.id"
         >
-          <div class="vehicle-card-wrapper fade-in-up" :style="{ animationDelay: `${index * 100}ms` }">
-            <ListingVehicleCard :vehicle="vehicle" @select="goToBrowse" @book="goToBrowse" />
+          <div
+            class="vehicle-card-wrapper fade-in-up"
+            :style="{ animationDelay: `${index * 100}ms` }"
+          >
+            <VehicleCard :vehicle="vehicle" @select="goToBrowse" @book="goToBrowse" />
           </div>
         </v-col>
       </v-row>
@@ -111,7 +119,9 @@ const goToBrowse = () => {
     @apply absolute top-1/2 left-1/2 w-0 h-0 rounded-full;
     background: rgba(255, 255, 255, 0.2);
     transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
+    transition:
+      width 0.6s,
+      height 0.6s;
   }
 
   &:hover::before {

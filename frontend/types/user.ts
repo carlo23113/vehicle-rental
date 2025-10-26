@@ -12,7 +12,6 @@ export interface User {
   status: UserStatus
   joinDate: string
   lastLogin: string
-  department?: string
   permissions: string[]
   notes?: string
 }
@@ -21,5 +20,4 @@ export interface UserFilters {
   search: string
   role: UserRole | 'all'
   status: UserStatus | 'all'
-  department: string
 }

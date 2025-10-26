@@ -11,10 +11,8 @@
   >
     <template #item.vehicle="{ item }">
       <div class="flex items-center py-3">
-        <v-avatar color="surface-variant" size="40" class="vehicle-avatar">
-          <v-icon icon="mdi-car-wrench" size="20" />
-        </v-avatar>
-        <div class="ml-3">
+        <CommonUiIconAvatar icon="mdi-car-wrench" :size="40" :icon-size="20" avatar-class="mr-3" />
+        <div>
           <div class="font-bold text-base">{{ item.vehicleName }}</div>
           <v-chip size="x-small" variant="outlined" class="mt-1 license-chip">
             {{ item.licensePlate }}
@@ -26,9 +24,7 @@
     <template #item.type="{ item }">
       <div>
         <div class="font-semibold text-body-2">{{ getTypeLabel(item.type) }}</div>
-        <div class="text-xs text-medium-emphasis mt-1">
-          {{ item.mileage.toLocaleString() }} mi
-        </div>
+        <div class="text-xs text-medium-emphasis mt-1">{{ item.mileage.toLocaleString() }} mi</div>
       </div>
     </template>
 
@@ -51,27 +47,21 @@
     </template>
 
     <template #item.status="{ item }">
-      <v-chip
+      <CommonUiTableChip
         :color="getStatusColor(item.status)"
-        size="small"
-        variant="flat"
-        class="status-chip"
-      >
-        <v-icon :icon="getStatusIcon(item.status)" start size="14" />
-        {{ item.status }}
-      </v-chip>
+        :icon="getStatusIcon(item.status)"
+        :label="item.status"
+        chip-class="status-chip"
+      />
     </template>
 
     <template #item.priority="{ item }">
-      <v-chip
+      <CommonUiTableChip
         :color="getPriorityColor(item.priority)"
-        size="small"
-        variant="flat"
-        class="priority-chip"
-      >
-        <v-icon :icon="getPriorityIcon(item.priority)" start size="14" />
-        {{ item.priority }}
-      </v-chip>
+        :icon="getPriorityIcon(item.priority)"
+        :label="item.priority"
+        chip-class="priority-chip"
+      />
     </template>
 
     <template #item.cost="{ item }">
@@ -81,53 +71,21 @@
     </template>
 
     <template #item.actions="{ item }">
-      <div class="flex gap-2" @click.stop>
-        <v-btn
-          v-if="item.status === 'scheduled' || item.status === 'in-progress'"
-          icon="mdi-check"
-          size="small"
-          variant="tonal"
-          color="success"
-          class="action-btn"
-          @click="$emit('complete', item)"
-        >
-          <v-icon>mdi-check</v-icon>
-          <v-tooltip activator="parent" location="top">Mark Complete</v-tooltip>
-        </v-btn>
-        <v-btn
-          icon="mdi-eye"
-          size="small"
-          variant="tonal"
-          color="info"
-          class="action-btn"
-          @click="$emit('view', item)"
-        >
-          <v-icon>mdi-eye</v-icon>
-          <v-tooltip activator="parent" location="top">View Details</v-tooltip>
-        </v-btn>
-        <v-btn
-          icon="mdi-pencil"
-          size="small"
-          variant="tonal"
-          color="primary"
-          class="action-btn"
-          @click="$emit('edit', item)"
-        >
-          <v-icon>mdi-pencil</v-icon>
-          <v-tooltip activator="parent" location="top">Edit</v-tooltip>
-        </v-btn>
-        <v-btn
-          icon="mdi-delete"
-          size="small"
-          variant="tonal"
-          color="error"
-          class="action-btn"
-          @click="$emit('delete', item)"
-        >
-          <v-icon>mdi-delete</v-icon>
-          <v-tooltip activator="parent" location="top">Delete</v-tooltip>
-        </v-btn>
-      </div>
+      <CommonUiTableActionButtons
+        @view="$emit('view', item)"
+        @edit="$emit('edit', item)"
+        @delete="$emit('delete', item)"
+      >
+        <template #prepend>
+          <CommonUiTableActionButton
+            v-if="item.status === 'scheduled' || item.status === 'in-progress'"
+            icon="mdi-check"
+            tooltip="Mark Complete"
+            color="success"
+            @click="$emit('complete', item)"
+          />
+        </template>
+      </CommonUiTableActionButtons>
     </template>
   </CommonUiDataTable>
 </template>
@@ -191,51 +149,34 @@ const getPriorityIcon = (priority: string) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .maintenance-table :deep(tbody tr) {
-  cursor: pointer;
+  @apply cursor-pointer;
 }
 
-.maintenance-table :deep(tbody tr:hover) .vehicle-avatar {
-  transform: scale(1.05);
+.maintenance-table :deep(tbody tr:hover) .icon-avatar {
+  @apply scale-105;
   box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.15);
 }
 
-.vehicle-avatar {
-  transition: all 0.3s ease;
-}
-
 .license-chip {
-  font-family: 'Courier New', monospace;
-  font-weight: 700;
+  @apply font-mono font-bold;
   border: 1.5px solid rgba(var(--v-theme-on-surface), 0.2);
 }
 
 .status-chip {
-  text-transform: capitalize;
-  font-weight: 600;
+  @apply capitalize font-semibold;
 }
 
 .priority-chip {
-  text-transform: capitalize;
-  font-weight: 600;
+  @apply capitalize font-semibold;
 }
 
 .description-cell {
-  max-width: 300px;
+  @apply max-w-xs;
 }
 
 .amount-display {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-
-.action-btn {
-  transition: all 0.2s ease;
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
+  @apply flex flex-col gap-0.5;
 }
 </style>

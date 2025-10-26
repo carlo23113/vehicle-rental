@@ -20,9 +20,7 @@
             <template #item="{ props: itemProps, item }">
               <v-list-item v-bind="itemProps">
                 <template #prepend>
-                  <v-avatar size="40" class="vehicle-avatar">
-                    <v-icon icon="mdi-car" size="20" />
-                  </v-avatar>
+                  <CommonUiIconAvatar icon="mdi-car" :size="40" :icon-size="20" />
                 </template>
                 <template #subtitle>
                   <span class="text-xs">{{ item.raw.subtitle }}</span>
@@ -331,12 +329,3 @@ const handleVehicleChange = (vehicleId: number) => {
 }
 </script>
 
-<style scoped>
-.vehicle-avatar {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 0.1),
-    rgba(var(--v-theme-secondary), 0.1)
-  );
-}
-</style>

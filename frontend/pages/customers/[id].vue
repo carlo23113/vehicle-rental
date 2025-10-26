@@ -73,6 +73,19 @@
             :format-date="formatDate"
             class="mb-6"
           />
+
+          <!-- Documents Section -->
+          <DocumentList
+            :documents="customerDocuments"
+            :can-upload="true"
+            :can-verify="true"
+            :can-delete="true"
+            class="mb-6"
+            @upload="handleDocumentUpload"
+            @verify="handleDocumentVerify"
+            @reject="handleDocumentReject"
+            @delete="handleDocumentDelete"
+          />
         </v-col>
 
         <!-- Right Column: Stats -->
@@ -91,13 +104,7 @@
               >
                 Create Rental
               </v-btn>
-              <v-btn
-                variant="tonal"
-                color="info"
-                block
-                prepend-icon="mdi-email"
-                @click="sendEmail"
-              >
+              <v-btn variant="tonal" color="info" block prepend-icon="mdi-email" @click="sendEmail">
                 Send Email
               </v-btn>
               <v-btn
@@ -131,9 +138,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCustomerDetails } from '~/composables/useCustomerDetails'
+import { useDocuments } from '~/composables/useDocuments'
+import type { DocumentType, Document } from '~/types/document'
 
 definePageMeta({
   layout: 'default',
@@ -162,6 +171,19 @@ const {
   isLicenseExpired,
   isLicenseExpiringSoon,
 } = useCustomerDetails(customerId)
+
+// Documents functionality
+const {
+  uploadDocument,
+  verifyDocument,
+  rejectDocument,
+  deleteDocument: removeDocument,
+  getDocumentsByCustomer,
+} = useDocuments()
+
+const customerDocuments = computed(() => getDocumentsByCustomer(customerId))
+const showDocumentUploadDialog = ref(false)
+const selectedDocumentType = ref<DocumentType | null>(null)
 
 const headerActions = [
   {
@@ -201,6 +223,54 @@ const sendEmail = () => {
 const callCustomer = () => {
   if (customer.value) {
     window.location.href = `tel:${customer.value.phone}`
+  }
+}
+
+// Document handlers
+const handleDocumentUpload = (type: DocumentType) => {
+  selectedDocumentType.value = type
+  showDocumentUploadDialog.value = true
+}
+
+const handleDocumentVerify = async (document: Document) => {
+  const success = await verifyDocument(
+    document.id,
+    'Current User',
+    'Document verified successfully'
+  )
+  if (success) {
+    snackbar.value = {
+      show: true,
+      message: 'Document verified successfully',
+      color: 'success',
+    }
+  }
+}
+
+const handleDocumentReject = async (document: Document) => {
+  const reason = prompt('Please provide a reason for rejection:')
+  if (reason) {
+    const success = await rejectDocument(document.id, 'Current User', reason)
+    if (success) {
+      snackbar.value = {
+        show: true,
+        message: 'Document rejected',
+        color: 'warning',
+      }
+    }
+  }
+}
+
+const handleDocumentDelete = async (document: Document) => {
+  if (confirm(`Are you sure you want to delete "${document.name}"?`)) {
+    const success = await removeDocument(document.id)
+    if (success) {
+      snackbar.value = {
+        show: true,
+        message: 'Document deleted successfully',
+        color: 'success',
+      }
+    }
   }
 }
 

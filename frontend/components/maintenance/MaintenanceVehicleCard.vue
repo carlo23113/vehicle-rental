@@ -1,9 +1,7 @@
 <template>
   <CommonUiDetailCard title="Vehicle Information" icon="mdi-car">
     <div class="vehicle-header">
-      <v-avatar color="surface-variant" size="64" class="vehicle-avatar">
-        <v-icon icon="mdi-car-wrench" size="32" />
-      </v-avatar>
+      <CommonUiIconAvatar icon="mdi-car-wrench" :size="64" :icon-size="32" color="surface-variant" />
       <div class="vehicle-details">
         <h3 class="vehicle-name">{{ maintenance.vehicleName }}</h3>
         <v-chip size="small" variant="outlined" class="license-chip">
@@ -43,10 +41,6 @@ defineProps<{
   @apply flex items-center gap-4;
 }
 
-.vehicle-avatar {
-  @apply transition-all duration-300;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
 
 .vehicle-details {
   @apply flex flex-col gap-2;

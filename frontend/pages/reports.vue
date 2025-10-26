@@ -9,17 +9,43 @@
     />
 
     <!-- Filters -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <ReportsFilters
-          :filters="filters"
-          :period-options="PERIOD_OPTIONS"
-          @update:period="val => (filters.period = val as any)"
-          @update:start-date="val => (filters.startDate = val)"
-          @update:end-date="val => (filters.endDate = val)"
-        />
-      </v-col>
-    </v-row>
+    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
+      <v-row dense>
+        <v-col cols="12" md="4">
+          <v-select
+            v-model="filters.period"
+            :items="PERIOD_OPTIONS"
+            variant="outlined"
+            density="comfortable"
+            label="Period"
+            prepend-inner-icon="mdi-calendar"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-text-field
+            v-model="filters.startDate"
+            type="date"
+            variant="outlined"
+            density="comfortable"
+            label="Start Date"
+            prepend-inner-icon="mdi-calendar-start"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-text-field
+            v-model="filters.endDate"
+            type="date"
+            variant="outlined"
+            density="comfortable"
+            label="End Date"
+            prepend-inner-icon="mdi-calendar-end"
+            clearable
+          />
+        </v-col>
+      </v-row>
+    </CommonFilterSection>
 
     <!-- Statistics Cards -->
     <v-row class="mb-6">
@@ -163,6 +189,9 @@ const {
   getPaymentStatusColor,
 } = useReportHelpers()
 
+// Filter state
+const showFilters = ref(false)
+
 // Export functionality
 const showExportDialog = ref(false)
 const exporting = ref(false)
@@ -262,4 +291,12 @@ const topCustomersItems = computed(() =>
 )
 
 const revenueChartConfig = computed(() => getRevenueChartConfig(filters.value.period))
+
+const clearFilters = () => {
+  filters.value = {
+    period: 'month',
+    startDate: '',
+    endDate: '',
+  }
+}
 </script>

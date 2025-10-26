@@ -61,12 +61,7 @@
 
       <!-- Skeleton loaders while loading -->
       <template v-else>
-        <v-skeleton-loader
-          v-for="i in 5"
-          :key="i"
-          type="list-item"
-          class="mb-1"
-        />
+        <v-skeleton-loader v-for="i in 5" :key="i" type="list-item" class="mb-1" />
       </template>
     </v-list>
 
@@ -161,6 +156,14 @@ const navigationItems = [
     badgeColor: 'warning',
   },
   {
+    title: 'Documents',
+    icon: 'mdi-file-document-multiple',
+    value: 'documents',
+    to: '/documents',
+    badge: '5',
+    badgeColor: 'warning',
+  },
+  {
     title: 'Reports',
     icon: 'mdi-chart-line',
     value: 'reports',
@@ -171,6 +174,14 @@ const navigationItems = [
     icon: 'mdi-credit-card-outline',
     value: 'payments',
     to: '/payments',
+  },
+  {
+    title: 'Invoices',
+    icon: 'mdi-file-document-outline',
+    value: 'invoices',
+    to: '/invoices',
+    badge: '3',
+    badgeColor: 'info',
   },
   {
     title: 'Users',

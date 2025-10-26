@@ -10,8 +10,8 @@
   >
     <template #item.customer="{ item }">
       <div class="flex items-center py-3">
-        <v-avatar color="primary" size="40" class="customer-avatar">
-          <span class="text-subtitle-2 font-bold">
+        <v-avatar color="primary" size="40">
+          <span class="font-bold">
             {{ getInitials(item.customerName) }}
           </span>
         </v-avatar>
@@ -34,9 +34,7 @@
     <template #item.period="{ item }">
       <div>
         <div class="text-body-2 font-medium">{{ formatDate(item.startDate) }}</div>
-        <div class="text-xs text-medium-emphasis">
-          to {{ formatDate(item.endDate) }}
-        </div>
+        <div class="text-xs text-medium-emphasis">to {{ formatDate(item.endDate) }}</div>
         <v-chip size="x-small" variant="tonal" color="primary" class="mt-1 duration-chip">
           <v-icon icon="mdi-calendar" start size="12" />
           {{ item.numberOfDays }} days
@@ -46,25 +44,22 @@
 
     <template #item.status="{ item }">
       <div class="status-container">
-        <v-chip
+        <CommonUiTableChip
           :color="getStatusColor(item.status)"
-          size="small"
-          variant="flat"
-          class="status-chip"
-        >
-          <v-icon :icon="getStatusIcon(item.status)" start size="14" />
-          {{ item.status }}
-        </v-chip>
-        <v-chip
+          :icon="getStatusIcon(item.status)"
+          :label="item.status"
+          chip-class="status-chip"
+        />
+        <CommonUiTableChip
           v-if="item.paymentStatus"
           :color="getPaymentStatusColor(item.paymentStatus)"
+          icon="mdi-cash"
+          :icon-size="12"
+          :label="item.paymentStatus"
           size="x-small"
           variant="tonal"
-          class="payment-chip"
-        >
-          <v-icon icon="mdi-cash" start size="12" />
-          {{ item.paymentStatus }}
-        </v-chip>
+          chip-class="payment-chip"
+        />
       </div>
     </template>
 
@@ -76,32 +71,12 @@
     </template>
 
     <template #item.actions="{ item }">
-      <div class="flex gap-2" @click.stop>
-        <v-btn
-          icon="mdi-eye"
-          size="small"
-          variant="tonal"
-          color="info"
-          class="action-btn"
-          @click="$emit('view', item)"
-        />
-        <v-btn
-          icon="mdi-pencil"
-          size="small"
-          variant="tonal"
-          color="primary"
-          class="action-btn"
-          @click="$emit('edit', item)"
-        />
-        <v-btn
-          icon="mdi-delete"
-          size="small"
-          variant="tonal"
-          color="error"
-          class="action-btn"
-          @click="$emit('delete', item)"
-        />
-      </div>
+      <CommonUiTableActionButtons
+        edit-tooltip="Edit Rental"
+        @view="$emit('view', item)"
+        @edit="$emit('edit', item)"
+        @delete="$emit('delete', item)"
+      />
     </template>
   </CommonUiDataTable>
 </template>
@@ -152,55 +127,29 @@ const getStatusIcon = (status: string) => {
 }
 </script>
 
-<style scoped>
-.rentals-table :deep(tbody tr:hover) .customer-avatar {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.15);
-}
-
-.customer-avatar {
-  transition: all 0.3s ease;
-}
-
+<style scoped lang="scss">
 .license-chip {
-  font-family: 'Courier New', monospace;
-  font-weight: 700;
+  @apply font-mono font-bold;
   border: 1.5px solid rgba(var(--v-theme-on-surface), 0.2);
 }
 
 .duration-chip {
-  font-weight: 600;
+  @apply font-semibold;
 }
 
 .status-chip {
-  text-transform: capitalize;
-  font-weight: 600;
+  @apply capitalize font-semibold;
 }
 
 .payment-chip {
-  text-transform: capitalize;
-  font-weight: 600;
+  @apply capitalize font-semibold;
 }
 
 .status-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  align-items: flex-start;
-  width: fit-content;
+  @apply flex flex-col gap-1 items-start w-fit;
 }
 
 .amount-display {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-
-.action-btn {
-  transition: all 0.2s ease;
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
+  @apply flex flex-col gap-0.5;
 }
 </style>

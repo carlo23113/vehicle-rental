@@ -8,18 +8,42 @@
       @action-click="$router.push('/vehicles/add')"
     />
 
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <VehicleFilters
-          :filters="filters"
-          :status-options="statusOptions"
-          :type-options="typeOptions"
-          @update:search="(val: string) => (filters.search = val)"
-          @update:status="(val: any) => (filters.status = val)"
-          @update:type="(val: any) => (filters.type = val)"
-        />
-      </v-col>
-    </v-row>
+    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
+      <v-row dense>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="filters.search"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Search by make, model, or license plate..."
+            prepend-inner-icon="mdi-magnify"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+          <v-select
+            v-model="filters.status"
+            :items="statusOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Status"
+            prepend-inner-icon="mdi-car-info"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+          <v-select
+            v-model="filters.type"
+            :items="typeOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Type"
+            prepend-inner-icon="mdi-car-side"
+            clearable
+          />
+        </v-col>
+      </v-row>
+    </CommonFilterSection>
 
     <v-row>
       <v-col cols="12">
@@ -61,6 +85,9 @@ import { useSnackbar } from '~/composables/useSnackbar'
 const router = useRouter()
 const { filters, filteredVehicles, getStatusColor, getTypeLabel, vehicles } = useVehicles()
 const { snackbar, showSuccess, showError } = useSnackbar()
+
+// Filter state
+const showFilters = ref(false)
 
 const showDeleteDialog = ref(false)
 const vehicleToDelete = ref<any>(null)
@@ -130,5 +157,13 @@ const deleteVehicle = async () => {
 
 const handleCancelDelete = () => {
   vehicleToDelete.value = null
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    status: 'all',
+    type: 'all',
+  }
 }
 </script>

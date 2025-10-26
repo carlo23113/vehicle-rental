@@ -29,16 +29,22 @@
         <v-window-item value="editor">
           <v-form ref="formRef">
             <div class="flex flex-col gap-6">
-              <CompanyInfoSection v-model="form" />
-
               <EditorSection
-                v-model="form.termsAndConditions"
-                title="Terms and Conditions"
-                subtitle="Use the rich text editor to format your terms"
+                v-model="form.fullContractTemplate"
+                title="Full Contract Template"
+                subtitle="Customize the entire contract with dynamic variables. Use {{VARIABLE_NAME}} format for placeholders."
                 icon="mdi-file-document-edit"
-                placeholder="Enter your terms and conditions here..."
+                placeholder="Enter your complete contract template here..."
               >
                 <template #actions>
+                  <v-btn
+                    size="small"
+                    variant="text"
+                    prepend-icon="mdi-variable"
+                    @click="showVariables = true"
+                  >
+                    Variables
+                  </v-btn>
                   <v-btn
                     size="small"
                     variant="text"
@@ -49,14 +55,6 @@
                   </v-btn>
                 </template>
               </EditorSection>
-
-              <EditorSection
-                v-model="form.additionalClauses"
-                title="Additional Clauses"
-                subtitle="Add disclaimers, special conditions, or legal notes"
-                icon="mdi-text-box-plus-outline"
-                placeholder="Enter additional clauses or disclaimers..."
-              />
             </div>
           </v-form>
         </v-window-item>
@@ -69,6 +67,7 @@
     </div>
 
     <!-- Dialogs -->
+    <VariablesDialog v-model="showVariables" />
     <HelpDialog v-model="showHelp" />
     <ContractDialog v-model="showPreview" @print="handlePrint">
       <RentalContract :rental="mockRental" />
@@ -80,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useContractTemplate } from '~/composables/useContractTemplate'
 import {
   useContractEditorMock,
@@ -93,6 +92,7 @@ const formRef = ref()
 const saving = ref(false)
 const showPreview = ref(false)
 const showHelp = ref(false)
+const showVariables = ref(false)
 
 const { contractTemplate, saveTemplate, loadTemplate, resetTemplate, defaultTemplate } =
   useContractTemplate()
@@ -157,8 +157,25 @@ const handlePrint = () => {
   printContract({ title: 'Contract Template Preview' })
 }
 
-onMounted(() => {
+onMounted(async () => {
+  console.log('1. Before loadTemplate:', contractTemplate.value.fullContractTemplate?.substring(0, 100))
+
   loadTemplate()
+
+  console.log('2. After loadTemplate:', contractTemplate.value.fullContractTemplate?.substring(0, 100))
+
+  // Wait for next tick to ensure template is loaded
+  await nextTick()
+
+  console.log('3. Before resetForm:', form.value.fullContractTemplate?.substring(0, 100))
+
   resetForm(contractTemplate.value)
+
+  console.log('4. After resetForm:', form.value.fullContractTemplate?.substring(0, 100))
+  console.log('5. Contract template loaded:', {
+    hasFullTemplate: !!contractTemplate.value.fullContractTemplate,
+    templateLength: contractTemplate.value.fullContractTemplate?.length || 0,
+    formTemplateLength: form.value.fullContractTemplate?.length || 0
+  })
 })
 </script>

@@ -10,16 +10,31 @@
     />
 
     <!-- Filters -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <CustomerFilters
-          :filters="filters"
-          :status-options="statusOptions"
-          @update:search="(val: string) => filters.search = val"
-          @update:status="(val: any) => filters.status = val"
-        />
-      </v-col>
-    </v-row>
+    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
+      <v-row dense>
+        <v-col cols="12" md="8">
+          <v-text-field
+            v-model="filters.search"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Search by name, email, phone, or license..."
+            prepend-inner-icon="mdi-magnify"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-select
+            v-model="filters.status"
+            :items="statusOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Status"
+            prepend-inner-icon="mdi-account-check"
+            clearable
+          />
+        </v-col>
+      </v-row>
+    </CommonFilterSection>
 
     <!-- Statistics Cards -->
     <v-row class="mb-6">
@@ -82,6 +97,9 @@ const {
   getInitials,
   formatDate,
 } = useCustomers()
+
+// Filter state
+const showFilters = ref(false)
 
 const showDeleteDialog = ref(false)
 const customerToDelete = ref<any>(null)
@@ -165,5 +183,12 @@ const handleDelete = async () => {
 
 const handleCancelDelete = () => {
   customerToDelete.value = null
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    status: 'all',
+  }
 }
 </script>

@@ -10,7 +10,7 @@
   >
     <template #item.customer="{ item }">
       <div class="flex items-center py-3">
-        <v-avatar color="primary" size="40" class="customer-avatar">
+        <v-avatar color="primary" size="40">
           <span class="text-subtitle-2 font-bold">
             {{ getInitials(item.customerName) }}
           </span>
@@ -48,15 +48,12 @@
     </template>
 
     <template #item.status="{ item }">
-      <v-chip
+      <CommonUiTableChip
         :color="getStatusColor(item.status)"
-        size="small"
-        variant="flat"
-        class="status-chip"
-      >
-        <v-icon :icon="getStatusIcon(item.status)" start size="14" />
-        {{ item.status }}
-      </v-chip>
+        :icon="getStatusIcon(item.status)"
+        :label="item.status"
+        chip-class="status-chip"
+      />
     </template>
 
     <template #item.date="{ item }">
@@ -64,9 +61,7 @@
         <div v-if="item.paymentDate" class="text-body-2 font-medium">
           {{ formatDate(item.paymentDate) }}
         </div>
-        <div class="text-xs text-medium-emphasis mt-1">
-          Due: {{ formatDate(item.dueDate) }}
-        </div>
+        <div class="text-xs text-medium-emphasis mt-1">Due: {{ formatDate(item.dueDate) }}</div>
         <v-chip v-if="item.refundDate" size="x-small" variant="tonal" color="info" class="mt-1">
           <v-icon icon="mdi-keyboard-return" start size="12" />
           {{ formatDate(item.refundDate) }}
@@ -75,54 +70,36 @@
     </template>
 
     <template #item.actions="{ item }">
-      <div class="flex gap-2" @click.stop>
-        <v-btn
-          v-if="item.status === 'pending'"
-          icon="mdi-credit-card-check"
-          size="small"
-          variant="tonal"
-          color="success"
-          class="action-btn"
-          @click="$emit('process', item)"
-        >
-          <v-icon>mdi-credit-card-check</v-icon>
-          <v-tooltip activator="parent" location="top">Process Payment</v-tooltip>
-        </v-btn>
-        <v-btn
-          v-if="item.status === 'completed'"
-          icon="mdi-keyboard-return"
-          size="small"
-          variant="tonal"
-          color="warning"
-          class="action-btn"
-          @click="$emit('refund', item)"
-        >
-          <v-icon>mdi-keyboard-return</v-icon>
-          <v-tooltip activator="parent" location="top">Refund</v-tooltip>
-        </v-btn>
-        <v-btn
-          icon="mdi-eye"
-          size="small"
-          variant="tonal"
-          color="info"
-          class="action-btn"
-          @click="$emit('view', item)"
-        >
-          <v-icon>mdi-eye</v-icon>
-          <v-tooltip activator="parent" location="top">View Details</v-tooltip>
-        </v-btn>
-        <v-btn
-          icon="mdi-printer"
-          size="small"
-          variant="tonal"
-          color="primary"
-          class="action-btn"
-          @click="$emit('print', item)"
-        >
-          <v-icon>mdi-printer</v-icon>
-          <v-tooltip activator="parent" location="top">Print Receipt</v-tooltip>
-        </v-btn>
-      </div>
+      <CommonUiTableActionButtons
+        :show-edit="false"
+        :show-delete="false"
+        @view="$emit('view', item)"
+      >
+        <template #prepend>
+          <CommonUiTableActionButton
+            v-if="item.status === 'pending'"
+            icon="mdi-credit-card-check"
+            tooltip="Process Payment"
+            color="success"
+            @click="$emit('process', item)"
+          />
+          <CommonUiTableActionButton
+            v-if="item.status === 'completed'"
+            icon="mdi-keyboard-return"
+            tooltip="Refund"
+            color="warning"
+            @click="$emit('refund', item)"
+          />
+        </template>
+        <template #append>
+          <CommonUiTableActionButton
+            icon="mdi-printer"
+            tooltip="Print Receipt"
+            color="primary"
+            @click="$emit('print', item)"
+          />
+        </template>
+      </CommonUiTableActionButtons>
     </template>
   </CommonUiDataTable>
 </template>
@@ -174,37 +151,16 @@ const getStatusIcon = (status: string) => {
 </script>
 
 <style scoped>
-.payments-table :deep(tbody tr:hover) .customer-avatar {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.15);
-}
-
-.customer-avatar {
-  transition: all 0.3s ease;
-}
-
 .license-chip {
-  font-family: 'Courier New', monospace;
-  font-weight: 700;
+  @apply font-mono font-bold;
   border: 1.5px solid rgba(var(--v-theme-on-surface), 0.2);
 }
 
 .status-chip {
-  text-transform: capitalize;
-  font-weight: 600;
+  @apply capitalize font-semibold;
 }
 
 .amount-display {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-
-.action-btn {
-  transition: all 0.2s ease;
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
+  @apply flex flex-col gap-[0.125rem];
 }
 </style>

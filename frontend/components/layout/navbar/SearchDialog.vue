@@ -8,7 +8,7 @@
             ref="searchInput"
             v-model="query"
             type="text"
-            placeholder="Search for vehicles, rentals, customers..."
+            placeholder="Search for vehicles, rentals, customers, invoices..."
             class="search-input"
             @input="handleInput"
           />
@@ -176,7 +176,9 @@ const searchData = ref({
     { id: 2, title: 'Vehicles', subtitle: 'Manage vehicles', icon: 'mdi-car-multiple', color: 'success', route: '/vehicles' },
     { id: 3, title: 'Rentals', subtitle: 'Manage rentals', icon: 'mdi-file-document-multiple', color: 'info', route: '/rentals' },
     { id: 4, title: 'Customers', subtitle: 'Manage customers', icon: 'mdi-account-group', color: 'warning', route: '/customers' },
-    { id: 5, title: 'Reports', subtitle: 'Financial reports', icon: 'mdi-chart-box', color: 'secondary', route: '/reports' },
+    { id: 5, title: 'Documents', subtitle: 'Manage documents', icon: 'mdi-file-document-multiple', color: 'warning', route: '/documents' },
+    { id: 6, title: 'Invoices', subtitle: 'Manage invoices & receipts', icon: 'mdi-file-document-outline', color: 'info', route: '/invoices' },
+    { id: 7, title: 'Reports', subtitle: 'Financial reports', icon: 'mdi-chart-box', color: 'secondary', route: '/reports' },
   ],
 })
 

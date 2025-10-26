@@ -10,22 +10,53 @@
     />
 
     <!-- Filters -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <MaintenanceFilters
-          :filters="filters"
-          :type-options="typeOptions"
-          :status-options="statusOptions"
-          :priority-options="priorityOptions"
-          @update:search="(val: string) => (filters.search = val)"
-          @update:type="(val: string) => (filters.type = val as MaintenanceType | 'all')"
-          @update:status="(val: string) => (filters.status = val as MaintenanceStatus | 'all')"
-          @update:priority="
-            (val: string) => (filters.priority = val as MaintenancePriority | 'all')
-          "
-        />
-      </v-col>
-    </v-row>
+    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
+      <v-row dense>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="filters.search"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Search by vehicle or description..."
+            prepend-inner-icon="mdi-magnify"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="4" md="2">
+          <v-select
+            v-model="filters.type"
+            :items="typeOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Type"
+            prepend-inner-icon="mdi-wrench"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="4" md="2">
+          <v-select
+            v-model="filters.status"
+            :items="statusOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Status"
+            prepend-inner-icon="mdi-check-circle"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="4" md="2">
+          <v-select
+            v-model="filters.priority"
+            :items="priorityOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Priority"
+            prepend-inner-icon="mdi-alert"
+            clearable
+          />
+        </v-col>
+      </v-row>
+    </CommonFilterSection>
 
     <!-- Statistics Cards -->
     <v-row class="mb-6">
@@ -106,6 +137,9 @@ const {
   getTypeLabel,
   formatDate,
 } = useMaintenance()
+
+// Filter state
+const showFilters = ref(false)
 
 // Optimized stats - compute once instead of filtering multiple times
 const stats = computed(() => {
@@ -276,6 +310,15 @@ const handleDelete = async () => {
     }
   } finally {
     deleting.value = false
+  }
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    type: 'all',
+    status: 'all',
+    priority: 'all',
   }
 }
 </script>

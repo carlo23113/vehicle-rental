@@ -10,18 +10,42 @@
     />
 
     <!-- Filters -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <LocationFilters
-          :filters="filters"
-          :status-options="statusOptions"
-          :type-options="typeOptions"
-          @update:search="(val: string) => filters.search = val"
-          @update:status="(val: any) => filters.status = val"
-          @update:type="(val: any) => filters.type = val"
-        />
-      </v-col>
-    </v-row>
+    <CommonFilterSection v-model="showFilters" :filters="filters" @clear="clearFilters">
+      <v-row dense>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="filters.search"
+            variant="outlined"
+            density="comfortable"
+            placeholder="Search by name, city, or address..."
+            prepend-inner-icon="mdi-magnify"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+          <v-select
+            v-model="filters.status"
+            :items="statusOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Status"
+            prepend-inner-icon="mdi-check-circle"
+            clearable
+          />
+        </v-col>
+        <v-col cols="12" sm="6" md="3">
+          <v-select
+            v-model="filters.type"
+            :items="typeOptions"
+            variant="outlined"
+            density="comfortable"
+            label="Type"
+            prepend-inner-icon="mdi-office-building"
+            clearable
+          />
+        </v-col>
+      </v-row>
+    </CommonFilterSection>
 
     <!-- Statistics Cards -->
     <v-row class="mb-6">
@@ -77,6 +101,9 @@ const {
   deleteLocation,
   getStatusColor,
 } = useLocations()
+
+// Filter state
+const showFilters = ref(false)
 
 const showDeleteDialog = ref(false)
 const locationToDelete = ref<Location | null>(null)
@@ -164,5 +191,13 @@ const handleDelete = async () => {
 
 const handleCancelDelete = () => {
   locationToDelete.value = null
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    status: 'all',
+    type: 'all',
+  }
 }
 </script>
