@@ -1,26 +1,24 @@
 <template>
-  <CommonPageContainer>
-    <!-- Header - Critical content (always visible) -->
-    <CommonPageHeader
-      title="Vehicles"
-      subtitle="Manage your fleet inventory"
-      action-text="Add Vehicle"
-      action-icon="mdi-plus"
-      @action-click="handleAddVehicle"
-    />
+  <CommonPageLayout
+    title="Vehicles"
+    subtitle="Manage your fleet inventory"
+    action-text="Add Vehicle"
+    action-icon="mdi-plus"
+    @action-click="handleAddVehicle"
+  >
+    <!-- Filters Slot -->
+    <template #filters="{ showFilters: isFilterVisible, sectionsLoaded: sections }">
+      <LazyVehiclesFilters
+        v-if="isFilterVisible || sections.content"
+        v-model:show-filters="showFilters"
+        v-model:filters="filters"
+        @clear="clearFilters"
+      />
+    </template>
 
-    <!-- Filters - Code-split lazy loaded component -->
-    <LazyVehiclesFilters
-      v-if="showFilters || isTableVisible"
-      v-model:show-filters="showFilters"
-      v-model:filters="filters"
-      @clear="clearFilters"
-    />
-
-    <!-- Vehicles Table - Code-split with progressive loading -->
-    <div ref="tableSection">
+    <!-- Main Content Slot -->
+    <template #content>
       <LazyVehiclesTableSection
-        v-if="isTableVisible"
         :vehicles="displayedItems"
         :is-loading-more="isLoadingMore"
         :get-status-color="getStatusColor"
@@ -30,25 +28,29 @@
         @delete="handleDeleteVehicle"
         @row-click="handleViewVehicle"
       />
-      <VehiclesTableSkeleton v-else />
-    </div>
+    </template>
 
-    <!-- Delete Dialog - Code-split lazy loaded -->
-    <LazyVehiclesDeleteDialog
-      v-if="showDeleteDialog"
-      v-model="showDeleteDialog"
-      :vehicle="vehicleToDelete"
-      :deleting="deleting"
-      @confirm="deleteVehicle"
-      @cancel="handleCancelDelete"
-    />
+    <!-- Dialogs Slot -->
+    <template #dialogs>
+      <LazyVehiclesDeleteDialog
+        v-if="showDeleteDialog"
+        v-model="showDeleteDialog"
+        :vehicle="vehicleToDelete"
+        :deleting="deleting"
+        @confirm="deleteVehicle"
+        @cancel="handleCancelDelete"
+      />
+    </template>
 
-    <CommonUiSnackbar v-model="snackbar" />
-  </CommonPageContainer>
+    <!-- Snackbar Slot -->
+    <template #snackbar>
+      <CommonUiSnackbar v-model="snackbar" />
+    </template>
+  </CommonPageLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVehicles } from '~/composables/useVehicles'
 import { useSnackbar } from '~/composables/useSnackbar'
@@ -63,34 +65,16 @@ const { snackbar, showSuccess, showError } = useSnackbar()
 
 // Progressive table loading (DRY - reusing composable from rentals)
 const {
-  tableSection,
-  sectionsLoaded,
   displayedItems,
   isLoadingMore,
   updateDisplayedItems,
 } = useProgressiveTable(filteredVehicles, { batchSize: 20 })
 
-// Use table visibility from sections loaded
-const isTableVisible = ref(false)
-
-// Watch for section loading
-watch(() => sectionsLoaded.value.table, (loaded) => {
-  isTableVisible.value = loaded
-})
-
 // Debounced filters (DRY - reusing composable from rentals)
 const { watchImmediateFilters } = useDebouncedFilters(filters, {
   searchDebounce: 300,
-  onSearchChange: () => {
-    if (isTableVisible.value) {
-      updateDisplayedItems()
-    }
-  },
-  onFilterChange: () => {
-    if (isTableVisible.value) {
-      updateDisplayedItems()
-    }
-  },
+  onSearchChange: updateDisplayedItems,
+  onFilterChange: updateDisplayedItems,
 })
 
 // Watch immediate filters (status, type)

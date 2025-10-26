@@ -94,7 +94,7 @@ const viewRental = (rentalId: number) => {
 }
 
 const viewAllRentals = () => {
-  router.push(`/rentals?customerId=${props.customerId}`)
+  router.push(`/owner/rentals?customerId=${props.customerId}`)
 }
 </script>
 

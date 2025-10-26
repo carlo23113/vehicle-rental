@@ -1,67 +1,65 @@
 <template>
-  <CommonPageContainer>
-    <CommonPageHeader
-      title="Notifications"
-      subtitle="Stay updated with your latest activities and alerts"
-      icon="mdi-bell"
-    >
-      <template #actions>
-        <v-btn
-          variant="outlined"
-          prepend-icon="mdi-check-all"
-          @click="markAllAsRead"
-        >
-          Mark all as read
-        </v-btn>
-      </template>
-    </CommonPageHeader>
+  <CommonPageLayout
+    title="Notifications"
+    subtitle="Stay updated with your latest activities and alerts"
+    icon="mdi-bell"
+  >
+    <!-- Custom Header Actions Slot -->
+    <template #header-actions>
+      <v-btn
+        variant="outlined"
+        prepend-icon="mdi-check-all"
+        @click="markAllAsRead"
+      >
+        Mark all as read
+      </v-btn>
+    </template>
 
-    <!-- Filters -->
-    <LazyNotificationFilters
-      v-model="showFilters"
-      :filters="filter"
-      @update:type="filter.type = $event"
-      @update:status="filter.status = $event"
-      @update:priority="filter.priority = $event"
-      @clear="clearFilters"
-    />
-
-    <!-- Statistics -->
-    <div ref="statsSection">
-      <LazyNotificationsStatsCards
-        v-if="sectionsLoaded.stats"
-        v-bind="notificationStats"
+    <!-- Filters Slot -->
+    <template #filters="{ showFilters: isFilterVisible, sectionsLoaded: sections }">
+      <LazyNotificationFilters
+        v-if="isFilterVisible || sections.stats"
+        v-model="showFilters"
+        :filters="filter"
+        @update:type="filter.type = $event"
+        @update:status="filter.status = $event"
+        @update:priority="filter.priority = $event"
+        @clear="clearFilters"
       />
-      <LazyNotificationsStatsSkeleton v-else />
-    </div>
+    </template>
 
-    <!-- Notifications List -->
-    <div ref="listSection">
+    <!-- Stats Slot -->
+    <template #stats>
+      <LazyNotificationsStatsCards v-bind="notificationStats" />
+    </template>
+
+    <!-- Main Content Slot -->
+    <template #content>
       <LazyNotificationsListSection
-        v-if="sectionsLoaded.list"
         :notifications="filteredNotifications"
         @click="handleNotificationClick"
         @menu="showMenu"
       />
-      <LazyNotificationsListSkeleton v-else />
-    </div>
+    </template>
 
-    <!-- Action Menu -->
-    <v-menu v-model="menuOpen" :activator="menuActivator" location="bottom end">
-      <v-list density="compact">
-        <v-list-item prepend-icon="mdi-check" @click="handleMarkAsRead">
-          <v-list-item-title>Mark as read</v-list-item-title>
-        </v-list-item>
-        <v-list-item prepend-icon="mdi-delete" @click="handleDeleteNotification">
-          <v-list-item-title>Delete</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-menu>
-  </CommonPageContainer>
+    <!-- Additional Slot (for v-menu) -->
+    <template #additional>
+      <v-menu v-model="menuOpen" :activator="menuActivator" location="bottom end">
+        <v-list density="compact">
+          <v-list-item prepend-icon="mdi-check" @click="handleMarkAsRead">
+            <v-list-item-title>Mark as read</v-list-item-title>
+          </v-list-item>
+          <v-list-item prepend-icon="mdi-delete" @click="handleDeleteNotification">
+            <v-list-item-title>Delete</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </template>
+  </CommonPageLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import { useNotifications } from '~/composables/useNotifications'
 import { useNotificationStats } from '~/composables/useNotificationStats'
 
@@ -73,41 +71,6 @@ const showFilters = ref(false)
 const menuOpen = ref(false)
 const menuActivator = ref<any>(null)
 const selectedNotification = ref<any>(null)
-
-// Progressive section loading with intersection observer
-const statsSection = ref<HTMLElement | null>(null)
-const listSection = ref<HTMLElement | null>(null)
-
-const sectionsLoaded = ref({
-  stats: false,
-  list: false,
-})
-
-let observer: IntersectionObserver | null = null
-
-onMounted(() => {
-  // Immediate load stats
-  sectionsLoaded.value.stats = true
-
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          if (entry.target === listSection.value) {
-            sectionsLoaded.value.list = true
-          }
-        }
-      })
-    },
-    { rootMargin: '100px' }
-  )
-
-  if (listSection.value) observer.observe(listSection.value)
-})
-
-onUnmounted(() => {
-  observer?.disconnect()
-})
 
 const filter = ref({
   type: null as string | null,

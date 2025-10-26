@@ -1,32 +1,29 @@
 <template>
-  <CommonPageContainer>
-    <!-- Header -->
-    <CommonPageHeader
-      title="Locations"
-      subtitle="Manage your rental office locations and service centers"
-      action-text="Add Location"
-      action-icon="mdi-plus"
-      @action-click="handleAddLocation"
-    />
+  <CommonPageLayout
+    title="Locations"
+    subtitle="Manage your rental office locations and service centers"
+    action-text="Add Location"
+    action-icon="mdi-plus"
+    @action-click="handleAddLocation"
+  >
+    <!-- Filters Slot -->
+    <template #filters="{ showFilters: isFilterVisible, sectionsLoaded: sections }">
+      <LazyLocationsFilters
+        v-if="isFilterVisible || sections.stats"
+        v-model:show-filters="showFilters"
+        v-model:filters="filters"
+        @clear="clearFilters"
+      />
+    </template>
 
-    <!-- Filters -->
-    <LazyLocationsFilters
-      v-if="showFilters || sectionsLoaded.stats"
-      v-model="showFilters"
-      v-model:filters="filters"
-      @clear="clearFilters"
-    />
+    <!-- Stats Slot -->
+    <template #stats>
+      <LazyLocationsStatsCards :stats="stats" />
+    </template>
 
-    <!-- Statistics Cards -->
-    <div ref="statsSection">
-      <LazyLocationsStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
-      <LazyLocationsStatsSkeleton v-else />
-    </div>
-
-    <!-- Locations Table -->
-    <div ref="tableSection">
+    <!-- Main Content Slot -->
+    <template #content>
       <LazyLocationsTableSection
-        v-if="sectionsLoaded.table"
         :displayed-items="displayedItems"
         :is-loading-more="isLoadingMore"
         :get-status-color="getStatusColor"
@@ -34,20 +31,25 @@
         @edit="handleEditLocation"
         @delete="confirmDelete"
       />
-      <LazyLocationsTableSkeleton v-else />
-    </div>
+    </template>
 
-    <!-- Delete Confirmation Dialog -->
-    <LazyLocationsDeleteDialog
-      v-model="showDeleteDialog"
-      :location="locationToDelete"
-      :loading="deleting"
-      @confirm="handleDelete"
-      @cancel="handleCancelDelete"
-    />
+    <!-- Dialogs Slot -->
+    <template #dialogs>
+      <LazyLocationsDeleteDialog
+        v-if="showDeleteDialog"
+        v-model="showDeleteDialog"
+        :location="locationToDelete"
+        :loading="deleting"
+        @confirm="handleDelete"
+        @cancel="handleCancelDelete"
+      />
+    </template>
 
-    <CommonUiSnackbar v-model="snackbar" />
-  </CommonPageContainer>
+    <!-- Snackbar Slot -->
+    <template #snackbar>
+      <CommonUiSnackbar v-model="snackbar" />
+    </template>
+  </CommonPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -71,22 +73,14 @@ const {
   getStatusColor,
 } = useLocations()
 
-// Filter state
-const showFilters = ref(false)
+// Stats calculation
+const { stats } = useLocationStats(locations)
 
-// Delete dialog state
-const showDeleteDialog = ref(false)
-const locationToDelete = ref<Location | null>(null)
-const deleting = ref(false)
-
-// Progressive table loading with intersection observer
+// Progressive table loading
 const {
-  statsSection,
-  tableSection,
-  sectionsLoaded,
   displayedItems,
   isLoadingMore,
-  updateDisplayedItems
+  updateDisplayedItems,
 } = useProgressiveTable(filteredLocations, { batchSize: 20 })
 
 // Debounced filters
@@ -95,8 +89,11 @@ useDebouncedFilters(filters, {
   onSearchChange: updateDisplayedItems
 })
 
-// Single-pass stats calculation
-const { stats } = useLocationStats(locations)
+// UI state
+const showFilters = ref(false)
+const showDeleteDialog = ref(false)
+const locationToDelete = ref<Location | null>(null)
+const deleting = ref(false)
 
 // DRY navigation helper
 const navigateToRoute = (path: string) => router.push(path)

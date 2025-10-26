@@ -1,34 +1,43 @@
 <template>
-  <CommonPageContainer>
-    <CommonPageHeader
-      title="Document Management"
-      subtitle="Manage all customer, rental, and vehicle documents"
-      action-text="Upload Document"
-      action-icon="mdi-upload"
-      @action-click="handleUploadClick"
-    />
+  <CommonPageLayout
+    title="Document Management"
+    subtitle="Manage all customer, rental, and vehicle documents"
+    action-text="Upload Document"
+    action-icon="mdi-upload"
+    @action-click="handleUploadClick"
+  >
+    <!-- Filters Slot -->
+    <template #filters="{ showFilters: isFilterVisible, sectionsLoaded: sections }">
+      <DocumentFilters
+        v-if="isFilterVisible || sections.stats"
+        v-model="showFilters"
+        :filters="filters"
+        @clear="clearFilters"
+      />
+    </template>
 
-    <!-- Statistics Cards -->
-    <div ref="statsSection">
-      <LazyDocumentsStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
-      <LazyDocumentsStatsSkeleton v-else />
-    </div>
+    <!-- Stats Slot -->
+    <template #stats>
+      <LazyDocumentsStatsCards :stats="stats" />
+    </template>
 
-    <DocumentFilters v-model="showFilters" :filters="filters" @clear="clearFilters" />
+    <!-- Additional Section (View Mode Toggle and Expiry Alert) -->
+    <template #additional>
+      <CommonUiViewModeToggle v-model="viewMode" />
 
-    <CommonUiViewModeToggle v-model="viewMode" />
+      <CommonUiExpiryAlert
+        :count="expiringSoonDocuments.length"
+        item-name="document"
+        message="Review and renew expiring documents to maintain compliance."
+        @view-all="viewExpiringDocuments"
+      />
+    </template>
 
-    <CommonUiExpiryAlert
-      :count="expiringSoonDocuments.length"
-      item-name="document"
-      message="Review and renew expiring documents to maintain compliance."
-      @view-all="viewExpiringDocuments"
-    />
-
-    <!-- Document View Section -->
-    <div ref="contentSection">
+    <!-- Main Content Slot - Supporting Both Grid and Table Views -->
+    <template #content>
+      <!-- Grid View -->
       <LazyDocumentsGridSection
-        v-if="viewMode === 'grid' && sectionsLoaded.content"
+        v-if="viewMode === 'grid'"
         :displayed-items="displayedItems"
         :is-loading-more="isLoadingMore"
         @upload="handleDocumentUpload"
@@ -36,49 +45,60 @@
         @reject="handleDocumentReject"
         @delete="handleDocumentDelete"
       />
-      <LazyDocumentsGridSkeleton v-else-if="viewMode === 'grid'" />
 
+      <!-- Table View -->
       <LazyDocumentsTableSection
-        v-else-if="viewMode === 'table' && sectionsLoaded.content"
+        v-else
         :displayed-items="displayedItems"
         :is-loading-more="isLoadingMore"
         @view="viewDocument"
         @verify="handleDocumentVerify"
         @download="downloadDocument"
       />
-      <LazyDocumentsTableSkeleton v-else />
-    </div>
+    </template>
 
-    <v-dialog v-model="showUploadDialog" max-width="800">
-      <DocumentTypeSelector @select="handleDocumentTypeSelect" @cancel="showUploadDialog = false" />
-    </v-dialog>
+    <!-- Content Skeleton Slot - Supporting Both Grid and Table -->
+    <template #content-skeleton>
+      <LazyCommonUiGridSkeleton v-if="viewMode === 'grid'" :cols="12" :sm="6" :md="4" :lg="3" />
+      <LazyCommonUiTableSkeleton v-else />
+    </template>
 
-    <v-dialog v-model="showUploadFormDialog" max-width="800">
-      <DocumentUpload
-        v-if="selectedDocumentType"
-        :document-type="selectedDocumentType"
-        @cancel="showUploadFormDialog = false"
-        @upload="handleUpload"
+    <!-- Dialogs Slot -->
+    <template #dialogs>
+      <v-dialog v-model="showUploadDialog" max-width="800">
+        <DocumentTypeSelector @select="handleDocumentTypeSelect" @cancel="showUploadDialog = false" />
+      </v-dialog>
+
+      <v-dialog v-model="showUploadFormDialog" max-width="800">
+        <DocumentUpload
+          v-if="selectedDocumentType"
+          :document-type="selectedDocumentType"
+          @cancel="showUploadFormDialog = false"
+          @upload="handleUpload"
+        />
+      </v-dialog>
+
+      <DocumentViewer
+        v-if="selectedDocument"
+        v-model="showViewer"
+        :document="selectedDocument"
+        :can-verify="true"
+        @verify="openVerifyDialog"
+        @reject="handleDocumentReject"
       />
-    </v-dialog>
 
-    <DocumentViewer
-      v-if="selectedDocument"
-      v-model="showViewer"
-      :document="selectedDocument"
-      :can-verify="true"
-      @verify="openVerifyDialog"
-      @reject="handleDocumentReject"
-    />
+      <DocumentVerifyDialog
+        v-model="showVerifyDialog"
+        :document="documentToVerify"
+        @confirm="confirmVerification"
+      />
+    </template>
 
-    <DocumentVerifyDialog
-      v-model="showVerifyDialog"
-      :document="documentToVerify"
-      @confirm="confirmVerification"
-    />
-
-    <CommonUiSnackbar v-model="snackbar" />
-  </CommonPageContainer>
+    <!-- Snackbar Slot -->
+    <template #snackbar>
+      <CommonUiSnackbar v-model="snackbar" />
+    </template>
+  </CommonPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -130,11 +150,8 @@ const documentsToDisplay = computed(() =>
   showExpiringOnly.value ? expiringSoonDocuments.value : filteredDocuments.value
 )
 
-// Progressive table loading with intersection observer
+// Progressive table loading (no manual intersection observer needed - handled by CommonPageLayout)
 const {
-  statsSection,
-  tableSection: contentSection,
-  sectionsLoaded: sectionsLoadedBase,
   displayedItems,
   isLoadingMore,
   updateDisplayedItems
@@ -148,12 +165,6 @@ useDebouncedFilters(filters, {
 
 // Stats calculation using composable
 const { stats } = useDocumentStats(getDocumentStats)
-
-// Rename sectionsLoaded.table to sectionsLoaded.content for clarity
-const sectionsLoaded = computed(() => ({
-  stats: sectionsLoadedBase.value.stats,
-  content: sectionsLoadedBase.value.table
-}))
 
 const clearFilters = () => {
   filters.value.status = 'all'

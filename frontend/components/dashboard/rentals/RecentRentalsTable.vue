@@ -41,7 +41,7 @@ const handleRowClick = (event: any, { item }: { item: Rental }) => {
   <CommonUiDetailCard title="Recent Rentals" icon="mdi-clipboard-text-clock">
     <template #actions>
       <v-btn
-        to="/rentals"
+        to="/owner/rentals"
         variant="text"
         color="primary"
         append-icon="mdi-arrow-right"

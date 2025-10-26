@@ -1,32 +1,29 @@
 <template>
-  <CommonPageContainer>
-    <!-- Header - Critical content (always visible) -->
-    <CommonPageHeader
-      title="Rentals"
-      subtitle="Track and manage rental bookings"
-      action-text="New Rental"
-      action-icon="mdi-plus"
-      @action-click="handleAddRental"
-    />
+  <CommonPageLayout
+    title="Rentals"
+    subtitle="Track and manage rental bookings"
+    action-text="New Rental"
+    action-icon="mdi-plus"
+    @action-click="handleAddRental"
+  >
+    <!-- Filters Slot -->
+    <template #filters="{ showFilters: isFilterVisible, sectionsLoaded: sections }">
+      <LazyRentalsFilters
+        v-if="isFilterVisible || sections.stats"
+        v-model:show-filters="showFilters"
+        v-model:filters="filters"
+        @clear="clearFilters"
+      />
+    </template>
 
-    <!-- Filters - Code-split lazy loaded component -->
-    <LazyRentalsFilters
-      v-if="showFilters || sectionsLoaded.stats"
-      v-model:show-filters="showFilters"
-      v-model:filters="filters"
-      @clear="clearFilters"
-    />
+    <!-- Stats Slot -->
+    <template #stats>
+      <LazyRentalsStatsCards :stats="stats" />
+    </template>
 
-    <!-- Statistics Cards - Code-split with intersection observer -->
-    <div ref="statsSection">
-      <LazyRentalsStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
-      <RentalsStatsSkeleton v-else />
-    </div>
-
-    <!-- Rentals Table - Code-split with progressive loading -->
-    <div ref="tableSection">
+    <!-- Main Content Slot -->
+    <template #content>
       <LazyRentalsTableSection
-        v-if="sectionsLoaded.table"
         :rentals="displayedItems"
         :is-loading-more="isLoadingMore"
         :format-date="formatDate"
@@ -37,22 +34,26 @@
         @delete="handleDeleteRental"
         @generate-invoice="handleGenerateInvoice"
       />
-      <RentalsTableSkeleton v-else />
-    </div>
+    </template>
 
-    <!-- Delete Dialog - Code-split lazy loaded -->
-    <LazyRentalsDeleteDialog
-      v-if="showDeleteDialog"
-      v-model="showDeleteDialog"
-      :rental="rentalToDelete"
-      :deleting="deleting"
-      :format-date="formatDate"
-      @confirm="deleteRental"
-      @cancel="cancelDelete"
-    />
+    <!-- Dialogs Slot -->
+    <template #dialogs>
+      <LazyRentalsDeleteDialog
+        v-if="showDeleteDialog"
+        v-model="showDeleteDialog"
+        :rental="rentalToDelete"
+        :deleting="deleting"
+        :format-date="formatDate"
+        @confirm="deleteRental"
+        @cancel="cancelDelete"
+      />
+    </template>
 
-    <CommonUiSnackbar v-model="snackbar" />
-  </CommonPageContainer>
+    <!-- Snackbar Slot -->
+    <template #snackbar>
+      <CommonUiSnackbar v-model="snackbar" />
+    </template>
+  </CommonPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -78,28 +79,16 @@ const { snackbar, showSuccess, showError } = useSnackbar()
 const { stats } = useRentalStats(rentals)
 
 // Progressive table loading (DRY - extracted to composable)
-const {
-  statsSection,
-  tableSection,
-  sectionsLoaded,
-  displayedItems,
-  isLoadingMore,
-  updateDisplayedItems,
-} = useProgressiveTable(filteredRentals, { batchSize: 20 })
+const { displayedItems, isLoadingMore, updateDisplayedItems } = useProgressiveTable(
+  filteredRentals,
+  { batchSize: 20 }
+)
 
 // Debounced filters (DRY - extracted to composable)
 const { watchImmediateFilters } = useDebouncedFilters(filters, {
   searchDebounce: 300,
-  onSearchChange: () => {
-    if (sectionsLoaded.value.table) {
-      updateDisplayedItems()
-    }
-  },
-  onFilterChange: () => {
-    if (sectionsLoaded.value.table) {
-      updateDisplayedItems()
-    }
-  },
+  onSearchChange: updateDisplayedItems,
+  onFilterChange: updateDisplayedItems,
 })
 
 // Watch immediate filters (status, payment, dateRange)

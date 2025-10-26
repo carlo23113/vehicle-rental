@@ -50,7 +50,7 @@
     <!-- Statistics Cards -->
     <div ref="statsSection">
       <LazyReportsStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
-      <LazyReportsStatsSkeleton v-else />
+      <LazyCommonUiStatsSkeleton v-else />
     </div>
 
     <!-- Charts Section -->

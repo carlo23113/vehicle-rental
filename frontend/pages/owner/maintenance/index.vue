@@ -1,32 +1,29 @@
 <template>
-  <CommonPageContainer>
-    <!-- Header -->
-    <CommonPageHeader
-      title="Maintenance"
-      subtitle="Track vehicle maintenance and service records"
-      action-text="Schedule Maintenance"
-      action-icon="mdi-plus"
-      @action-click="handleAddMaintenance"
-    />
+  <CommonPageLayout
+    title="Maintenance"
+    subtitle="Track vehicle maintenance and service records"
+    action-text="Schedule Maintenance"
+    action-icon="mdi-plus"
+    @action-click="handleAddMaintenance"
+  >
+    <!-- Filters Slot -->
+    <template #filters="{ showFilters: isFilterVisible, sectionsLoaded: sections }">
+      <LazyMaintenanceFilters
+        v-if="isFilterVisible || sections.stats"
+        v-model:show-filters="showFilters"
+        v-model:filters="filters"
+        @clear="clearFilters"
+      />
+    </template>
 
-    <!-- Filters -->
-    <LazyMaintenanceFilters
-      v-if="showFilters || sectionsLoaded.stats"
-      v-model="showFilters"
-      v-model:filters="filters"
-      @clear="clearFilters"
-    />
+    <!-- Stats Slot -->
+    <template #stats>
+      <LazyMaintenanceStatsCards :stats="stats" />
+    </template>
 
-    <!-- Statistics Cards -->
-    <div ref="statsSection">
-      <LazyMaintenanceStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
-      <LazyMaintenanceStatsSkeleton v-else />
-    </div>
-
-    <!-- Maintenance Table -->
-    <div ref="tableSection">
+    <!-- Main Content Slot -->
+    <template #content>
       <LazyMaintenanceTableSection
-        v-if="sectionsLoaded.table"
         :displayed-items="displayedItems"
         :is-loading-more="isLoadingMore"
         :format-date="formatDate"
@@ -38,34 +35,38 @@
         @delete="openDeleteDialog"
         @complete="openCompleteDialog"
       />
-      <LazyMaintenanceTableSkeleton v-else />
-    </div>
+    </template>
 
-    <!-- Complete Confirmation Dialog -->
-    <LazyMaintenanceCompleteDialog
-      v-model="showCompleteDialog"
-      :record="recordToComplete"
-      :loading="completing"
-      :format-date="formatDate"
-      :get-type-label="getTypeLabel"
-      @confirm="handleComplete"
-      @cancel="cancelComplete"
-    />
+    <!-- Dialogs Slot -->
+    <template #dialogs>
+      <LazyMaintenanceCompleteDialog
+        v-if="showCompleteDialog"
+        v-model="showCompleteDialog"
+        :record="recordToComplete"
+        :loading="completing"
+        :format-date="formatDate"
+        :get-type-label="getTypeLabel"
+        @confirm="handleComplete"
+        @cancel="cancelComplete"
+      />
 
-    <!-- Delete Confirmation Dialog -->
-    <LazyMaintenanceDeleteDialog
-      v-model="showDeleteDialog"
-      :record="recordToDelete"
-      :loading="deleting"
-      :format-date="formatDate"
-      :get-type-label="getTypeLabel"
-      @confirm="handleDelete"
-      @cancel="cancelDelete"
-    />
+      <LazyMaintenanceDeleteDialog
+        v-if="showDeleteDialog"
+        v-model="showDeleteDialog"
+        :record="recordToDelete"
+        :loading="deleting"
+        :format-date="formatDate"
+        :get-type-label="getTypeLabel"
+        @confirm="handleDelete"
+        @cancel="cancelDelete"
+      />
+    </template>
 
-    <!-- Snackbar -->
-    <CommonUiSnackbar v-model="snackbar" />
-  </CommonPageContainer>
+    <!-- Snackbar Slot -->
+    <template #snackbar>
+      <CommonUiSnackbar v-model="snackbar" />
+    </template>
+  </CommonPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -92,17 +93,14 @@ const {
   formatDate,
 } = useMaintenance()
 
-// Filter state
+// UI state
 const showFilters = ref(false)
 
-// Progressive table loading with intersection observer
+// Progressive table loading (DRY - reusing composable)
 const {
-  statsSection,
-  tableSection,
-  sectionsLoaded,
   displayedItems,
   isLoadingMore,
-  updateDisplayedItems
+  updateDisplayedItems,
 } = useProgressiveTable(filteredRecords, { batchSize: 20 })
 
 // Debounced filters

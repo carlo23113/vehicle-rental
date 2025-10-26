@@ -1,32 +1,29 @@
 <template>
-  <CommonPageContainer>
-    <!-- Header -->
-    <CommonPageHeader
-      title="Payments"
-      subtitle="Manage payment transactions and billing"
-      action-text="Record Payment"
-      action-icon="mdi-plus"
-      @action-click="handleAddPayment"
-    />
+  <CommonPageLayout
+    title="Payments"
+    subtitle="Manage payment transactions and billing"
+    action-text="Record Payment"
+    action-icon="mdi-plus"
+    @action-click="handleAddPayment"
+  >
+    <!-- Filters Slot -->
+    <template #filters="{ showFilters: isFilterVisible, sectionsLoaded: sections }">
+      <LazyPaymentsFilters
+        v-if="isFilterVisible || sections.stats"
+        v-model:show-filters="showFilters"
+        v-model:filters="filters"
+        @clear="clearFilters"
+      />
+    </template>
 
-    <!-- Filters -->
-    <LazyPaymentsFilters
-      v-if="showFilters || sectionsLoaded.stats"
-      v-model="showFilters"
-      v-model:filters="filters"
-      @clear="clearFilters"
-    />
+    <!-- Stats Slot -->
+    <template #stats>
+      <LazyPaymentsStatsCards :stats="stats" />
+    </template>
 
-    <!-- Statistics Cards -->
-    <div ref="statsSection">
-      <LazyPaymentsStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
-      <LazyPaymentsStatsSkeleton v-else />
-    </div>
-
-    <!-- Payments Table -->
-    <div ref="tableSection">
+    <!-- Main Content Slot -->
+    <template #content>
       <LazyPaymentsTableSection
-        v-if="sectionsLoaded.table"
         :displayed-items="displayedItems"
         :is-loading-more="isLoadingMore"
         :format-date="formatDate"
@@ -39,32 +36,34 @@
         @view="viewPayment"
         @print="printReceipt"
       />
-      <LazyPaymentsTableSkeleton v-else />
-    </div>
+    </template>
 
-    <!-- Process Payment Dialog -->
-    <PaymentProcessDialog
-      v-model="processDialog"
-      v-model:transaction-id="transactionId"
-      :amount="currentPayment ? formatCurrency(currentPayment.amount) : ''"
-      :loading="actionLoading"
-      @confirm="confirmProcess"
-    />
+    <!-- Dialogs Slot -->
+    <template #dialogs>
+      <PaymentProcessDialog
+        v-model="processDialog"
+        v-model:transaction-id="transactionId"
+        :amount="currentPayment ? formatCurrency(currentPayment.amount) : ''"
+        :loading="actionLoading"
+        @confirm="confirmProcess"
+      />
 
-    <!-- Refund Payment Dialog -->
-    <PaymentRefundDialog
-      v-model="refundDialog"
-      v-model:refund-amount="refundAmount"
-      v-model:reason="refundReason"
-      :original-amount="currentPayment ? formatCurrency(currentPayment.amount) : formatCurrency(0)"
-      :max-amount="currentPayment?.amount || 0"
-      :loading="actionLoading"
-      @confirm="confirmRefund"
-    />
+      <PaymentRefundDialog
+        v-model="refundDialog"
+        v-model:refund-amount="refundAmount"
+        v-model:reason="refundReason"
+        :original-amount="currentPayment ? formatCurrency(currentPayment.amount) : formatCurrency(0)"
+        :max-amount="currentPayment?.amount || 0"
+        :loading="actionLoading"
+        @confirm="confirmRefund"
+      />
+    </template>
 
-    <!-- Snackbar -->
-    <CommonUiSnackbar v-model="snackbar" />
-  </CommonPageContainer>
+    <!-- Snackbar Slot -->
+    <template #snackbar>
+      <CommonUiSnackbar v-model="snackbar" />
+    </template>
+  </CommonPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -111,11 +110,8 @@ const refundDialog = ref(false)
 const refundAmount = ref(0)
 const refundReason = ref('')
 
-// Progressive table loading with intersection observer
+// Progressive table loading (DRY - reusing composable)
 const {
-  statsSection,
-  tableSection,
-  sectionsLoaded,
   displayedItems,
   isLoadingMore,
   updateDisplayedItems

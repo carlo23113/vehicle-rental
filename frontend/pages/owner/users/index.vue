@@ -1,32 +1,29 @@
 <template>
-  <CommonPageContainer>
-    <!-- Header -->
-    <CommonPageHeader
-      title="System Users"
-      subtitle="Manage system users and permissions"
-      action-text="Add User"
-      action-icon="mdi-plus"
-      @action-click="handleAddUser"
-    />
+  <CommonPageLayout
+    title="System Users"
+    subtitle="Manage system users and permissions"
+    action-text="Add User"
+    action-icon="mdi-plus"
+    @action-click="handleAddUser"
+  >
+    <!-- Filters Slot -->
+    <template #filters="{ showFilters: isFilterVisible, sectionsLoaded: sections }">
+      <LazyUsersFilters
+        v-if="isFilterVisible || sections.stats"
+        v-model="showFilters"
+        v-model:filters="filters"
+        @clear="clearFilters"
+      />
+    </template>
 
-    <!-- Filters -->
-    <LazyUsersFilters
-      v-if="showFilters || sectionsLoaded.stats"
-      v-model="showFilters"
-      v-model:filters="filters"
-      @clear="clearFilters"
-    />
+    <!-- Stats Slot -->
+    <template #stats>
+      <LazyUsersStatsCards :stats="stats" />
+    </template>
 
-    <!-- Statistics Cards -->
-    <div ref="statsSection">
-      <LazyUsersStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
-      <LazyUsersStatsSkeleton v-else />
-    </div>
-
-    <!-- Users Table -->
-    <div ref="tableSection">
+    <!-- Main Content Slot -->
+    <template #content>
       <LazyUsersTableSection
-        v-if="sectionsLoaded.table"
         :displayed-items="displayedItems"
         :is-loading-more="isLoadingMore"
         :get-full-name="getFullName"
@@ -41,21 +38,22 @@
         @deactivate="handleDeactivate"
         @suspend="handleSuspend"
       />
-      <LazyUsersTableSkeleton v-else />
-    </div>
+    </template>
 
-    <!-- Action Dialogs -->
-    <LazyUsersActionDialogs
-      v-model:activate-dialog="activateDialog"
-      v-model:deactivate-dialog="deactivateDialog"
-      v-model:suspend-dialog="suspendDialog"
-      :user="selectedUser"
-      :loading="actionLoading"
-      @activate="confirmActivate"
-      @deactivate="confirmDeactivate"
-      @suspend="confirmSuspend"
-    />
-  </CommonPageContainer>
+    <!-- Dialogs Slot -->
+    <template #dialogs>
+      <LazyUsersActionDialogs
+        v-model:activate-dialog="activateDialog"
+        v-model:deactivate-dialog="deactivateDialog"
+        v-model:suspend-dialog="suspendDialog"
+        :user="selectedUser"
+        :loading="actionLoading"
+        @activate="confirmActivate"
+        @deactivate="confirmDeactivate"
+        @suspend="confirmSuspend"
+      />
+    </template>
+  </CommonPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -89,11 +87,8 @@ const suspendDialog = ref(false)
 const actionLoading = ref(false)
 const selectedUser = ref<User | null>(null)
 
-// Progressive table loading with intersection observer
+// Progressive table loading
 const {
-  statsSection,
-  tableSection,
-  sectionsLoaded,
   displayedItems,
   isLoadingMore,
   updateDisplayedItems

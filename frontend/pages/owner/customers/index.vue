@@ -1,32 +1,29 @@
 <template>
-  <CommonPageContainer>
-    <!-- Header - Critical content (always visible) -->
-    <CommonPageHeader
-      title="Customers"
-      subtitle="Manage customer profiles and information"
-      action-text="Add Customer"
-      action-icon="mdi-plus"
-      @action-click="handleAddCustomer"
-    />
+  <CommonPageLayout
+    title="Customers"
+    subtitle="Manage customer profiles and information"
+    action-text="Add Customer"
+    action-icon="mdi-plus"
+    @action-click="handleAddCustomer"
+  >
+    <!-- Filters Slot -->
+    <template #filters="{ showFilters: isFilterVisible, sectionsLoaded: sections }">
+      <LazyCustomersFilters
+        v-if="isFilterVisible || sections.stats"
+        v-model:show-filters="showFilters"
+        v-model:filters="filters"
+        @clear="clearFilters"
+      />
+    </template>
 
-    <!-- Filters - Code-split lazy loaded component -->
-    <LazyCustomersFilters
-      v-if="showFilters || sectionsLoaded.stats"
-      v-model:show-filters="showFilters"
-      v-model:filters="filters"
-      @clear="clearFilters"
-    />
+    <!-- Stats Slot -->
+    <template #stats>
+      <LazyCustomersStatsCards :stats="stats" />
+    </template>
 
-    <!-- Statistics Cards - Code-split with intersection observer -->
-    <div ref="statsSection">
-      <LazyCustomersStatsCards v-if="sectionsLoaded.stats" :stats="stats" />
-      <CustomersStatsSkeleton v-else />
-    </div>
-
-    <!-- Customers Table - Code-split with progressive loading -->
-    <div ref="tableSection">
+    <!-- Main Content Slot -->
+    <template #content>
       <LazyCustomersTableSection
-        v-if="sectionsLoaded.table"
         :customers="displayedItems"
         :is-loading-more="isLoadingMore"
         :get-status-color="getStatusColor"
@@ -37,22 +34,26 @@
         @edit="handleEditCustomer"
         @delete="handleDeleteCustomer"
       />
-      <CustomersTableSkeleton v-else />
-    </div>
+    </template>
 
-    <!-- Delete Dialog - Code-split lazy loaded -->
-    <LazyCustomersDeleteDialog
-      v-if="showDeleteDialog"
-      v-model="showDeleteDialog"
-      :customer="customerToDelete"
-      :deleting="deleting"
-      :get-full-name="getFullName"
-      @confirm="handleDelete"
-      @cancel="handleCancelDelete"
-    />
+    <!-- Dialogs Slot -->
+    <template #dialogs>
+      <LazyCustomersDeleteDialog
+        v-if="showDeleteDialog"
+        v-model="showDeleteDialog"
+        :customer="customerToDelete"
+        :deleting="deleting"
+        :get-full-name="getFullName"
+        @confirm="handleDelete"
+        @cancel="handleCancelDelete"
+      />
+    </template>
 
-    <CommonUiSnackbar v-model="snackbar" />
-  </CommonPageContainer>
+    <!-- Snackbar Slot -->
+    <template #snackbar>
+      <CommonUiSnackbar v-model="snackbar" />
+    </template>
+  </CommonPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -84,9 +85,6 @@ const { stats } = useCustomerStats(customers)
 
 // Progressive table loading (DRY - reusing composable)
 const {
-  statsSection,
-  tableSection,
-  sectionsLoaded,
   displayedItems,
   isLoadingMore,
   updateDisplayedItems,
@@ -95,16 +93,8 @@ const {
 // Debounced filters (DRY - reusing composable)
 const { watchImmediateFilters } = useDebouncedFilters(filters, {
   searchDebounce: 300,
-  onSearchChange: () => {
-    if (sectionsLoaded.value.table) {
-      updateDisplayedItems()
-    }
-  },
-  onFilterChange: () => {
-    if (sectionsLoaded.value.table) {
-      updateDisplayedItems()
-    }
-  },
+  onSearchChange: updateDisplayedItems,
+  onFilterChange: updateDisplayedItems,
 })
 
 // Watch immediate filters (status)

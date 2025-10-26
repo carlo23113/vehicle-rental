@@ -27,9 +27,10 @@
 </template>
 
 <script setup lang="ts">
-const modelValue = defineModel<boolean>({ required: true })
+import { computed } from 'vue'
 
 const props = defineProps<{
+  showFilters: boolean
   filters: {
     search: string
     module: string
@@ -38,8 +39,15 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  'update:showFilters': [value: boolean]
+  'update:filters': [value: any]
   clear: []
 }>()
+
+const modelValue = computed({
+  get: () => props.showFilters,
+  set: (value: boolean) => emit('update:showFilters', value)
+})
 
 const handleClear = () => {
   emit('clear')

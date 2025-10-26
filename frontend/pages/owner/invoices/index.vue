@@ -1,29 +1,28 @@
 <template>
-  <CommonPageContainer>
-    <!-- Header -->
-    <CommonPageHeader
-      title="Invoices"
-      subtitle="Manage invoices and billing for rentals"
-    />
+  <CommonPageLayout
+    title="Invoices"
+    subtitle="Manage invoices and billing for rentals"
+  >
+    <!-- Filters Slot -->
+    <template #filters="{ showFilters: isFilterVisible, sectionsLoaded: sections }">
+      <InvoiceFilters
+        v-if="isFilterVisible || sections.stats"
+        v-model="showFilters"
+        :filters="filters"
+        :date-range="dateRange"
+        @clear="clearFilters"
+        @update:date-range="dateRange = $event"
+      />
+    </template>
 
-    <!-- Statistics Cards -->
-    <div ref="statsSection">
-      <LazyInvoicesStatsCards v-if="sectionsLoaded.stats" :stats="statsCards" />
-      <LazyInvoicesStatsSkeleton v-else />
-    </div>
+    <!-- Stats Slot -->
+    <template #stats>
+      <LazyInvoicesStatsCards :stats="statsCards" />
+    </template>
 
-    <InvoiceFilters
-      v-model="showFilters"
-      :filters="filters"
-      :date-range="dateRange"
-      @clear="clearFilters"
-      @update:date-range="dateRange = $event"
-    />
-
-    <!-- Invoices Table -->
-    <div ref="tableSection">
+    <!-- Main Content Slot -->
+    <template #content>
       <LazyInvoicesTableSection
-        v-if="sectionsLoaded.table"
         :displayed-items="displayedItems"
         :is-loading-more="isLoadingMore"
         @view="viewInvoice"
@@ -31,37 +30,41 @@
         @send="sendInvoice"
         @mark-paid="markAsPaidDialog"
       />
-      <LazyInvoicesTableSkeleton v-else />
-    </div>
+    </template>
 
-    <!-- Hidden Invoice Template for Printing -->
-    <div style="position: absolute; left: -9999px; top: -9999px;">
-      <div id="invoice-for-print">
-        <InvoiceTemplate v-if="selectedInvoice" :invoice="selectedInvoice" :company-info="companyInfo" print-mode />
+    <!-- Dialogs Slot -->
+    <template #dialogs>
+      <!-- Hidden Invoice Template for Printing -->
+      <div style="position: absolute; left: -9999px; top: -9999px;">
+        <div id="invoice-for-print">
+          <InvoiceTemplate v-if="selectedInvoice" :invoice="selectedInvoice" :company-info="companyInfo" print-mode />
+        </div>
       </div>
-    </div>
 
-    <!-- View Invoice Dialog -->
-    <InvoiceViewDialog
-      v-model="showViewDialog"
-      :invoice="selectedInvoice"
-      :company-info="companyInfo"
-      @download="downloadInvoice"
-      @print="printInvoice"
-      @send="sendInvoice"
-    />
+      <!-- View Invoice Dialog -->
+      <InvoiceViewDialog
+        v-model="showViewDialog"
+        :invoice="selectedInvoice"
+        :company-info="companyInfo"
+        @download="downloadInvoice"
+        @print="printInvoice"
+        @send="sendInvoice"
+      />
 
-    <!-- Mark as Paid Dialog -->
-    <MarkAsPaidDialog
-      v-model="showMarkPaidDialog"
-      :invoice="selectedInvoice"
-      :payment-methods="paymentMethods"
-      @confirm="confirmMarkAsPaid"
-    />
+      <!-- Mark as Paid Dialog -->
+      <MarkAsPaidDialog
+        v-model="showMarkPaidDialog"
+        :invoice="selectedInvoice"
+        :payment-methods="paymentMethods"
+        @confirm="confirmMarkAsPaid"
+      />
+    </template>
 
-    <!-- Snackbar -->
-    <CommonUiSnackbar v-model="snackbar" />
-  </CommonPageContainer>
+    <!-- Snackbar Slot -->
+    <template #snackbar>
+      <CommonUiSnackbar v-model="snackbar" />
+    </template>
+  </CommonPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -145,12 +148,9 @@ const mockInvoices = ref<Invoice[]>([
   },
 ])
 
-// Progressive table loading with intersection observer
+// Progressive table loading
 const invoicesAsComputed = computed(() => mockInvoices.value)
 const {
-  statsSection,
-  tableSection,
-  sectionsLoaded,
   displayedItems,
   isLoadingMore,
   updateDisplayedItems

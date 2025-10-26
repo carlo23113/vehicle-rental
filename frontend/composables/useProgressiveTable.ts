@@ -127,7 +127,25 @@ export const useProgressiveTable = (
 
   // Initialize on mount
   onMounted(() => {
-    setupIntersectionObserver()
+    // If refs are not provided (new CommonPageLayout pattern), auto-load data immediately
+    if (!statsSection.value && !tableSection.value) {
+      sectionsLoaded.value = {
+        stats: true,
+        table: true,
+      }
+      displayedItems.value = filteredData.value.slice(0, batchSize)
+
+      // Queue loading of remaining data
+      if (displayedItems.value.length < filteredData.value.length) {
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(() => loadNextBatch())
+        } else {
+          setTimeout(() => loadNextBatch(), 500)
+        }
+      }
+    } else {
+      setupIntersectionObserver()
+    }
   })
 
   // Cleanup on unmount
