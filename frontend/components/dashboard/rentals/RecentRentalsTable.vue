@@ -33,7 +33,7 @@ const headers = [
 ]
 
 const handleRowClick = (event: any, { item }: { item: Rental }) => {
-  router.push(`/rentals/${item.id}`)
+  router.push(`/owner/rentals/${item.id}`)
 }
 </script>
 

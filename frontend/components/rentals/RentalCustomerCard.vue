@@ -65,7 +65,7 @@ const customerInitials = computed(() => {
 
 const viewCustomer = () => {
   if (props.customerId) {
-    router.push(`/customers/${props.customerId}`)
+    router.push(`/owner/customers/${props.customerId}`)
   }
 }
 </script>

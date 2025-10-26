@@ -28,7 +28,7 @@
               size="x-large"
               elevation="0"
               class="rounded-pill px-8 hero-btn hero-btn-primary"
-              to="/browse"
+              to="/owner/browse"
             >
               <v-icon icon="mdi-car" start></v-icon>
               Explore Fleet
@@ -38,7 +38,7 @@
               variant="outlined"
               size="x-large"
               class="rounded-pill px-8 hero-btn-outline"
-              to="/help"
+              to="/owner/help"
             >
               <v-icon icon="mdi-play-circle" start></v-icon>
               Watch Demo

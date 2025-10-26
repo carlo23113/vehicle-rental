@@ -33,7 +33,7 @@ export const useCustomerDetails = (customerId: string) => {
 
       if (!foundCustomer) {
         showError('Customer not found')
-        router.push('/customers')
+        router.push('/owner/customers')
         return
       }
 
@@ -47,7 +47,7 @@ export const useCustomerDetails = (customerId: string) => {
     } catch (error) {
       console.error('Error loading customer:', error)
       showError('Failed to load customer data. Please try again.')
-      router.push('/customers')
+      router.push('/owner/customers')
     } finally {
       loading.value = false
     }
@@ -71,7 +71,7 @@ export const useCustomerDetails = (customerId: string) => {
 
       deleteCustomer(customer.value.id)
       showSuccess('Customer deleted successfully!')
-      router.push('/customers')
+      router.push('/owner/customers')
     } catch (error) {
       console.error('Error deleting customer:', error)
       showError('Failed to delete customer. Please try again.')
@@ -83,7 +83,7 @@ export const useCustomerDetails = (customerId: string) => {
 
   const handleEdit = () => {
     if (!customer.value) return
-    router.push(`/customers/edit/${customer.value.id}`)
+    router.push(`/owner/customers/edit/${customer.value.id}`)
   }
 
   const getAge = (dateOfBirth: string) => {

@@ -165,7 +165,7 @@ const handleLogin = async () => {
 
   try {
     await authStore.login({ email: email.value, password: password.value });
-    await navigateTo("/dashboard");
+    await navigateTo("/owner/dashboard");
   } catch (error: any) {
     errorMessage.value =
       error.message || "Invalid email or password. Please try again.";

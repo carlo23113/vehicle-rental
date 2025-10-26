@@ -58,7 +58,7 @@ export const useRentalForm = (isEditMode = false) => {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       showSuccess('Rental created successfully!')
-      router.push('/rentals')
+      router.push('/owner/rentals')
     } catch (error) {
       console.error('Error creating rental:', error)
       showError('Failed to create rental. Please try again.')
@@ -80,7 +80,7 @@ export const useRentalForm = (isEditMode = false) => {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       showSuccess('Rental updated successfully!')
-      router.push(`/rentals/${id}`)
+      router.push(`/owner/rentals/${id}`)
     } catch (error) {
       console.error('Error updating rental:', error)
       showError('Failed to update rental. Please try again.')
@@ -123,7 +123,7 @@ export const useRentalForm = (isEditMode = false) => {
     } catch (error) {
       console.error('Error loading rental:', error)
       showError('Failed to load rental data. Please try again.')
-      router.push('/rentals')
+      router.push('/owner/rentals')
     } finally {
       loading.value = false
     }

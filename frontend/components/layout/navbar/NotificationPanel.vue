@@ -63,7 +63,7 @@ const isOpen = ref(false)
 
 const viewAllNotifications = () => {
   isOpen.value = false
-  navigateTo('/notifications')
+  navigateTo('/owner/notifications')
 }
 
 const notifications = ref([

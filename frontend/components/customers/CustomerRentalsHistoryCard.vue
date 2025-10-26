@@ -90,7 +90,7 @@ const getStatusColor = (status: string) => {
 }
 
 const viewRental = (rentalId: number) => {
-  router.push(`/rentals/${rentalId}`)
+  router.push(`/owner/rentals/${rentalId}`)
 }
 
 const viewAllRentals = () => {

@@ -53,7 +53,7 @@ export const useLocationForm = (isEditMode = false) => {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       showSuccess('Location created successfully!')
-      router.push('/locations')
+      router.push('/owner/locations')
     } catch (error) {
       console.error('Error creating location:', error)
       showError('Failed to create location. Please try again.')
@@ -75,7 +75,7 @@ export const useLocationForm = (isEditMode = false) => {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       showSuccess('Location updated successfully!')
-      router.push(`/locations/${id}`)
+      router.push(`/owner/locations/${id}`)
     } catch (error) {
       console.error('Error updating location:', error)
       showError('Failed to update location. Please try again.')
@@ -95,7 +95,7 @@ export const useLocationForm = (isEditMode = false) => {
 
       if (!location) {
         showError('Location not found')
-        router.push('/locations')
+        router.push('/owner/locations')
         return
       }
 

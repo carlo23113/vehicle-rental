@@ -77,7 +77,7 @@ const goToProfile = () => {
 }
 
 const goToSettings = () => {
-  router.push('/settings')
+  router.push('/owner/settings')
 }
 
 const handleLogout = async () => {

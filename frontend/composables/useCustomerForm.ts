@@ -59,7 +59,7 @@ export const useCustomerForm = (isEditMode = false) => {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       showSuccess('Customer created successfully!')
-      router.push('/customers')
+      router.push('/owner/customers')
     } catch (error) {
       console.error('Error creating customer:', error)
       showError('Failed to create customer. Please try again.')
@@ -84,7 +84,7 @@ export const useCustomerForm = (isEditMode = false) => {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       showSuccess('Customer updated successfully!')
-      router.push(`/customers/${id}`)
+      router.push(`/owner/customers/${id}`)
     } catch (error) {
       console.error('Error updating customer:', error)
       showError('Failed to update customer. Please try again.')
@@ -108,7 +108,7 @@ export const useCustomerForm = (isEditMode = false) => {
 
       if (!customer) {
         showError('Customer not found')
-        router.push('/customers')
+        router.push('/owner/customers')
         return
       }
 
@@ -132,7 +132,7 @@ export const useCustomerForm = (isEditMode = false) => {
     } catch (error) {
       console.error('Error loading customer:', error)
       showError('Failed to load customer data. Please try again.')
-      router.push('/customers')
+      router.push('/owner/customers')
     } finally {
       loading.value = false
     }

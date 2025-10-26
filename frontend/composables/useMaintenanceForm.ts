@@ -55,7 +55,7 @@ export const useMaintenanceForm = (isEditMode = false) => {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       showSuccess('Maintenance scheduled successfully!')
-      router.push('/maintenance')
+      router.push('/owner/maintenance')
     } catch (error) {
       console.error('Error creating maintenance:', error)
       showError('Failed to schedule maintenance. Please try again.')
@@ -77,7 +77,7 @@ export const useMaintenanceForm = (isEditMode = false) => {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       showSuccess('Maintenance updated successfully!')
-      router.push(`/maintenance/${id}`)
+      router.push(`/owner/maintenance/${id}`)
     } catch (error) {
       console.error('Error updating maintenance:', error)
       showError('Failed to update maintenance. Please try again.')
@@ -114,7 +114,7 @@ export const useMaintenanceForm = (isEditMode = false) => {
     } catch (error) {
       console.error('Error loading maintenance:', error)
       showError('Failed to load maintenance data. Please try again.')
-      router.push('/maintenance')
+      router.push('/owner/maintenance')
     } finally {
       loading.value = false
     }

@@ -25,7 +25,7 @@ export const useLocationDetails = (locationId: string) => {
 
       if (!foundLocation) {
         showError('Location not found')
-        router.push('/locations')
+        router.push('/owner/locations')
         return
       }
 
@@ -33,7 +33,7 @@ export const useLocationDetails = (locationId: string) => {
     } catch (error) {
       console.error('Error loading location:', error)
       showError('Failed to load location data. Please try again.')
-      router.push('/locations')
+      router.push('/owner/locations')
     } finally {
       loading.value = false
     }
@@ -54,7 +54,7 @@ export const useLocationDetails = (locationId: string) => {
 
       deleteLocation(location.value.id)
       showSuccess('Location deleted successfully!')
-      router.push('/locations')
+      router.push('/owner/locations')
     } catch (error) {
       console.error('Error deleting location:', error)
       showError('Failed to delete location. Please try again.')
@@ -66,7 +66,7 @@ export const useLocationDetails = (locationId: string) => {
 
   const handleEdit = () => {
     if (!location.value) return
-    router.push(`/locations/edit/${location.value.id}`)
+    router.push(`/owner/locations/edit/${location.value.id}`)
   }
 
   const getFullAddress = (loc: Location) => {

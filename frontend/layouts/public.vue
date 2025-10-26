@@ -15,7 +15,7 @@
             <a href="/#vehicles" class="nav-link" @click.prevent="smoothScroll('#vehicles')">Vehicles</a>
             <a href="/#how-it-works" class="nav-link" @click.prevent="smoothScroll('#how-it-works')">How It Works</a>
             <a href="/#testimonials" class="nav-link" @click.prevent="smoothScroll('#testimonials')">Testimonials</a>
-            <NuxtLink to="/browse" class="nav-link">Browse</NuxtLink>
+            <NuxtLink to="/owner/browse" class="nav-link">Browse</NuxtLink>
             <v-btn color="primary" variant="flat" class="rounded-pill nav-btn" to="/login">
               <v-icon icon="mdi-login" start size="20"></v-icon>
               Sign In
@@ -77,8 +77,8 @@
           <v-col cols="6" sm="4" md="2">
             <h4 class="footer-heading mb-4">Quick Links</h4>
             <ul class="footer-links">
-              <li><NuxtLink to="/browse">Browse Vehicles</NuxtLink></li>
-              <li><NuxtLink to="/help">Help Center</NuxtLink></li>
+              <li><NuxtLink to="/owner/browse">Browse Vehicles</NuxtLink></li>
+              <li><NuxtLink to="/owner/help">Help Center</NuxtLink></li>
               <li><NuxtLink to="/login">Sign In</NuxtLink></li>
             </ul>
           </v-col>

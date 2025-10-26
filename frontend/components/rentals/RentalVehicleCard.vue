@@ -66,7 +66,7 @@ const router = useRouter()
 
 const viewVehicle = () => {
   if (props.vehicleId) {
-    router.push(`/vehicles/${props.vehicleId}`)
+    router.push(`/owner/vehicles/${props.vehicleId}`)
   }
 }
 </script>

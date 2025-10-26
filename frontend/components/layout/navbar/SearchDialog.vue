@@ -156,29 +156,29 @@ const searchInput = ref<HTMLInputElement | null>(null)
 
 const searchData = ref({
   vehicles: [
-    { id: 1, title: 'Toyota Camry 2023', subtitle: 'ABC-1234 • Available', icon: 'mdi-car', color: 'success', route: '/vehicles/1' },
-    { id: 2, title: 'Honda CR-V 2024', subtitle: 'XYZ-5678 • Rented', icon: 'mdi-car', color: 'primary', route: '/vehicles/2' },
-    { id: 3, title: 'Ford Explorer 2023', subtitle: 'DEF-9012 • Maintenance', icon: 'mdi-car', color: 'warning', route: '/vehicles/3' },
-    { id: 4, title: 'Tesla Model 3', subtitle: 'GHI-3456 • Available', icon: 'mdi-car', color: 'success', route: '/vehicles/4' },
+    { id: 1, title: 'Toyota Camry 2023', subtitle: 'ABC-1234 • Available', icon: 'mdi-car', color: 'success', route: '/owner/vehicles/1' },
+    { id: 2, title: 'Honda CR-V 2024', subtitle: 'XYZ-5678 • Rented', icon: 'mdi-car', color: 'primary', route: '/owner/vehicles/2' },
+    { id: 3, title: 'Ford Explorer 2023', subtitle: 'DEF-9012 • Maintenance', icon: 'mdi-car', color: 'warning', route: '/owner/vehicles/3' },
+    { id: 4, title: 'Tesla Model 3', subtitle: 'GHI-3456 • Available', icon: 'mdi-car', color: 'success', route: '/owner/vehicles/4' },
   ],
   rentals: [
-    { id: 1, title: 'Rental #1234', subtitle: 'John Smith • Active', icon: 'mdi-file-document', color: 'success', route: '/rentals/1' },
-    { id: 2, title: 'Rental #1235', subtitle: 'Sarah Johnson • Active', icon: 'mdi-file-document', color: 'success', route: '/rentals/2' },
-    { id: 3, title: 'Rental #1236', subtitle: 'Michael Brown • Completed', icon: 'mdi-file-document', color: 'info', route: '/rentals/3' },
+    { id: 1, title: 'Rental #1234', subtitle: 'John Smith • Active', icon: 'mdi-file-document', color: 'success', route: '/owner/rentals/1' },
+    { id: 2, title: 'Rental #1235', subtitle: 'Sarah Johnson • Active', icon: 'mdi-file-document', color: 'success', route: '/owner/rentals/2' },
+    { id: 3, title: 'Rental #1236', subtitle: 'Michael Brown • Completed', icon: 'mdi-file-document', color: 'info', route: '/owner/rentals/3' },
   ],
   customers: [
-    { id: 1, title: 'John Smith', subtitle: 'john@example.com', initials: 'JS', color: 'primary', route: '/customers/1' },
-    { id: 2, title: 'Sarah Johnson', subtitle: 'sarah@example.com', initials: 'SJ', color: 'secondary', route: '/customers/2' },
-    { id: 3, title: 'Michael Brown', subtitle: 'michael@example.com', initials: 'MB', color: 'info', route: '/customers/3' },
+    { id: 1, title: 'John Smith', subtitle: 'john@example.com', initials: 'JS', color: 'primary', route: '/owner/customers/1' },
+    { id: 2, title: 'Sarah Johnson', subtitle: 'sarah@example.com', initials: 'SJ', color: 'secondary', route: '/owner/customers/2' },
+    { id: 3, title: 'Michael Brown', subtitle: 'michael@example.com', initials: 'MB', color: 'info', route: '/owner/customers/3' },
   ],
   pages: [
-    { id: 1, title: 'Dashboard', subtitle: 'Overview and statistics', icon: 'mdi-view-dashboard', color: 'primary', route: '/dashboard' },
-    { id: 2, title: 'Vehicles', subtitle: 'Manage vehicles', icon: 'mdi-car-multiple', color: 'success', route: '/vehicles' },
-    { id: 3, title: 'Rentals', subtitle: 'Manage rentals', icon: 'mdi-file-document-multiple', color: 'info', route: '/rentals' },
-    { id: 4, title: 'Customers', subtitle: 'Manage customers', icon: 'mdi-account-group', color: 'warning', route: '/customers' },
-    { id: 5, title: 'Documents', subtitle: 'Manage documents', icon: 'mdi-file-document-multiple', color: 'warning', route: '/documents' },
-    { id: 6, title: 'Invoices', subtitle: 'Manage invoices & receipts', icon: 'mdi-file-document-outline', color: 'info', route: '/invoices' },
-    { id: 7, title: 'Reports', subtitle: 'Financial reports', icon: 'mdi-chart-box', color: 'secondary', route: '/reports' },
+    { id: 1, title: 'Dashboard', subtitle: 'Overview and statistics', icon: 'mdi-view-dashboard', color: 'primary', route: '/owner/dashboard' },
+    { id: 2, title: 'Vehicles', subtitle: 'Manage vehicles', icon: 'mdi-car-multiple', color: 'success', route: '/owner/vehicles' },
+    { id: 3, title: 'Rentals', subtitle: 'Manage rentals', icon: 'mdi-file-document-multiple', color: 'info', route: '/owner/rentals' },
+    { id: 4, title: 'Customers', subtitle: 'Manage customers', icon: 'mdi-account-group', color: 'warning', route: '/owner/customers' },
+    { id: 5, title: 'Documents', subtitle: 'Manage documents', icon: 'mdi-file-document-multiple', color: 'warning', route: '/owner/documents' },
+    { id: 6, title: 'Invoices', subtitle: 'Manage invoices & receipts', icon: 'mdi-file-document-outline', color: 'info', route: '/owner/invoices' },
+    { id: 7, title: 'Reports', subtitle: 'Financial reports', icon: 'mdi-chart-box', color: 'secondary', route: '/owner/reports' },
   ],
 })
 

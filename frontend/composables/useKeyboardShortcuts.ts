@@ -12,11 +12,14 @@ export interface KeyboardShortcut {
 
 export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[]) => {
   const handleKeyDown = (e: KeyboardEvent) => {
+    // Guard against undefined key
+    if (!e.key) return
+
     for (const shortcut of shortcuts) {
       const metaMatch = shortcut.meta === undefined || shortcut.meta === e.metaKey
       const ctrlMatch = shortcut.ctrl === undefined || shortcut.ctrl === e.ctrlKey
       const shiftMatch = shortcut.shift === undefined || shortcut.shift === e.shiftKey
-      const altMatch = shortcut.alt === undefined || shortcut.alt === e.altKey
+      const altMatch = shortcut.alt === undefined || shortcut.alt === e.altMatch
       const keyMatch = shortcut.key.toLowerCase() === e.key.toLowerCase()
 
       if (metaMatch && ctrlMatch && shiftMatch && altMatch && keyMatch) {

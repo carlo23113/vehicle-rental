@@ -40,7 +40,7 @@
           size="x-large"
           variant="flat"
           class="rounded-pill px-8 view-all-btn"
-          to="/browse"
+          to="/owner/browse"
         >
           View All Vehicles
           <v-icon icon="mdi-arrow-right" end class="arrow-slide"></v-icon>
@@ -63,7 +63,7 @@ const featuredVehicles = computed(() => {
 })
 
 const goToBrowse = () => {
-  router.push('/browse')
+  router.push('/owner/browse')
 }
 </script>
 

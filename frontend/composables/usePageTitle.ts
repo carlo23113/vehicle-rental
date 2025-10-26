@@ -10,20 +10,20 @@ export const usePageTitle = () => {
     // Define custom titles for specific routes
     const titleMap: Record<string, string> = {
       '/': 'Dashboard',
-      '/dashboard': 'Dashboard',
-      '/vehicles': 'Vehicles',
-      '/vehicles/add': 'Add Vehicle',
-      '/customers': 'Customers',
-      '/rentals': 'Rentals',
+      '/owner/dashboard': 'Dashboard',
+      '/owner/vehicles': 'Vehicles',
+      '/owner/vehicles/add': 'Add Vehicle',
+      '/owner/customers': 'Customers',
+      '/owner/rentals': 'Rentals',
       '/reservations': 'Reservations',
-      '/payments': 'Payments',
-      '/maintenance': 'Maintenance',
-      '/reports': 'Reports',
-      '/users': 'Users',
-      '/roles': 'Roles',
-      '/settings': 'Settings',
-      '/locations': 'Locations',
-      '/locations/add': 'Add Location',
+      '/owner/payments': 'Payments',
+      '/owner/maintenance': 'Maintenance',
+      '/owner/reports': 'Reports',
+      '/owner/users': 'Users',
+      '/owner/roles': 'Roles',
+      '/owner/settings': 'Settings',
+      '/owner/locations': 'Locations',
+      '/owner/locations/add': 'Add Location',
     }
 
     // Check if we have a custom title for this route

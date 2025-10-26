@@ -53,7 +53,7 @@ export const useUserForm = (isEditMode = false) => {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       showSuccess('User created successfully!')
-      router.push('/users')
+      router.push('/owner/users')
     } catch (error) {
       console.error('Error creating user:', error)
       showError('Failed to create user. Please try again.')
@@ -78,7 +78,7 @@ export const useUserForm = (isEditMode = false) => {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       showSuccess('User updated successfully!')
-      router.push(`/users/${id}`)
+      router.push(`/owner/users/${id}`)
     } catch (error) {
       console.error('Error updating user:', error)
       showError('Failed to update user. Please try again.')
@@ -102,7 +102,7 @@ export const useUserForm = (isEditMode = false) => {
 
       if (!user) {
         showError('User not found')
-        router.push('/users')
+        router.push('/owner/users')
         return
       }
 
@@ -121,7 +121,7 @@ export const useUserForm = (isEditMode = false) => {
     } catch (error) {
       console.error('Error loading user:', error)
       showError('Failed to load user data. Please try again.')
-      router.push('/users')
+      router.push('/owner/users')
     } finally {
       loading.value = false
     }

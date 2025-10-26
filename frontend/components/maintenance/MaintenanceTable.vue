@@ -114,7 +114,7 @@ const emit = defineEmits<{
 const { formatCurrency } = useCurrency()
 
 const handleRowClick = (_event: any, row: any) => {
-  router.push(`/maintenance/${row.item.id}`)
+  router.push(`/owner/maintenance/${row.item.id}`)
 }
 
 const headers = [

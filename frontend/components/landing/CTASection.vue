@@ -27,7 +27,7 @@
               size="x-large"
               elevation="0"
               class="rounded-pill px-8 cta-btn-primary"
-              to="/browse"
+              to="/owner/browse"
             >
               <v-icon icon="mdi-car-key" start></v-icon>
               Get Started Now
@@ -37,7 +37,7 @@
               color="white"
               size="x-large"
               class="rounded-pill px-8 cta-btn-secondary"
-              to="/help"
+              to="/owner/help"
             >
               Contact Support
               <v-icon icon="mdi-arrow-right" end></v-icon>

@@ -32,7 +32,7 @@ export const useMaintenanceDetails = (maintenanceId: string) => {
 
       if (!foundMaintenance) {
         showError('Maintenance record not found')
-        router.push('/maintenance')
+        router.push('/owner/maintenance')
         return
       }
 
@@ -40,14 +40,14 @@ export const useMaintenanceDetails = (maintenanceId: string) => {
     } catch (error) {
       console.error('Error loading maintenance:', error)
       showError('Failed to load maintenance details')
-      router.push('/maintenance')
+      router.push('/owner/maintenance')
     } finally {
       loading.value = false
     }
   }
 
   const handleEdit = () => {
-    router.push(`/maintenance/edit/${maintenanceId}`)
+    router.push(`/owner/maintenance/edit/${maintenanceId}`)
   }
 
   const showCompleteDialog = ref(false)
@@ -98,7 +98,7 @@ export const useMaintenanceDetails = (maintenanceId: string) => {
 
       deleteMaintenanceRecord(Number(maintenanceId))
       showSuccess('Maintenance record deleted successfully')
-      router.push('/maintenance')
+      router.push('/owner/maintenance')
     } catch (error) {
       console.error('Error deleting maintenance:', error)
       showError('Failed to delete maintenance record')

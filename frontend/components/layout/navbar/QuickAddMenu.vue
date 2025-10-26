@@ -96,22 +96,22 @@ const handleClick = (action: string) => {
 
   switch (action) {
     case 'new-rental':
-      router.push('/rentals/add')
+      router.push('/owner/rentals/add')
       break
     case 'add-vehicle':
-      router.push('/vehicles/add')
+      router.push('/owner/vehicles/add')
       break
     case 'add-customer':
       router.push('/customers?action=new')
       break
     case 'upload-document':
-      router.push('/documents?action=upload')
+      router.push('/owner/documents?action=upload')
       break
     case 'create-invoice':
       router.push('/invoices?action=create')
       break
     case 'generate-report':
-      router.push('/reports')
+      router.push('/owner/reports')
       break
   }
 }

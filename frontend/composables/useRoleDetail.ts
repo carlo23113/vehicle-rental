@@ -29,11 +29,11 @@ export const useRoleDetail = <T extends { id: number; permissions: string[] }, P
     role.value && updateRole(role.value.id, data)
 
   const handleDelete = () =>
-    confirm('Are you sure you want to delete this role?') && (deleteRole(roleId.value), router.push('/roles'))
+    confirm('Are you sure you want to delete this role?') && (deleteRole(roleId.value), router.push('/owner/roles'))
 
-  const handleBack = () => router.push('/roles')
+  const handleBack = () => router.push('/owner/roles')
 
-  const handleViewUser = (userId: number) => router.push(`/users?view=${userId}`)
+  const handleViewUser = (userId: number) => router.push(`/owner/users?view=${userId}`)
 
   return {
     permissionsByModule,
