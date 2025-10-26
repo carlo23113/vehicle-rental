@@ -16,6 +16,9 @@
         <v-btn variant="text" prepend-icon="mdi-download" @click="$emit('download', invoice)">
           Download PDF
         </v-btn>
+        <v-btn variant="text" prepend-icon="mdi-printer" @click="$emit('print', invoice)">
+          Print
+        </v-btn>
         <v-spacer />
         <v-btn variant="text" @click="$emit('update:modelValue', false)">Close</v-btn>
         <v-btn
@@ -44,6 +47,7 @@ defineProps<{
 defineEmits<{
   'update:modelValue': [value: boolean]
   download: [invoice: Invoice]
+  print: [invoice: Invoice]
   send: [invoice: Invoice]
 }>()
 </script>

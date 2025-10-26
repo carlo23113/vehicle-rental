@@ -21,8 +21,21 @@
       <v-divider />
 
       <v-card-text class="pa-0" style="height: 600px;">
+        <!-- Demo Mode Notice (for mock documents) -->
+        <div v-if="isMockDocument" class="unsupported-format d-flex flex-column align-center justify-center fill-height">
+          <v-icon :icon="documentTypeConfig.icon" size="64" color="primary" />
+          <p class="text-h6 mt-4">Document Preview</p>
+          <p class="text-body-2 text-medium-emphasis">
+            {{ isPDF ? 'PDF' : isImage ? 'Image' : 'Document' }} preview would appear here
+          </p>
+          <v-chip color="info" variant="tonal" class="mt-4">
+            <v-icon icon="mdi-information" start />
+            Demo Mode - {{ document.name }}
+          </v-chip>
+        </div>
+
         <!-- PDF Viewer -->
-        <div v-if="isPDF" class="pdf-viewer">
+        <div v-else-if="isPDF" class="pdf-viewer">
           <iframe
             :src="document.url"
             class="pdf-iframe"
@@ -194,6 +207,7 @@
 
       <v-card-actions class="pa-4">
         <v-btn
+          v-if="!isMockDocument"
           variant="text"
           prepend-icon="mdi-download"
           :href="document.url"
@@ -201,6 +215,14 @@
           target="_blank"
         >
           Download
+        </v-btn>
+        <v-btn
+          v-else
+          variant="text"
+          prepend-icon="mdi-download"
+          disabled
+        >
+          Download (Demo)
         </v-btn>
 
         <v-spacer />
@@ -238,7 +260,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed } from 'vue'
 import type { Document } from '~/types/document'
 import { DOCUMENT_TYPE_CONFIG } from '~/types/document'
 
@@ -265,6 +287,7 @@ const isOpen = computed({
 
 const documentTypeConfig = computed(() => DOCUMENT_TYPE_CONFIG[props.document.type])
 
+const isMockDocument = computed(() => props.document.url.startsWith('/uploads/'))
 const isPDF = computed(() => props.document.fileType === 'application/pdf')
 const isImage = computed(() => props.document.fileType.startsWith('image/'))
 

@@ -87,7 +87,7 @@
                   density="comfortable"
                   label="Min Price"
                   type="number"
-                  prefix="$"
+                  :prefix="getCurrencySymbol()"
                   hide-details
                 ></v-text-field>
                 <v-text-field
@@ -96,7 +96,7 @@
                   density="comfortable"
                   label="Max Price"
                   type="number"
-                  prefix="$"
+                  :prefix="getCurrencySymbol()"
                   hide-details
                 ></v-text-field>
               </div>
@@ -461,7 +461,7 @@ definePageMeta({
 })
 
 const { vehicles, getStatusColor, getTypeLabel } = useVehicles()
-const { formatCurrency } = useCurrency()
+const { formatCurrency, getCurrencySymbol } = useCurrency()
 
 const filters = ref({
   search: '',

@@ -144,6 +144,8 @@ const props = withDefaults(defineProps<Props>(), {
   }),
 })
 
+const { formatCurrency: formatCurrencyComposable } = useCurrency()
+
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
@@ -156,10 +158,7 @@ const formatDate = (dateString: string): string => {
 }
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount)
+  return formatCurrencyComposable(amount)
 }
 
 const getPaymentMethodIcon = (method: string): string => {

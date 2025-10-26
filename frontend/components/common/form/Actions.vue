@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-end gap-3 mt-8">
+  <div class="d-flex justify-end ga-3 mt-8">
     <v-btn
       v-if="showCancel"
       variant="text"
@@ -9,6 +9,7 @@
     >
       {{ cancelText }}
     </v-btn>
+    <slot name="prepend" />
     <v-btn
       :type="submitType"
       color="primary"
@@ -21,6 +22,7 @@
       <v-icon v-if="submitIcon" start>{{ submitIcon }}</v-icon>
       {{ submitText }}
     </v-btn>
+    <slot name="append" />
   </div>
 </template>
 

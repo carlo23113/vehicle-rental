@@ -45,7 +45,12 @@
 </template>
 
 <script setup lang="ts">
-const features = [
+import { computed } from 'vue'
+import { useCurrency } from '~/composables/useCurrency'
+
+const { getCurrencyIcon } = useCurrency()
+
+const features = computed(() => [
   {
     title: 'Wide Selection',
     description:
@@ -56,7 +61,7 @@ const features = [
   {
     title: 'Competitive Pricing',
     description: 'Get the best rates in the market with transparent pricing and no hidden fees.',
-    icon: 'mdi-currency-usd',
+    icon: getCurrencyIcon(),
     color: 'success',
   },
   {
@@ -83,7 +88,7 @@ const features = [
     icon: 'mdi-shield-check',
     color: 'secondary',
   },
-]
+])
 </script>
 
 <style scoped lang="scss">

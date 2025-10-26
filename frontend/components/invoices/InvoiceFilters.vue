@@ -29,7 +29,7 @@
           variant="outlined"
           density="comfortable"
           label="Payment"
-          prepend-inner-icon="mdi-currency-usd"
+          :prepend-inner-icon="getCurrencyIcon()"
           clearable
         />
       </v-col>
@@ -50,6 +50,8 @@
 </template>
 
 <script setup lang="ts">
+const { getCurrencyIcon } = useCurrency()
+
 defineProps<{
   modelValue: boolean
   filters: any

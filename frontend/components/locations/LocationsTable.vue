@@ -12,7 +12,6 @@
       <div class="flex items-center py-3">
         <CommonUiIconAvatar
           :icon="item.type === 'main' ? 'mdi-office-building' : 'mdi-map-marker'"
-          :color="item.type === 'main' ? 'primary' : 'info'"
           :size="40"
           :icon-size="20"
           avatar-class="location-avatar mr-3"

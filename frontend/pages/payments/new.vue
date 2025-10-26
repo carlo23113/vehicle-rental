@@ -59,7 +59,7 @@
 
           <CommonUiDetailItem
             label="Total Rental Amount"
-            icon="mdi-currency-usd"
+            :icon="getCurrencyIcon()"
           >
             <span class="text-h6 text-success font-weight-bold">
               {{ formatCurrency(selectedRental.totalAmount) }}
@@ -89,7 +89,7 @@
 
         <!-- Payment Summary Card -->
         <CommonUiDetailCard title="Payment Summary" icon="mdi-receipt-text">
-          <CommonUiDetailItem label="Payment Amount" icon="mdi-currency-usd">
+          <CommonUiDetailItem label="Payment Amount" :icon="getCurrencyIcon()">
             <span class="text-h6 text-primary font-weight-bold">
               {{ formatCurrency(formData.amount || 0) }}
             </span>
@@ -146,9 +146,11 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePayments } from '~/composables/usePayments'
+import { useCurrency } from '~/composables/useCurrency'
 import type { PaymentMethod, PaymentStatus } from '~/types/payment'
 
 const router = useRouter()
+const { getCurrencyIcon } = useCurrency()
 
 const {
   formatCurrency,

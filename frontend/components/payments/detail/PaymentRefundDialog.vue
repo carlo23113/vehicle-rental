@@ -30,7 +30,7 @@
             type="number"
             variant="outlined"
             density="comfortable"
-            prepend-inner-icon="mdi-currency-usd"
+            :prepend-inner-icon="getCurrencyIcon()"
             placeholder="0.00"
             :rules="[
               v => !!v || 'Refund amount is required',
@@ -117,6 +117,8 @@
 </template>
 
 <script setup lang="ts">
+const { getCurrencyIcon } = useCurrency()
+
 defineProps<{
   modelValue: boolean
   refundAmount: number

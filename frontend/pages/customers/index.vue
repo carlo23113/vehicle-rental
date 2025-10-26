@@ -84,7 +84,7 @@ import { useCurrency } from '~/composables/useCurrency'
 import { useSnackbar } from '~/composables/useSnackbar'
 
 const router = useRouter()
-const { formatCurrency } = useCurrency()
+const { formatCurrency, getCurrencyIcon } = useCurrency()
 const { snackbar, showSuccess, showError } = useSnackbar()
 
 const {
@@ -138,7 +138,7 @@ const stats = computed(() => {
       color: 'primary'
     },
     {
-      icon: 'mdi-currency-usd',
+      icon: getCurrencyIcon(),
       label: 'Total Revenue',
       value: formatCurrency(totalRevenue),
       color: 'info'

@@ -42,11 +42,10 @@
                 variant="outlined"
                 density="comfortable"
                 type="number"
-                prefix="$"
                 placeholder="0.00"
                 step="0.01"
                 min="0"
-                prepend-inner-icon="mdi-currency-usd"
+                :prepend-inner-icon="getCurrencyIcon()"
                 :rules="[
                   v => !!v || 'Amount is required',
                   v => v > 0 || 'Amount must be greater than 0',
@@ -143,13 +142,7 @@
       <v-divider />
 
       <v-card-actions class="pa-6">
-        <v-btn
-          variant="outlined"
-          size="large"
-          @click="$emit('cancel')"
-        >
-          Cancel
-        </v-btn>
+        <v-btn variant="outlined" size="large" @click="$emit('cancel')"> Cancel </v-btn>
         <v-spacer />
         <v-btn
           type="submit"
@@ -168,6 +161,8 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+
+const { getCurrencySymbol, getCurrencyIcon } = useCurrency()
 
 interface Rental {
   id: number

@@ -5,7 +5,6 @@
         <div class="header-content">
           <div class="title-wrapper">
             <h1 class="page-title">{{ title }}</h1>
-            <div class="title-underline"></div>
           </div>
           <p class="page-subtitle">{{ subtitle }}</p>
         </div>
@@ -15,7 +14,7 @@
             color="primary"
             elevation="0"
             class="action-btn"
-            size="large"
+            rounded="lg"
             @click="$emit('action-click')"
           >
             <v-icon v-if="actionIcon" :icon="actionIcon" start size="20"></v-icon>
@@ -29,7 +28,7 @@
 
 <style scoped>
 .page-header {
-  @apply flex justify-between items-center flex-wrap gap-6 py-4;
+  @apply flex justify-between flex-wrap gap-6 py-4;
 }
 
 .header-content {
@@ -42,26 +41,7 @@
 
 .page-title {
   @apply text-3xl font-extrabold m-0;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-secondary)) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   letter-spacing: -0.5px;
-}
-
-.title-underline {
-  @apply h-1 rounded mt-2 w-[60px];
-  background: linear-gradient(90deg, rgb(var(--v-theme-primary)) 0%, transparent 100%);
-  animation: expand 0.6s ease-out;
-}
-
-@keyframes expand {
-  from {
-    @apply w-0 opacity-0;
-  }
-  to {
-    @apply w-[60px] opacity-100;
-  }
 }
 
 .page-subtitle {

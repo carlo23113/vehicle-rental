@@ -64,6 +64,21 @@ export const useCurrency = () => {
     return selectedCurrency.value.code
   }
 
+  const getCurrencyIcon = (): string => {
+    const iconMap: Record<string, string> = {
+      PHP: 'mdi-currency-php',
+      USD: 'mdi-currency-usd',
+      EUR: 'mdi-currency-eur',
+      GBP: 'mdi-currency-gbp',
+      JPY: 'mdi-currency-jpy',
+      CAD: 'mdi-currency-usd', // No specific CAD icon, use USD
+      AUD: 'mdi-currency-usd', // No specific AUD icon, use USD
+      CNY: 'mdi-currency-cny',
+      INR: 'mdi-currency-inr',
+    }
+    return iconMap[selectedCurrency.value.code] || 'mdi-currency-usd'
+  }
+
   return {
     currencies,
     selectedCurrency,
@@ -71,5 +86,6 @@ export const useCurrency = () => {
     formatCurrency,
     getCurrencySymbol,
     getCurrencyCode,
+    getCurrencyIcon,
   }
 }

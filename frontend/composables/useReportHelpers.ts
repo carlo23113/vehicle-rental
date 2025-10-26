@@ -121,8 +121,8 @@ export const MOCK_DATA_BY_PERIOD: Record<string, any> = {
 }
 
 export const getRevenueChartConfig = (period: string) => ({
-  labels: CHART_DATA_BY_PERIOD[period]?.labels || CHART_DATA_BY_PERIOD.month.labels,
-  data: CHART_DATA_BY_PERIOD[period]?.data || CHART_DATA_BY_PERIOD.month.data,
+  labels: CHART_DATA_BY_PERIOD[period]?.labels || CHART_DATA_BY_PERIOD['month']?.labels || [],
+  data: CHART_DATA_BY_PERIOD[period]?.data || CHART_DATA_BY_PERIOD['month']?.data || [],
   label: 'Revenue',
   yAxisPrefix: '$',
   yAxisSuffix: 'K',
@@ -131,8 +131,8 @@ export const getRevenueChartConfig = (period: string) => ({
   height: 320
 })
 
-export const STAT_CONFIGS = [
-  { icon: 'mdi-currency-usd', label: 'Total Revenue', key: 'totalRevenue', color: 'success', format: 'currency' },
+export const getStatConfigs = (getCurrencyIcon: () => string) => [
+  { icon: getCurrencyIcon(), label: 'Total Revenue', key: 'totalRevenue', color: 'success', format: 'currency' },
   { icon: 'mdi-car-key', label: 'Total Rentals', key: 'totalRentals', color: 'primary', format: 'number' },
   { icon: 'mdi-chart-line', label: 'Avg Utilization', key: 'avgUtilization', color: 'info', format: 'percentage' },
   { icon: 'mdi-wrench', label: 'Maintenance Cost', key: 'totalMaintenanceCost', color: 'warning', format: 'currency' },

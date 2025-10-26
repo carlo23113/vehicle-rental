@@ -32,7 +32,7 @@
               type="number"
               variant="outlined"
               density="comfortable"
-              prefix="$"
+              :prefix="getCurrencySymbol()"
             />
           </v-col>
         </v-row>
@@ -60,6 +60,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   confirm: [data: { paymentMethod: string; paymentReference: string; amountPaid: number }]
 }>()
+
+const { getCurrencySymbol } = useCurrency()
 
 const form = ref({
   paymentMethod: '',

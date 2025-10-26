@@ -13,7 +13,7 @@
         </CommonUiDetailItem>
       </v-col>
       <v-col cols="12" md="6">
-        <CommonUiDetailItem label="Amount" icon="mdi-currency-usd">
+        <CommonUiDetailItem label="Amount" :icon="getCurrencyIcon()">
           <span class="text-primary font-weight-bold">{{ amount }}</span>
         </CommonUiDetailItem>
       </v-col>
@@ -47,6 +47,8 @@
 </template>
 
 <script setup lang="ts">
+const { getCurrencyIcon } = useCurrency()
+
 defineProps<{
   transactionId?: string
   amount: string

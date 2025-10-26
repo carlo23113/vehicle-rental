@@ -15,7 +15,6 @@
     <v-row>
       <v-col cols="12">
         <div class="d-flex align-center mb-4" style="gap: 12px">
-          <CommonUiIconAvatar icon="mdi-car" :size="48" :icon-size="24" />
           <div>
             <h4 class="text-subtitle-1 font-weight-bold">{{ vehicle.make }} {{ vehicle.model }}</h4>
             <div class="text-caption text-medium-emphasis">

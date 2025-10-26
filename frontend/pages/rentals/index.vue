@@ -39,7 +39,7 @@
             variant="outlined"
             density="comfortable"
             label="Payment"
-            prepend-inner-icon="mdi-currency-usd"
+            :prepend-inner-icon="getCurrencyIcon()"
             clearable
           />
         </v-col>
@@ -75,6 +75,7 @@
           @view="handleViewRental"
           @edit="handleEditRental"
           @delete="handleDeleteRental"
+          @generate-invoice="handleGenerateInvoice"
         />
       </v-col>
     </v-row>
@@ -108,7 +109,7 @@ const router = useRouter()
 const route = useRoute()
 const { rentals, filters, filteredRentals, getStatusColor, getPaymentStatusColor, formatDate } = useRentals()
 const { customers, getFullName } = useCustomers()
-const { formatCurrency } = useCurrency()
+const { formatCurrency, getCurrencyIcon } = useCurrency()
 const { snackbar, showSuccess, showError } = useSnackbar()
 
 // Filter state
@@ -172,7 +173,7 @@ const stats = computed(() => {
       color: 'info'
     },
     {
-      icon: 'mdi-currency-usd',
+      icon: getCurrencyIcon(),
       label: 'Total Revenue',
       value: formatCurrency(totalRevenue),
       color: 'primary'
@@ -192,6 +193,10 @@ const handleEditRental = (rental: any) => {
 const handleDeleteRental = (rental: any) => {
   rentalToDelete.value = rental
   showDeleteDialog.value = true
+}
+
+const handleGenerateInvoice = (rental: any) => {
+  router.push(`/invoices/new?rentalId=${rental.id}`)
 }
 
 const deleteRental = async () => {

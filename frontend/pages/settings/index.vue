@@ -160,7 +160,7 @@
 
               <v-list-item>
                 <template v-slot:prepend>
-                  <v-icon>mdi-currency-usd</v-icon>
+                  <v-icon>{{ getCurrencyIcon() }}</v-icon>
                 </template>
                 <v-list-item-title>Currency</v-list-item-title>
                 <v-list-item-subtitle>
@@ -489,7 +489,7 @@ import { useCurrency } from '~/composables/useCurrency'
 const router = useRouter()
 const authStore = useAuthStore()
 const { isDark, setDarkMode } = useDarkMode()
-const { currencies, selectedCurrency, setCurrency } = useCurrency()
+const { currencies, selectedCurrency, setCurrency, getCurrencyIcon } = useCurrency()
 
 const activeSection = ref('profile')
 const saving = ref(false)

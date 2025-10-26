@@ -138,7 +138,7 @@
             variant="outlined"
             density="comfortable"
             readonly
-            prepend-inner-icon="mdi-currency-usd"
+            :prepend-inner-icon="getCurrencyIcon()"
             :hint="rateHint"
             persistent-hint
           />
@@ -307,7 +307,11 @@
     </CommonFormSection>
 
     <!-- Payment Information (for reserved status) -->
-    <CommonFormSection v-if="localForm.status === 'reserved'" title="Payment Information" icon="mdi-cash">
+    <CommonFormSection
+      v-if="localForm.status === 'reserved'"
+      title="Payment Information"
+      icon="mdi-cash"
+    >
       <v-row>
         <v-col cols="12" md="6">
           <v-select
@@ -328,11 +332,10 @@
             variant="outlined"
             density="comfortable"
             type="number"
-            prefix="$"
             step="0.01"
             min="0"
             :max="rentalSummary.total"
-            prepend-inner-icon="mdi-currency-usd"
+            :prepend-inner-icon="getCurrencyIcon()"
             :hint="getPaymentHint"
             persistent-hint
           />
@@ -403,7 +406,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: RentalFormData]
 }>()
 
-const { formatCurrency } = useCurrency()
+const { formatCurrency, getCurrencySymbol, getCurrencyIcon } = useCurrency()
 const { vehicles } = useVehicles()
 const { customers, getFullName, getInitials } = useCustomers()
 const { getLocationById, formatLocationForSelect } = useLocations()
@@ -626,7 +629,10 @@ const getPaymentHint = computed(() => {
 })
 
 const getPaymentAlertType = computed(() => {
-  if (localForm.value.paymentStatus === 'paid' && localForm.value.depositAmount >= rentalSummary.value.total) {
+  if (
+    localForm.value.paymentStatus === 'paid' &&
+    (localForm.value.depositAmount || 0) >= rentalSummary.value.total
+  ) {
     return 'success'
   } else if (localForm.value.paymentStatus === 'partial') {
     return 'info'
@@ -662,4 +668,3 @@ const getPaymentSummaryMessage = computed(() => {
   return ''
 })
 </script>
-

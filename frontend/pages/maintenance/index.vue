@@ -124,7 +124,7 @@ import { useCurrency } from '~/composables/useCurrency'
 import type { MaintenanceType, MaintenanceStatus, MaintenancePriority } from '~/types/maintenance'
 
 const router = useRouter()
-const { formatCurrency } = useCurrency()
+const { formatCurrency, getCurrencyIcon } = useCurrency()
 
 const {
   maintenanceRecords,
@@ -170,7 +170,7 @@ const stats = computed(() => {
       color: 'success',
     },
     {
-      icon: 'mdi-currency-usd',
+      icon: getCurrencyIcon(),
       label: 'Total Cost',
       value: formatCurrency(totalCost),
       color: 'primary',

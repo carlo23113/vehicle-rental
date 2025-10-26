@@ -106,14 +106,14 @@
                 v-if="document.thumbnailUrl"
                 :src="document.thumbnailUrl"
                 :alt="document.name"
-                height="150"
+                height="100"
                 cover
                 class="document-thumbnail"
               />
               <div v-else class="document-icon-preview">
                 <v-icon
                   :icon="getDocumentIcon(document)"
-                  size="64"
+                  size="48"
                   :color="getDocumentColor(document)"
                 />
               </div>
@@ -121,7 +121,7 @@
               <!-- Status Badge -->
               <v-chip
                 :color="getStatusColor(document.status)"
-                size="small"
+                size="x-small"
                 variant="flat"
                 class="status-badge"
               >
@@ -132,40 +132,40 @@
               <v-chip
                 v-if="isExpired(document)"
                 color="error"
-                size="small"
+                size="x-small"
                 variant="flat"
                 class="expiry-badge"
               >
-                <v-icon icon="mdi-alert-circle" start size="14" />
+                <v-icon icon="mdi-alert-circle" start size="12" />
                 Expired
               </v-chip>
               <v-chip
                 v-else-if="isExpiringSoon(document)"
                 color="warning"
-                size="small"
+                size="x-small"
                 variant="flat"
                 class="expiry-badge"
               >
-                <v-icon icon="mdi-clock-alert" start size="14" />
+                <v-icon icon="mdi-clock-alert" start size="12" />
                 Expiring Soon
               </v-chip>
             </div>
 
             <!-- Document Info -->
-            <v-card-text class="pa-3">
-              <div class="d-flex align-center mb-2">
+            <v-card-text class="pa-2">
+              <div class="d-flex align-center mb-1">
                 <v-icon
                   :icon="DOCUMENT_TYPE_CONFIG[document.type].icon"
-                  size="20"
+                  size="16"
                   color="primary"
-                  class="mr-2"
+                  class="mr-1"
                 />
                 <p class="text-caption text-medium-emphasis text-uppercase">
                   {{ DOCUMENT_TYPE_CONFIG[document.type].label }}
                 </p>
               </div>
 
-              <h4 class="text-body-1 font-weight-bold mb-1 text-truncate">
+              <h4 class="text-body-2 font-weight-bold mb-1 text-truncate">
                 {{ document.name }}
               </h4>
 
@@ -173,18 +173,18 @@
                 {{ formatFileSize(document.fileSize) }} • {{ formatDate(document.uploadedAt) }}
               </p>
 
-              <div v-if="document.metadata?.expiryDate" class="mt-2">
+              <div v-if="document.metadata?.expiryDate" class="mt-1">
                 <p class="text-caption">
-                  <v-icon icon="mdi-calendar-alert" size="14" class="mr-1" />
+                  <v-icon icon="mdi-calendar-alert" size="12" class="mr-1" />
                   Expires: {{ formatDate(document.metadata.expiryDate) }}
                 </p>
               </div>
             </v-card-text>
 
             <!-- Actions -->
-            <v-card-actions class="pa-3 pt-0">
+            <v-card-actions class="pa-2 pt-0">
               <v-btn
-                size="small"
+                size="x-small"
                 variant="text"
                 prepend-icon="mdi-eye"
                 @click.stop="viewDocument(document)"
@@ -198,7 +198,7 @@
                 <template #activator="{ props: menuProps }">
                   <v-btn
                     icon="mdi-dots-vertical"
-                    size="small"
+                    size="x-small"
                     variant="text"
                     v-bind="menuProps"
                     @click.stop
@@ -350,7 +350,13 @@ const viewDocument = (document: Document) => {
 }
 
 const downloadDocument = (document: Document) => {
-  window.open(document.url, '_blank')
+  // For demo purposes, show alert. In production, this would download the actual file
+  if (document.url.startsWith('/uploads/')) {
+    console.log('Download document:', document.name)
+    // TODO: Implement actual file download when backend is ready
+  } else {
+    window.open(document.url, '_blank')
+  }
 }
 
 const handleDocumentTypeSelect = (type: DocumentType) => {
@@ -385,7 +391,7 @@ const handleDocumentTypeSelect = (type: DocumentType) => {
 
 .document-preview {
   position: relative;
-  height: 150px;
+  height: 100px;
   background: rgba(var(--v-theme-surface-variant), 0.3);
   overflow: hidden;
 }
@@ -400,16 +406,16 @@ const handleDocumentTypeSelect = (type: DocumentType) => {
 
 .status-badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 6px;
+  right: 6px;
   text-transform: capitalize;
   font-weight: 600;
 }
 
 .expiry-badge {
   position: absolute;
-  bottom: 8px;
-  left: 8px;
+  bottom: 6px;
+  left: 6px;
   font-weight: 600;
 }
 

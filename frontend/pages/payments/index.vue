@@ -92,6 +92,17 @@
       @confirm="confirmProcess"
     />
 
+    <!-- Refund Payment Dialog -->
+    <PaymentRefundDialog
+      v-model="refundDialog"
+      v-model:refund-amount="refundAmount"
+      v-model:reason="refundReason"
+      :original-amount="currentPayment ? formatCurrency(currentPayment.amount) : formatCurrency(0)"
+      :max-amount="currentPayment?.amount || 0"
+      :loading="actionLoading"
+      @confirm="confirmRefund"
+    />
+
     <!-- Snackbar -->
     <CommonUiSnackbar v-model="snackbar" />
   </CommonPageContainer>
@@ -129,6 +140,11 @@ const {
 
 // Filter state
 const showFilters = ref(false)
+
+// Refund dialog state
+const refundDialog = ref(false)
+const refundAmount = ref(0)
+const refundReason = ref('')
 
 const statusOptions = [
   { title: 'All Statuses', value: 'all' },
@@ -219,10 +235,28 @@ const confirmProcess = async () => {
   }
 }
 
-const handleRefund = (payment: any) => {
-  if (confirm(`Are you sure you want to refund ${formatCurrency(payment.amount)} to ${payment.customerName}?`)) {
-    refundPayment(payment.id, payment.amount)
-    console.log('Refunded payment:', payment)
+const handleRefund = (payment: Payment) => {
+  currentPayment.value = payment
+  refundAmount.value = payment.amount
+  refundReason.value = ''
+  refundDialog.value = true
+}
+
+const confirmRefund = async () => {
+  if (!currentPayment.value) return
+
+  actionLoading.value = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    refundPayment(currentPayment.value.id, refundAmount.value)
+    showSuccess(`Successfully refunded ${formatCurrency(refundAmount.value)} to ${currentPayment.value.customerName}`)
+    refundDialog.value = false
+    refundAmount.value = 0
+    refundReason.value = ''
+  } catch (error) {
+    showError('Failed to process refund')
+  } finally {
+    actionLoading.value = false
   }
 }
 

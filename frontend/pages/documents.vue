@@ -71,8 +71,14 @@
       v-model="showViewer"
       :document="selectedDocument"
       :can-verify="true"
-      @verify="handleDocumentVerify"
+      @verify="openVerifyDialog"
       @reject="handleDocumentReject"
+    />
+
+    <DocumentVerifyDialog
+      v-model="showVerifyDialog"
+      :document="documentToVerify"
+      @confirm="confirmVerification"
     />
 
     <CommonUiSnackbar v-model="snackbar" />
@@ -102,7 +108,9 @@ const viewMode = ref<'grid' | 'table'>('table')
 const showUploadDialog = ref(false)
 const showUploadFormDialog = ref(false)
 const showViewer = ref(false)
+const showVerifyDialog = ref(false)
 const selectedDocument = ref<Document | null>(null)
+const documentToVerify = ref<Document | null>(null)
 const selectedDocumentType = ref<DocumentType | null>(null)
 const showExpiringOnly = ref(false)
 const snackbar = ref<{
@@ -186,9 +194,24 @@ const handleDocumentUpload = (type: DocumentType) => {
   showUploadFormDialog.value = true
 }
 
-const handleDocumentVerify = async (document: Document) => {
-  const success = await verifyDocument(document.id, 'Current User', 'Document verified')
-  if (success) showSnackbar('Document verified successfully', 'success', 'mdi-check-circle')
+const openVerifyDialog = (document: Document) => {
+  documentToVerify.value = document
+  showVerifyDialog.value = true
+}
+
+const confirmVerification = async (notes: string) => {
+  if (!documentToVerify.value) return
+
+  const success = await verifyDocument(documentToVerify.value.id, 'Current User', notes || 'Document verified')
+  if (success) {
+    showSnackbar('Document verified successfully', 'success', 'mdi-check-circle')
+    showViewer.value = false
+  }
+  documentToVerify.value = null
+}
+
+const handleDocumentVerify = (document: Document) => {
+  openVerifyDialog(document)
 }
 
 const showSnackbar = (message: string, color: 'success' | 'error' | 'warning' | 'info', icon: string) => {

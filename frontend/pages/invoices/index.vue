@@ -2,11 +2,8 @@
   <CommonPageContainer>
     <!-- Header -->
     <CommonPageHeader
-      title="Invoices & Receipts"
-      subtitle="Manage invoices, receipts, and billing"
-      action-text="Create Invoice"
-      action-icon="mdi-plus"
-      @action-click="showCreateDialog = true"
+      title="Invoices"
+      subtitle="Manage invoices and billing for rentals"
     />
 
     <!-- Statistics Cards -->
@@ -36,16 +33,12 @@
       </v-col>
     </v-row>
 
-    <!-- Create Invoice Dialog -->
-    <v-dialog v-model="showCreateDialog" max-width="1000" scrollable>
-      <InvoiceGenerator
-        customer-name="John Doe"
-        customer-email="john@example.com"
-        @cancel="showCreateDialog = false"
-        @generate="handleGenerateInvoice"
-        @preview="handlePreviewInvoice"
-      />
-    </v-dialog>
+    <!-- Hidden Invoice Template for Printing -->
+    <div style="position: absolute; left: -9999px; top: -9999px;">
+      <div id="invoice-for-print">
+        <InvoiceTemplate v-if="selectedInvoice" :invoice="selectedInvoice" :company-info="companyInfo" print-mode />
+      </div>
+    </div>
 
     <!-- View Invoice Dialog -->
     <InvoiceViewDialog
@@ -53,6 +46,7 @@
       :invoice="selectedInvoice"
       :company-info="companyInfo"
       @download="downloadInvoice"
+      @print="printInvoice"
       @send="sendInvoice"
     />
 
@@ -84,7 +78,6 @@ definePageMeta({
 const { filters } = useInvoices()
 
 const showFilters = ref(false)
-const showCreateDialog = ref(false)
 const showViewDialog = ref(false)
 const showMarkPaidDialog = ref(false)
 const selectedInvoice = ref<Invoice | null>(null)
@@ -162,6 +155,105 @@ const downloadInvoice = (invoice: any) => {
   exportToPDF('invoice-preview', `invoice-${invoice.invoiceNumber}.pdf`)
 }
 
+const printInvoice = () => {
+  // Use the hidden invoice template for printing
+  const printContents = document.getElementById('invoice-for-print')
+  if (!printContents || !selectedInvoice.value) {
+    snackbar.value = {
+      show: true,
+      message: 'Invoice not available for printing',
+      color: 'error',
+      icon: 'mdi-alert-circle',
+    }
+    return
+  }
+
+  const printWindow = window.open('', '', 'width=800,height=600')
+  if (!printWindow) {
+    snackbar.value = {
+      show: true,
+      message: 'Failed to open print window',
+      color: 'error',
+      icon: 'mdi-alert-circle',
+    }
+    return
+  }
+
+  // Get all stylesheets from the current document
+  const styles = Array.from(document.styleSheets)
+    .map(styleSheet => {
+      try {
+        return Array.from(styleSheet.cssRules)
+          .map(rule => rule.cssText)
+          .join('\n')
+      } catch (e) {
+        console.warn('Could not access stylesheet:', e)
+        return ''
+      }
+    })
+    .join('\n')
+
+  // Clone the invoice template
+  const clonedContent = printContents.cloneNode(true) as HTMLElement
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Invoice - ${selectedInvoice.value.invoiceNumber}</title>
+        <meta charset="utf-8">
+        <link href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css" rel="stylesheet">
+        <style>
+          ${styles}
+
+          /* Additional print styles */
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            padding: 20px;
+            background: white;
+          }
+          .v-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+          }
+          @media print {
+            body {
+              padding: 0;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        ${clonedContent.innerHTML}
+      </body>
+    </html>
+  `
+
+  printWindow.document.open()
+  printWindow.document.write(htmlContent)
+  printWindow.document.close()
+
+  printWindow.onload = () => {
+    setTimeout(() => {
+      printWindow.focus()
+      printWindow.print()
+      printWindow.close()
+      snackbar.value = {
+        show: true,
+        message: 'Invoice sent to printer',
+        color: 'success',
+        icon: 'mdi-check-circle',
+      }
+    }, 500)
+  }
+}
+
 const sendInvoice = (invoice: any) => {
   snackbar.value = {
     show: true,
@@ -191,21 +283,6 @@ const confirmMarkAsPaid = (data: { paymentMethod: string; paymentReference: stri
       icon: 'mdi-check-circle',
     }
   }
-}
-
-const handleGenerateInvoice = (invoiceData: any) => {
-  console.log('Generate invoice:', invoiceData)
-  showCreateDialog.value = false
-  snackbar.value = {
-    show: true,
-    message: 'Invoice created successfully',
-    color: 'success',
-    icon: 'mdi-check-circle',
-  }
-}
-
-const handlePreviewInvoice = (invoiceData: any) => {
-  console.log('Preview invoice:', invoiceData)
 }
 </script>
 

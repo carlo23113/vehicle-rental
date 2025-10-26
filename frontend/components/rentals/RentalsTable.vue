@@ -76,7 +76,17 @@
         @view="$emit('view', item)"
         @edit="$emit('edit', item)"
         @delete="$emit('delete', item)"
-      />
+      >
+        <template #middle>
+          <CommonUiTableActionButton
+            v-if="getInvoiceButtonState(item).show"
+            :icon="getInvoiceButtonState(item).icon"
+            :tooltip="getInvoiceButtonState(item).tooltip"
+            :color="getInvoiceButtonState(item).color"
+            @click="$emit('generate-invoice', item)"
+          />
+        </template>
+      </CommonUiTableActionButtons>
     </template>
   </CommonUiDataTable>
 </template>
@@ -95,6 +105,7 @@ defineEmits<{
   view: [rental: any]
   edit: [rental: any]
   delete: [rental: any]
+  'generate-invoice': [rental: any]
 }>()
 
 const { formatCurrency } = useCurrency()
@@ -124,6 +135,47 @@ const getStatusIcon = (status: string) => {
     cancelled: 'mdi-cancel',
   }
   return icons[status] || 'mdi-help-circle'
+}
+
+const hasInvoice = (rental: any): boolean => {
+  // Check if rental has an invoice
+  // In production, this would check a property on the rental object
+  const existingInvoice = localStorage.getItem(`invoice-draft-rental-${rental.id}`)
+  return !!existingInvoice
+}
+
+const getInvoiceButtonState = (rental: any) => {
+  const hasInv = hasInvoice(rental)
+
+  // Cancelled or Reserved rentals - hide button
+  // Reserved: invoice auto-generated, no action needed
+  // Cancelled: no invoice needed
+  if (rental.status === 'cancelled' || rental.status === 'reserved') {
+    return {
+      show: false,
+      icon: 'mdi-file-document-outline',
+      tooltip: 'No Invoice',
+      color: 'grey',
+    }
+  }
+
+  // Active or Completed WITHOUT invoice = ERROR state (should never happen)
+  if ((rental.status === 'active' || rental.status === 'completed') && !hasInv) {
+    return {
+      show: true,
+      icon: 'mdi-alert-circle',
+      tooltip: 'Missing Invoice - Create Now',
+      color: 'error',
+    }
+  }
+
+  // Active or Completed WITH invoice = View invoice
+  return {
+    show: true,
+    icon: 'mdi-file-document-check',
+    tooltip: 'View Invoice',
+    color: 'info',
+  }
 }
 </script>
 

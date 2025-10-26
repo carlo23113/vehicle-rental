@@ -161,7 +161,7 @@ import {
   useReportHelpers,
   PERIOD_OPTIONS,
   getRevenueChartConfig,
-  STAT_CONFIGS,
+  getStatConfigs,
 } from '~/composables/useReportHelpers'
 
 const {
@@ -180,7 +180,7 @@ const {
   formatDate,
 } = useReports()
 
-const { formatCurrency } = useCurrency()
+const { formatCurrency, getCurrencyIcon } = useCurrency()
 const {
   getUtilizationColor,
   getRankColor,
@@ -239,7 +239,7 @@ const dataValues: Record<string, any> = {
 }
 
 const stats = computed(() =>
-  STAT_CONFIGS.map(config => {
+  getStatConfigs(getCurrencyIcon).map(config => {
     const rawValue = dataValues[config.key].value
     let value: string | number
 
@@ -273,7 +273,7 @@ const revenueByTypeItems = computed(() =>
 )
 
 const paymentStatusItems = computed(() =>
-  paymentStatusOverview.value.map(item => ({
+  paymentStatusOverview.value.map((item: { status: string; count: number; amount: number; percentage: number }) => ({
     label: item.status,
     value: formatCurrency(item.amount),
     percentage: item.percentage,

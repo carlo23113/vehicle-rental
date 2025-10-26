@@ -1,5 +1,5 @@
 <template>
-  <CommonUiDetailCard title="Cost Details" icon="mdi-currency-usd">
+  <CommonUiDetailCard title="Cost Details" :icon="currencyIcon">
     <div class="cost-display">
       <div class="cost-label">
         <v-icon icon="mdi-cash" size="20" class="mr-2" />
@@ -59,6 +59,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useCurrency } from '~/composables/useCurrency'
 
 defineProps<{
@@ -66,7 +67,9 @@ defineProps<{
   formatDate: (date: string) => string
 }>()
 
-const { formatCurrency } = useCurrency()
+const { formatCurrency, getCurrencyIcon } = useCurrency()
+
+const currencyIcon = computed(() => getCurrencyIcon())
 </script>
 
 <style scoped>

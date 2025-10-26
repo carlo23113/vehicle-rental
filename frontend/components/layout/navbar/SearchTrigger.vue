@@ -5,7 +5,7 @@
       prepend-inner-icon="mdi-magnify"
       placeholder="Search anything..."
       variant="solo"
-      density="comfortable"
+      density="compact"
       hide-details
       single-line
       class="search-field transition-all duration-300"
@@ -14,7 +14,9 @@
       @click="$emit('click')"
     >
       <template #append-inner>
-        <v-chip size="x-small" class="bg-on-surface/6 font-semibold text-[0.7rem] px-1.5 h-5">⌘K</v-chip>
+        <v-chip size="x-small" class="bg-on-surface/6 font-semibold text-[0.7rem] px-1.5 h-5"
+          >⌘K</v-chip
+        >
       </template>
     </v-text-field>
   </div>

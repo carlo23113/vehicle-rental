@@ -108,6 +108,26 @@
       @confirm="confirmRetry"
     />
 
+    <!-- Hidden Templates for Printing -->
+    <div style="position: absolute; left: -9999px; top: -9999px;">
+      <div id="receipt-for-print">
+        <ReceiptTemplate v-if="receiptData" :receipt="receiptData" print-mode />
+      </div>
+      <div id="invoice-for-print">
+        <InvoiceTemplate v-if="invoiceData" :invoice="invoiceData" :company-info="companyInfo" print-mode />
+      </div>
+    </div>
+
+    <!-- View Invoice Dialog -->
+    <InvoiceViewDialog
+      v-model="showInvoiceDialog"
+      :invoice="invoiceData"
+      :company-info="companyInfo"
+      @download="downloadInvoice"
+      @print="printInvoice"
+      @send="sendInvoice"
+    />
+
     <!-- Generate Receipt Dialog -->
     <v-dialog v-model="showReceiptDialog" max-width="800px" scrollable>
       <v-card>
@@ -155,11 +175,10 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePayments } from '~/composables/usePayments'
 import { usePaymentActions } from '~/composables/usePaymentActions'
-import { useInvoices } from '~/composables/useInvoices'
-import { printReceipt as printReceiptUtil } from '~/utils/receiptPrint'
 import { exportToPDF } from '~/utils/pdfExport'
+import { DEFAULT_COMPANY_INFO } from '~/types/invoice'
 import type { Payment } from '~/types/payment'
-import type { Receipt } from '~/types/invoice'
+import type { Receipt, Invoice } from '~/types/invoice'
 
 const route = useRoute()
 const router = useRouter()
@@ -195,12 +214,56 @@ const {
   showError,
 } = usePaymentActions()
 
-const { createReceipt } = useInvoices()
-
 // Find payment by ID
 const paymentId = Number(route.params.id)
 const payment = computed((): Payment => {
   return payments.value.find(p => p.id === paymentId) ?? payments.value[0]!
+})
+
+// Company info
+const companyInfo = DEFAULT_COMPANY_INFO
+
+// Invoice dialog
+const showInvoiceDialog = ref(false)
+const invoiceData = computed<Invoice | null>(() => {
+  if (!payment.value || !payment.value.rentalId) return null
+
+  // In a real app, you would fetch the actual invoice data
+  // For now, create a mock invoice based on payment data
+  return {
+    id: payment.value.rentalId.toString(),
+    invoiceNumber: `INV-${String(payment.value.rentalId).padStart(5, '0')}`,
+    type: 'rental',
+    status: payment.value.status === 'completed' ? 'paid' : 'sent',
+    paymentStatus: payment.value.status === 'completed' ? 'paid' : 'unpaid',
+    customerId: '1',
+    customerName: payment.value.customerName,
+    customerEmail: payment.value.customerEmail || 'customer@example.com',
+    rentalId: payment.value.rentalId.toString(),
+    issueDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]!,
+    dueDate: payment.value.dueDate,
+    items: [
+      {
+        id: '1',
+        description: `Vehicle Rental - ${payment.value.vehicleName} (${payment.value.licensePlate})`,
+        quantity: 1,
+        unitPrice: payment.value.amount,
+        amount: payment.value.amount,
+        taxRate: 0,
+        taxAmount: 0,
+        total: payment.value.amount,
+      },
+    ],
+    subtotal: payment.value.amount,
+    taxRate: 0,
+    taxAmount: 0,
+    discountAmount: 0,
+    totalAmount: payment.value.amount,
+    amountPaid: payment.value.status === 'completed' ? payment.value.amount : 0,
+    amountDue: payment.value.status === 'completed' ? 0 : payment.value.amount,
+    createdAt: new Date().toISOString(),
+    createdBy: 'Admin',
+  }
 })
 
 // Receipt generation
@@ -268,11 +331,22 @@ const timeline = ref([
 const headerActions = computed(() => {
   const actions = []
 
+  // Always show View Invoice button if payment has an associated rental/invoice
+  if (payment.value.rentalId) {
+    actions.push({
+      key: 'invoice',
+      label: 'View Invoice',
+      icon: 'mdi-file-document-outline',
+      variant: 'outlined' as const,
+      color: 'info',
+    })
+  }
+
   if (payment.value.status === 'completed') {
     actions.push(
       {
         key: 'receipt',
-        label: 'Generate Receipt',
+        label: 'View Receipt',
         icon: 'mdi-receipt-text-outline',
         variant: 'outlined' as const,
         color: 'success',
@@ -291,11 +365,111 @@ const headerActions = computed(() => {
 })
 
 const handleAction = (key: string) => {
-  if (key === 'receipt') {
+  if (key === 'invoice') {
+    viewInvoice()
+  } else if (key === 'receipt') {
     showReceiptDialog.value = true
   } else if (key === 'print') {
     printReceipt()
   }
+}
+
+const viewInvoice = () => {
+  showInvoiceDialog.value = true
+}
+
+const downloadInvoice = (invoice: Invoice) => {
+  exportToPDF('invoice-preview', `invoice-${invoice.invoiceNumber}.pdf`)
+  showSuccess('Invoice downloaded successfully')
+}
+
+const printInvoice = () => {
+  // Use the hidden invoice template for printing
+  const printContents = document.getElementById('invoice-for-print')
+  if (!printContents || !invoiceData.value) {
+    showError('Invoice not available for printing')
+    return
+  }
+
+  const printWindow = window.open('', '', 'width=800,height=600')
+  if (!printWindow) {
+    showError('Failed to open print window')
+    return
+  }
+
+  // Get all stylesheets from the current document
+  const styles = Array.from(document.styleSheets)
+    .map(styleSheet => {
+      try {
+        return Array.from(styleSheet.cssRules)
+          .map(rule => rule.cssText)
+          .join('\n')
+      } catch (e) {
+        console.warn('Could not access stylesheet:', e)
+        return ''
+      }
+    })
+    .join('\n')
+
+  // Clone the invoice template
+  const clonedContent = printContents.cloneNode(true) as HTMLElement
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Invoice - ${invoiceData.value.invoiceNumber}</title>
+        <meta charset="utf-8">
+        <link href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css" rel="stylesheet">
+        <style>
+          ${styles}
+
+          /* Additional print styles */
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            padding: 20px;
+            background: white;
+          }
+          .v-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+          }
+          @media print {
+            body {
+              padding: 0;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        ${clonedContent.innerHTML}
+      </body>
+    </html>
+  `
+
+  printWindow.document.open()
+  printWindow.document.write(htmlContent)
+  printWindow.document.close()
+
+  printWindow.onload = () => {
+    setTimeout(() => {
+      printWindow.focus()
+      printWindow.print()
+      printWindow.close()
+      showSuccess('Invoice sent to printer')
+    }, 500)
+  }
+}
+
+const sendInvoice = async (invoice: Invoice) => {
+  // In a real app, this would send the invoice via email
+  showSuccess(`Invoice ${invoice.invoiceNumber} sent to ${invoice.customerEmail}`)
 }
 
 const downloadReceipt = () => {
@@ -351,13 +525,90 @@ const confirmRefund = async () => {
 }
 
 const printReceipt = () => {
-  printReceiptUtil({
-    payment: payment.value,
-    formatCurrency,
-    formatDate,
-    getMethodLabel,
-  })
-  showSuccess('Receipt sent to printer')
+  // Use the hidden receipt template for printing
+  const printContents = document.getElementById('receipt-for-print')
+  if (!printContents || !receiptData.value) {
+    showError('Receipt not available for printing')
+    return
+  }
+
+  const printWindow = window.open('', '', 'width=800,height=600')
+  if (!printWindow) {
+    showError('Failed to open print window')
+    return
+  }
+
+  // Get all stylesheets from the current document
+  const styles = Array.from(document.styleSheets)
+    .map(styleSheet => {
+      try {
+        return Array.from(styleSheet.cssRules)
+          .map(rule => rule.cssText)
+          .join('\n')
+      } catch (e) {
+        console.warn('Could not access stylesheet:', e)
+        return ''
+      }
+    })
+    .join('\n')
+
+  // Clone the receipt template
+  const clonedContent = printContents.cloneNode(true) as HTMLElement
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Payment Receipt - ${receiptData.value.receiptNumber}</title>
+        <meta charset="utf-8">
+        <link href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css" rel="stylesheet">
+        <style>
+          ${styles}
+
+          /* Additional print styles */
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            padding: 20px;
+            background: white;
+          }
+          .v-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+          }
+          @media print {
+            body {
+              padding: 0;
+            }
+            .receipt-container {
+              border: none !important;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        ${clonedContent.innerHTML}
+      </body>
+    </html>
+  `
+
+  printWindow.document.open()
+  printWindow.document.write(htmlContent)
+  printWindow.document.close()
+
+  printWindow.onload = () => {
+    setTimeout(() => {
+      printWindow.focus()
+      printWindow.print()
+      printWindow.close()
+      showSuccess('Receipt sent to printer')
+    }, 500)
+  }
 }
 
 const confirmEmail = async () => {

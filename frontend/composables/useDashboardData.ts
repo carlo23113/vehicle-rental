@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { useCurrency } from './useCurrency'
 
 export const useDashboardData = () => {
-  const { formatCurrency } = useCurrency()
+  const { formatCurrency, getCurrencyIcon } = useCurrency()
 
   // Statistics data - loaded immediately (above the fold)
   const stats = ref<any[]>([])
@@ -41,7 +41,7 @@ export const useDashboardData = () => {
         value: formatCurrency(124500),
         change: "12.5%",
         trend: "up" as const,
-        icon: "mdi-currency-usd",
+        icon: getCurrencyIcon(),
         color: "success",
       },
       {

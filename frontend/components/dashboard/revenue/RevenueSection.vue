@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+const { getCurrencySymbol } = useCurrency()
+
 type FilterType = 'week' | 'month' | 'year'
 
 const props = defineProps<{
@@ -67,9 +69,9 @@ const chartConfig = computed(() => CHART_DATA_MAP[props.filter] || { labels: [],
       :labels="chartConfig.labels"
       :data="chartConfig.data"
       label="Revenue"
-      y-axis-prefix="$"
+      :y-axis-prefix="getCurrencySymbol()"
       y-axis-suffix="K"
-      tooltip-prefix="$"
+      :tooltip-prefix="getCurrencySymbol()"
       :y-axis-divider="1000"
       :height="320"
     />

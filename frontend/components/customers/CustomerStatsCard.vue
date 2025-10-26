@@ -10,9 +10,9 @@
         </CommonUiDetailItem>
       </v-col>
       <v-col cols="12">
-        <CommonUiDetailItem label="Total Spent" icon="mdi-currency-usd">
+        <CommonUiDetailItem label="Total Spent" :icon="currencyIcon">
           <v-chip color="success" variant="tonal" size="small">
-            <v-icon icon="mdi-currency-usd" start size="14" />
+            <v-icon :icon="currencyIcon" start size="14" />
             {{ formatCurrency(customer.totalSpent) }}
           </v-chip>
         </CommonUiDetailItem>
@@ -40,7 +40,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { formatCurrency } = useCurrency()
+const { formatCurrency, getCurrencyIcon } = useCurrency()
+
+const currencyIcon = computed(() => getCurrencyIcon())
 
 const averagePerRental = computed(() => {
   if (props.customer.totalRentals === 0) return 0

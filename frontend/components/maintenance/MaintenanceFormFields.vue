@@ -132,10 +132,9 @@
             variant="outlined"
             density="comfortable"
             type="number"
-            :prefix="getCurrencySymbol()"
             step="0.01"
             min="0"
-            prepend-inner-icon="mdi-currency-usd"
+            :prepend-inner-icon="getCurrencyIcon()"
           />
         </v-col>
         <v-col cols="12" md="4">
@@ -163,7 +162,11 @@
     </CommonFormSection>
 
     <!-- Completion Information (only if status is completed) -->
-    <CommonFormSection v-if="localForm.status === 'completed'" title="Completion Information" icon="mdi-check-circle">
+    <CommonFormSection
+      v-if="localForm.status === 'completed'"
+      title="Completion Information"
+      icon="mdi-check-circle"
+    >
       <v-row>
         <v-col cols="12" md="6">
           <v-text-field
@@ -189,26 +192,18 @@
             step="0.01"
             min="0"
             :rules="[rules.required]"
-            prepend-inner-icon="mdi-currency-usd"
+            :prepend-inner-icon="getCurrencyIcon()"
           />
         </v-col>
       </v-row>
 
       <!-- Cost Summary Alert -->
-      <v-alert
-        v-if="localForm.cost > 0"
-        type="success"
-        variant="tonal"
-        class="mt-4"
-        border="start"
-      >
+      <v-alert v-if="localForm.cost > 0" type="success" variant="tonal" class="mt-4" border="start">
         <template #text>
           <div class="d-flex justify-space-between align-center">
             <div>
               <div class="text-subtitle-2 font-weight-bold mb-1">Maintenance Completed</div>
-              <div class="text-caption">
-                Total cost: {{ formatCurrency(localForm.cost) }}
-              </div>
+              <div class="text-caption">Total cost: {{ formatCurrency(localForm.cost) }}</div>
             </div>
           </div>
         </template>
@@ -246,7 +241,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: MaintenanceFormData]
 }>()
 
-const { formatCurrency, getCurrencySymbol } = useCurrency()
+const { formatCurrency, getCurrencySymbol, getCurrencyIcon } = useCurrency()
 const { vehicles } = useVehicles()
 const { rules } = useFormValidation()
 
@@ -328,4 +323,3 @@ const handleVehicleChange = (vehicleId: number) => {
   localForm.value.mileage = vehicle.mileage
 }
 </script>
-

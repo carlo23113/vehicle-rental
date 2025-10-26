@@ -1,20 +1,17 @@
 <template>
-  <v-card elevation="0" class="invoice-generator-card">
-    <v-card-title class="pa-4">
-      <div class="d-flex align-center justify-space-between">
-        <div>
-          <h3 class="text-h6 font-weight-bold">
-            {{ isEdit ? 'Edit Invoice' : 'Generate Invoice' }}
-          </h3>
-          <p class="text-caption text-medium-emphasis mt-1">Create a new invoice for the rental</p>
-        </div>
-        <v-btn icon="mdi-close" variant="text" @click="$emit('cancel')" />
-      </div>
-    </v-card-title>
+  <CommonPageContainer>
+    <!-- Header -->
+    <CommonPageDetailPageHeader
+      title="Generate Invoice"
+      subtitle="Create a new invoice for a customer or rental"
+      show-breadcrumbs
+      parent-label="Invoices"
+      parent-icon="mdi-file-document-outline"
+      @back="$router.push('/invoices')"
+    />
 
-    <v-divider />
-
-    <v-card-text class="pa-6">
+    <!-- Invoice Generator Form -->
+    <CommonFormCard>
       <v-form ref="formRef">
         <!-- Customer Selection -->
         <v-row>
@@ -87,28 +84,27 @@
         <v-divider class="my-6" />
 
         <!-- Items Section -->
-        <div class="items-section">
+        <div class="items-section pa-6 rounded-lg">
           <div class="d-flex align-center justify-space-between mb-4">
-            <h4 class="text-subtitle-1 font-weight-bold">Line Items</h4>
+            <h4 class="text-h6 font-weight-bold">Line Items</h4>
             <v-btn
               color="primary"
               variant="tonal"
               prepend-icon="mdi-plus"
-              size="small"
               @click="addItem"
             >
               Add Item
             </v-btn>
           </div>
 
-          <div v-for="(item, index) in form.items" :key="index" class="item-row mb-4">
+          <div v-for="(item, index) in form.items" :key="index" class="item-card mb-4 pa-4 rounded-lg">
             <v-row>
               <v-col cols="12" md="4">
                 <v-text-field
                   v-model="item.description"
                   label="Description"
                   variant="outlined"
-                  density="compact"
+                  density="comfortable"
                   hide-details="auto"
                   :rules="[v => !!v || 'Description is required']"
                 />
@@ -120,7 +116,7 @@
                   label="Qty"
                   type="number"
                   variant="outlined"
-                  density="compact"
+                  density="comfortable"
                   hide-details="auto"
                   :rules="[v => v > 0 || 'Must be > 0']"
                   @input="calculateItemTotal(item)"
@@ -133,7 +129,7 @@
                   label="Unit Price"
                   type="number"
                   variant="outlined"
-                  density="compact"
+                  density="comfortable"
                   :prefix="getCurrencySymbol()"
                   hide-details="auto"
                   :rules="[v => v >= 0 || 'Must be >= 0']"
@@ -147,7 +143,7 @@
                   label="Tax %"
                   type="number"
                   variant="outlined"
-                  density="compact"
+                  density="comfortable"
                   suffix="%"
                   hide-details="auto"
                   @input="calculateItemTotal(item)"
@@ -209,28 +205,26 @@
         </v-row>
 
         <!-- Totals Summary -->
-        <v-card elevation="0" class="totals-card mt-6">
-          <v-card-text>
-            <div class="total-row">
-              <span>Subtotal:</span>
-              <span class="font-weight-bold">{{ formatCurrency(calculatedTotals.subtotal) }}</span>
-            </div>
-            <div v-if="form.discountAmount > 0" class="total-row text-success">
-              <span>Discount:</span>
-              <span class="font-weight-bold">-{{ formatCurrency(form.discountAmount) }}</span>
-            </div>
-            <div class="total-row">
-              <span>Tax:</span>
-              <span class="font-weight-bold">{{ formatCurrency(calculatedTotals.taxAmount) }}</span>
-            </div>
-            <v-divider class="my-2" />
-            <div class="total-row grand-total">
-              <span>Total:</span>
-              <span class="font-weight-bold">{{
-                formatCurrency(calculatedTotals.totalAmount)
-              }}</span>
-            </div>
-          </v-card-text>
+        <v-card elevation="0" class="totals-card mt-6 pa-6 rounded-lg">
+          <div class="total-row">
+            <span class="text-subtitle-1">Subtotal:</span>
+            <span class="text-h6 font-weight-bold">{{ formatCurrency(calculatedTotals.subtotal) }}</span>
+          </div>
+          <div v-if="form.discountAmount > 0" class="total-row text-success">
+            <span class="text-subtitle-1">Discount:</span>
+            <span class="text-h6 font-weight-bold">-{{ formatCurrency(form.discountAmount) }}</span>
+          </div>
+          <div class="total-row">
+            <span class="text-subtitle-1">Tax:</span>
+            <span class="text-h6 font-weight-bold">{{ formatCurrency(calculatedTotals.taxAmount) }}</span>
+          </div>
+          <v-divider class="my-3" />
+          <div class="total-row grand-total">
+            <span class="text-h6">Total:</span>
+            <span class="text-h4 font-weight-bold">{{
+              formatCurrency(calculatedTotals.totalAmount)
+            }}</span>
+          </div>
         </v-card>
 
         <!-- Notes & Terms -->
@@ -259,101 +253,99 @@
             />
           </v-col>
         </v-row>
+
+        <!-- Form Actions -->
+        <CommonFormActions
+          submit-text="Generate Invoice"
+          submit-icon="mdi-file-document-check"
+          submit-type="button"
+          cancel-text="Cancel"
+          :loading="loading"
+          @submit="generateInvoice"
+          @cancel="handleCancel"
+        >
+          <template #prepend>
+            <v-btn
+              variant="outlined"
+              color="primary"
+              size="large"
+              prepend-icon="mdi-eye"
+              :disabled="form.items.length === 0 || loading"
+              @click="handlePreview"
+            >
+              Preview
+            </v-btn>
+          </template>
+        </CommonFormActions>
       </v-form>
-    </v-card-text>
+    </CommonFormCard>
 
-    <v-divider />
+    <!-- Preview Dialog -->
+    <v-dialog v-model="previewDialog" max-width="900px" scrollable>
+      <v-card>
+        <v-card-title class="d-flex align-center justify-space-between pa-4">
+          <span class="text-h6">Invoice Preview</span>
+          <v-btn icon="mdi-close" variant="text" @click="previewDialog = false" />
+        </v-card-title>
+        <v-divider />
+        <v-card-text class="pa-0">
+          <InvoiceTemplate
+            v-if="previewInvoice"
+            :invoice="previewInvoice"
+            :company-info="companyInfo"
+            :show-tax="true"
+          />
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn variant="text" @click="previewDialog = false">Close</v-btn>
+          <v-btn color="primary" variant="flat" @click="handleGenerateFromPreview">
+            Generate Invoice
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
-    <v-card-actions class="pa-6">
-      <v-btn variant="text" @click="$emit('cancel')"> Cancel </v-btn>
-      <v-spacer />
-      <v-btn variant="outlined" color="primary" prepend-icon="mdi-eye" @click="previewInvoice">
-        Preview
-      </v-btn>
-      <v-btn
-        color="primary"
-        variant="flat"
-        prepend-icon="mdi-check"
-        :loading="loading"
-        @click="generateInvoice"
-      >
-        {{ isEdit ? 'Update Invoice' : 'Generate Invoice' }}
-      </v-btn>
-    </v-card-actions>
-  </v-card>
+    <!-- Snackbar -->
+    <CommonUiSnackbar v-model="snackbar" />
+  </CommonPageContainer>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import type { InvoiceItem } from '~/types/invoice'
-import { useCurrency } from '~/composables/useCurrency'
+import { ref, computed } from 'vue'
+import type { Invoice, CompanyInfo, InvoiceItem } from '~/types/invoice'
 
-interface Customer {
-  id: number | string
-  name: string
-  email: string
-  phone?: string
-  address?: string
-}
-
-interface Vehicle {
-  id: number | string
-  make: string
-  model: string
-  year: number
-  licensePlate: string
-}
-
-interface Props {
-  rentalId?: string
-  customer?: Customer
-  vehicle?: Vehicle
-  customerId?: string
-  customerName?: string
-  customerEmail?: string
-  existingInvoice?: any
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  cancel: []
-  save: [invoice: any]
-  generate: [invoice: any]
-  preview: [invoice: any]
-}>()
+definePageMeta({
+  layout: 'default',
+})
 
 const { formatCurrency, getCurrencySymbol } = useCurrency()
 
+// State
 const formRef = ref()
 const loading = ref(false)
-
-const isEdit = computed(() => !!props.existingInvoice)
+const previewDialog = ref(false)
+const previewInvoice = ref<Invoice | null>(null)
+const snackbar = ref({
+  show: false,
+  message: '',
+  color: 'success' as 'success' | 'error',
+  icon: 'mdi-check-circle',
+})
 
 const form = ref({
-  customerName: props.customer?.name || props.customerName || '',
-  customerEmail: props.customer?.email || props.customerEmail || '',
+  customerName: 'John Doe',
+  customerEmail: 'john@example.com',
   issueDate: new Date().toISOString().split('T')[0],
   dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   status: 'draft' as const,
   items: [] as InvoiceItem[],
   discountAmount: 0,
   globalTaxRate: 8.5,
-  notes: '',
-  terms: 'Payment is due within 30 days. Late payments may incur additional fees.',
+  notes: '' as string,
+  terms: 'Payment is due within 30 days. Late payments may incur additional fees.' as string,
 })
-
-// Watch for customer prop changes
-watch(
-  () => props.customer,
-  newCustomer => {
-    if (newCustomer) {
-      form.value.customerName = newCustomer.name
-      form.value.customerEmail = newCustomer.email
-    }
-  },
-  { immediate: true }
-)
 
 const statusOptions = [
   { title: 'Draft', value: 'draft' },
@@ -373,6 +365,25 @@ const calculatedTotals = computed(() => {
   }
 })
 
+// Company info (this should come from settings in a real app)
+const companyInfo: CompanyInfo = {
+  name: 'Vehicle Rental Company',
+  logo: '',
+  address: {
+    street: '123 Business St',
+    city: 'San Francisco',
+    state: 'CA',
+    zipCode: '94102',
+    country: 'USA',
+  },
+  phone: '+1 (555) 123-4567',
+  email: 'contact@vehiclerental.com',
+  website: 'www.vehiclerental.com',
+  taxId: '12-3456789',
+  registrationNumber: 'REG-2024-001',
+}
+
+// Item operations
 const addItem = () => {
   form.value.items.push({
     id: `item-${Date.now()}`,
@@ -398,7 +409,6 @@ const calculateItemTotal = (item: InvoiceItem) => {
 }
 
 const calculateTotals = () => {
-  // Recalculate all items
   form.value.items.forEach(item => {
     if (!item.taxRate) {
       item.taxRate = form.value.globalTaxRate
@@ -407,9 +417,44 @@ const calculateTotals = () => {
   })
 }
 
-const previewInvoice = () => {
-  const invoiceData = buildInvoiceData()
-  emit('preview', invoiceData)
+const buildInvoiceData = (): Invoice => {
+  const invoice: Invoice = {
+    id: `inv-${Date.now()}`,
+    invoiceNumber: `INV-${Date.now()}`,
+    type: 'rental',
+    status: form.value.status,
+    paymentStatus: 'unpaid',
+    customerId: '1',
+    customerName: form.value.customerName,
+    customerEmail: form.value.customerEmail,
+    issueDate: form.value.issueDate || new Date().toISOString().split('T')[0],
+    dueDate: form.value.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    items: form.value.items,
+    subtotal: calculatedTotals.value.subtotal,
+    taxRate: form.value.globalTaxRate,
+    taxAmount: calculatedTotals.value.taxAmount,
+    discountAmount: form.value.discountAmount,
+    totalAmount: calculatedTotals.value.totalAmount,
+    amountPaid: 0,
+    amountDue: calculatedTotals.value.totalAmount,
+    createdAt: new Date().toISOString(),
+    createdBy: 'Admin',
+  }
+
+  if (form.value.notes) {
+    invoice.notes = form.value.notes
+  }
+
+  if (form.value.terms) {
+    invoice.terms = form.value.terms
+  }
+
+  return invoice
+}
+
+// Handlers
+const handleCancel = () => {
+  navigateTo('/invoices')
 }
 
 const generateInvoice = async () => {
@@ -417,70 +462,86 @@ const generateInvoice = async () => {
   if (!valid) return
 
   if (form.value.items.length === 0) {
-    alert('Please add at least one item to the invoice')
+    snackbar.value = {
+      show: true,
+      message: 'Please add at least one item to the invoice',
+      color: 'error',
+      icon: 'mdi-alert-circle',
+    }
     return
   }
 
   loading.value = true
 
   try {
+    await new Promise(resolve => setTimeout(resolve, 1000))
     const invoiceData = buildInvoiceData()
-    emit('save', invoiceData)
-    emit('generate', invoiceData)
+
+    console.log('Saving invoice:', invoiceData)
+
+    snackbar.value = {
+      show: true,
+      message: 'Invoice generated successfully!',
+      color: 'success',
+      icon: 'mdi-check-circle',
+    }
+
+    setTimeout(() => {
+      navigateTo('/invoices')
+    }, 1500)
   } finally {
     loading.value = false
   }
 }
 
-const buildInvoiceData = () => {
-  return {
-    ...form.value,
-    rentalId: props.rentalId,
-    customerId: props.customer?.id || props.customerId,
-    customerName: form.value.customerName,
-    customerEmail: form.value.customerEmail,
-    vehicleInfo: props.vehicle
-      ? `${props.vehicle.make} ${props.vehicle.model} (${props.vehicle.year})`
-      : undefined,
-    vehiclePlate: props.vehicle?.licensePlate,
-    subtotal: calculatedTotals.value.subtotal,
-    taxAmount: calculatedTotals.value.taxAmount,
-    totalAmount: calculatedTotals.value.totalAmount,
-    amountPaid: 0,
-    amountDue: calculatedTotals.value.totalAmount,
+const handlePreview = () => {
+  previewInvoice.value = buildInvoiceData()
+  previewDialog.value = true
+}
+
+const handleGenerateFromPreview = () => {
+  if (previewInvoice.value) {
+    previewDialog.value = false
+    generateInvoice()
   }
 }
 
-// Initialize with a rental item if it's a rental invoice
-if (props.rentalId && props.vehicle) {
+// Check for query parameters to pre-populate
+const route = useRoute()
+const rentalId = route.query.rentalId as string | undefined
+
+// Validate that rentalId is provided
+if (!rentalId) {
+  // Redirect to rentals page if no rental ID is provided
+  navigateTo('/rentals')
+} else {
+  // In a real app, you would fetch rental details from the API using the rentalId
+  // For now, we'll just add a default item with the rental information
   addItem()
   if (form.value.items[0]) {
-    form.value.items[0].description = `Vehicle Rental - ${props.vehicle.make} ${props.vehicle.model} (${props.vehicle.licensePlate})`
+    form.value.items[0].description = `Vehicle Rental - Rental ID: ${rentalId}`
+    form.value.items[0].quantity = 1
+    form.value.items[0].unitPrice = 100 // This would come from the rental data
+    calculateItemTotal(form.value.items[0])
   }
-} else if (props.rentalId) {
-  addItem()
-  if (form.value.items[0]) {
-    form.value.items[0].description = `Vehicle Rental - Rental ID: ${props.rentalId}`
-  }
+
+  // TODO: Fetch rental data and populate:
+  // - form.value.customerName from rental.customer.name
+  // - form.value.customerEmail from rental.customer.email
+  // - Item description with vehicle details
+  // - Item quantity (number of days)
+  // - Item unitPrice (daily rate from rental)
 }
 </script>
 
 <style scoped>
-.invoice-generator-card {
-  border: 1px solid rgba(var(--v-border-color), 0.12);
-  border-radius: 16px;
-}
-
 .items-section {
-  background: rgba(var(--v-theme-surface-variant), 0.3);
-  padding: 20px;
-  border-radius: 12px;
+  background: transparent;
+  border: 1px solid rgba(var(--v-border-color), 0.12);
 }
 
-.item-row {
+.item-card {
   background: rgb(var(--v-theme-surface));
-  padding: 15px;
-  border-radius: 8px;
   border: 1px solid rgba(var(--v-border-color), 0.12);
 }
 
@@ -491,18 +552,16 @@ if (props.rentalId && props.vehicle) {
     rgba(var(--v-theme-secondary), 0.05)
   );
   border: 1px solid rgba(var(--v-theme-primary), 0.2);
-  border-radius: 12px;
 }
 
 .total-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 8px 0;
-  font-size: 14px;
 }
 
 .total-row.grand-total {
-  font-size: 20px;
   color: rgb(var(--v-theme-primary));
   padding-top: 8px;
 }

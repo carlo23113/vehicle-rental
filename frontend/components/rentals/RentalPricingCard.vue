@@ -1,5 +1,5 @@
 <template>
-  <CommonUiDetailCard title="Pricing Details" icon="mdi-currency-usd">
+  <CommonUiDetailCard title="Pricing Details" :icon="currencyIcon">
     <div class="mb-4">
       <div class="text-caption text-medium-emphasis mb-1">Daily Rate</div>
       <div class="d-flex align-center ga-2">
@@ -71,8 +71,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { formatCurrency } = useCurrency()
+const { formatCurrency, getCurrencyIcon } = useCurrency()
 
+const currencyIcon = computed(() => getCurrencyIcon())
 const subtotal = props.days * props.dailyRate
 
 const remainingBalance = computed(() => {

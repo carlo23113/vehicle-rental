@@ -53,7 +53,7 @@
             </span>
           </div>
           <div class="detail-row">
-            <v-icon icon="mdi-currency-usd" size="16" class="text-medium-emphasis" />
+            <v-icon :icon="getCurrencyIcon()" size="16" class="text-medium-emphasis" />
             <span class="text-caption font-weight-bold">
               {{ formatCurrency(rental.totalAmount) }}
             </span>
@@ -77,7 +77,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const router = useRouter()
-const { formatCurrency } = useCurrency()
+const { formatCurrency, getCurrencyIcon } = useCurrency()
 
 const getStatusColor = (status: string) => {
   const colors: Record<string, string> = {

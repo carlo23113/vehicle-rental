@@ -161,7 +161,7 @@
     </CommonFormSection>
 
     <!-- Pricing Section -->
-    <CommonFormSection title="Pricing" icon="mdi-currency-usd">
+    <CommonFormSection title="Pricing" :icon="getCurrencyIcon()">
       <v-row>
         <v-col cols="12" md="6">
           <v-text-field
@@ -170,7 +170,7 @@
             variant="outlined"
             density="comfortable"
             type="number"
-            prefix="$"
+            :prefix="getCurrencySymbol()"
             placeholder="0.00"
             prepend-inner-icon="mdi-city"
             rounded="lg"
@@ -187,7 +187,7 @@
             variant="outlined"
             density="comfortable"
             type="number"
-            prefix="$"
+            :prefix="getCurrencySymbol()"
             placeholder="0.00"
             prepend-inner-icon="mdi-map-marker-distance"
             rounded="lg"
@@ -205,6 +205,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useLocations } from '~/composables/useLocations'
+
+const { getCurrencySymbol, getCurrencyIcon } = useCurrency()
 
 export interface VehicleFormData {
   make: string
