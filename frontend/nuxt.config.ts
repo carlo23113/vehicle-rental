@@ -156,7 +156,6 @@ export default defineNuxtConfig({
     {
       path: '~/components/contract',
       pathPrefix: false,
-      // Lazy load contract editor (heavy editor component)
       global: false,
     },
     {
