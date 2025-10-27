@@ -33,9 +33,13 @@ export default defineNuxtConfig({
         '@@': resolve(__dirname, './'),
       },
     },
+    optimizeDeps: {
+      exclude: ['xlsx'],
+    },
     build: {
       // Enable code splitting for better lazy loading
       rollupOptions: {
+        external: ['node:fs', 'node:stream', 'node:crypto'],
         output: {
           manualChunks: (id) => {
             // Split vendor chunks for better caching
@@ -57,6 +61,9 @@ export default defineNuxtConfig({
               }
               if (id.includes('@tiptap')) {
                 return 'tiptap'
+              }
+              if (id.includes('xlsx')) {
+                return 'xlsx'
               }
               return 'vendor'
             }
