@@ -113,6 +113,9 @@ export default defineNuxtConfig({
             if (id.includes('/components/landing/')) {
               return 'landing'
             }
+            if (id.includes('/components/admin/')) {
+              return 'admin'
+            }
           }
         }
       },
@@ -196,9 +199,6 @@ export default defineNuxtConfig({
   routeRules: {
     // Static pages - pre-render at build time
     '/': { prerender: true },
-
-    // SPA mode for dashboard pages (client-side only)
-    '/owner/**': { ssr: false },
 
     // Cache static assets
     '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
