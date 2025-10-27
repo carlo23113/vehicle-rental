@@ -95,7 +95,7 @@ export const useReportExport = (data: ExportData) => {
   }
 
   const exportToExcel = async () => {
-    const XLSX = await import('xlsx/dist/xlsx.mini.min.js')
+    const XLSX = await import('xlsx')
     const wb = XLSX.utils.book_new()
 
     // Summary Statistics sheet
