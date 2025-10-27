@@ -39,6 +39,9 @@ export default defineNuxtConfig({
     optimizeDeps: {
       exclude: ['xlsx'],
     },
+    ssr: {
+      noExternal: ['xlsx'],
+    },
     build: {
       // Enable code splitting for better lazy loading
       commonjsOptions: {
@@ -184,6 +187,9 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: true,
       routes: ['/'],
+    },
+    externals: {
+      inline: ['xlsx'],
     },
   },
 
