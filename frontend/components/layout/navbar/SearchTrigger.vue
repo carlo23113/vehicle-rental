@@ -30,7 +30,7 @@ defineEmits<{
 
 <style scoped>
 .search-field :deep(.v-field) {
-  background: white;
+  background: rgb(var(--v-theme-surface));
   border: 1px solid rgba(var(--v-border-color), 0.12);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
@@ -38,7 +38,7 @@ defineEmits<{
 }
 
 .search-field:hover :deep(.v-field) {
-  background: white;
+  background: rgb(var(--v-theme-surface));
   border-color: rgba(var(--v-theme-primary), 0.3);
   box-shadow: 0 4px 16px rgba(var(--v-theme-primary), 0.12);
   transform: translateY(-1px);
