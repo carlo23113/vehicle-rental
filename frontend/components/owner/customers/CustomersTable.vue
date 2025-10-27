@@ -7,6 +7,7 @@
     empty-icon="mdi-account-remove"
     empty-title="No customers found"
     empty-message="Try adjusting your filters or add a new customer"
+    @row-click="$emit('view', $event)"
   >
     <template #item.customer="{ item }">
       <div class="flex items-center py-3">

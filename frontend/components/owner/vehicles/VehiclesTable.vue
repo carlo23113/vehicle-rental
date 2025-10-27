@@ -7,6 +7,7 @@
     empty-icon="mdi-car-off"
     empty-title="No vehicles found"
     empty-message="Try adjusting your filters or add a new vehicle"
+    @row-click="$emit('view', $event)"
   >
     <template #item.vehicle="{ item }">
       <div class="flex items-center py-3">

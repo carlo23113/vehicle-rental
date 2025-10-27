@@ -7,6 +7,7 @@
     empty-icon="mdi-account-remove"
     empty-title="No users found"
     empty-message="Try adjusting your filters or add a new user"
+    @row-click="$emit('view', $event)"
   >
     <template #item.user="{ item }">
       <div class="flex items-center py-3">

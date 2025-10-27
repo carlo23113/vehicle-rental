@@ -7,7 +7,7 @@
     empty-icon="mdi-tools"
     empty-title="No maintenance records found"
     empty-message="Try adjusting your filters or schedule new maintenance"
-    @click:row="handleRowClick"
+    @row-click="$emit('view', $event)"
   >
     <template #item.vehicle="{ item }">
       <div class="flex items-center py-3">

@@ -7,6 +7,7 @@
     empty-icon="mdi-file-document-remove"
     empty-title="No documents found"
     empty-message="Try adjusting your filters or upload a new document"
+    @row-click="$emit('view', $event)"
   >
     <template #item.document="{ item }">
       <div class="d-flex align-center py-3">

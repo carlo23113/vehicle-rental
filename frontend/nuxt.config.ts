@@ -59,27 +59,79 @@ export default defineNuxtConfig({
       path: '~/components/layout',
       pathPrefix: false,
     },
+    // Owner components
     {
-      path: '~/components/dashboard',
+      path: '~/components/owner/dashboard',
       pathPrefix: false,
     },
     {
-      path: '~/components/reports',
+      path: '~/components/owner/customers',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/owner/rentals',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/owner/vehicles',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/owner/locations',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/owner/maintenance',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/owner/payments',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/owner/invoices',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/owner/roles',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/owner/users',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/owner/documents',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/owner/notifications',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/owner/reports',
+      pathPrefix: false,
+      global: false,
+    },
+    // Admin components
+    {
+      path: '~/components/admin',
       pathPrefix: false,
       global: false,
     },
     {
       path: '~/components/contract',
-      pathPrefix: false,
-      global: false,
-    },
-    {
-      path: '~/components/payments',
-      pathPrefix: false,
-      global: false,
-    },
-    {
-      path: '~/components/maintenance',
       pathPrefix: false,
       global: false,
     },

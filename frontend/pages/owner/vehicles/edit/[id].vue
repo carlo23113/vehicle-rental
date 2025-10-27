@@ -65,8 +65,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSnackbar } from '~/composables/useSnackbar'
-import type { VehicleFormData } from '~/components/vehicles/VehicleFormFields.vue'
-import type { PhotoFile } from '~/components/vehicles/VehiclePhotoUpload.vue'
+import type { VehicleFormData } from '~/components/owner/vehicles/VehicleFormFields.vue'
+import type { PhotoFile } from '~/components/owner/vehicles/VehiclePhotoUpload.vue'
 
 const route = useRoute()
 const router = useRouter()

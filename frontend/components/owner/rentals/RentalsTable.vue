@@ -7,6 +7,7 @@
     empty-icon="mdi-calendar-remove"
     empty-title="No rentals found"
     empty-message="Try adjusting your filters or create a new rental"
+    @row-click="$emit('view', $event)"
   >
     <template #item.customer="{ item }">
       <div class="flex items-center py-3">

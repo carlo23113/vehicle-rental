@@ -7,6 +7,7 @@
     empty-icon="mdi-map-marker-off"
     empty-title="No locations found"
     empty-message="Try adjusting your filters or add a new location"
+    @row-click="$emit('view', $event)"
   >
     <template #item.location="{ item }">
       <div class="flex items-center py-3">

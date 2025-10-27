@@ -7,6 +7,7 @@
     empty-icon="mdi-cash-remove"
     empty-title="No payments found"
     empty-message="Try adjusting your filters or record a new payment"
+    @row-click="$emit('view', $event)"
   >
     <template #item.customer="{ item }">
       <div class="flex items-center py-3">

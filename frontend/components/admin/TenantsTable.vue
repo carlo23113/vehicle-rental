@@ -1,8 +1,11 @@
 <template>
   <CommonUiDataTable
     :headers="headers"
-    :items="tenants"
+    :items="[]"
     :loading="false"
+    empty-icon="mdi-car-off"
+    empty-title="No tenants found"
+    empty-message="Try adjusting your filters or add a new tenants"
     @row-click="$emit('view', $event)"
   >
     <!-- Tenant Name -->

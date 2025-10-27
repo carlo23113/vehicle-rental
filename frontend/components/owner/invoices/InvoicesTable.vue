@@ -7,6 +7,7 @@
     empty-icon="mdi-file-document-remove"
     empty-title="No invoices found"
     empty-message="Try adjusting your filters or create a new invoice"
+    @row-click="$emit('view', $event)"
   >
     <template #item.invoice="{ item }">
       <div class="py-3">
@@ -105,8 +106,14 @@ defineEmits<{
 }>()
 
 const { formatCurrency } = useCurrency()
-const { getStatusColor, getStatusLabel, getPaymentStatusColor, getPaymentStatusLabel, isOverdue, formatDate } =
-  useInvoiceHelpers()
+const {
+  getStatusColor,
+  getStatusLabel,
+  getPaymentStatusColor,
+  getPaymentStatusLabel,
+  isOverdue,
+  formatDate,
+} = useInvoiceHelpers()
 
 const headers = [
   { title: 'Invoice', key: 'invoice', sortable: true },
