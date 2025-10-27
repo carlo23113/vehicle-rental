@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
 interface UseProgressiveTableOptions {
   batchSize?: number
@@ -126,7 +126,10 @@ export const useProgressiveTable = (
   }
 
   // Initialize on mount
-  onMounted(() => {
+  onMounted(async () => {
+    // Wait for computed refs to initialize
+    await nextTick()
+
     // If refs are not provided (new CommonPageLayout pattern), auto-load data immediately
     if (!statsSection.value && !tableSection.value) {
       sectionsLoaded.value = {
