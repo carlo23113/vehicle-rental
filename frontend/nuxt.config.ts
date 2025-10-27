@@ -35,37 +35,6 @@ export default defineNuxtConfig({
     ssr: {
       noExternal: ['xlsx'],
     },
-    build: {
-      // Enable code splitting for better lazy loading
-      commonjsOptions: {
-        transformMixedEsModules: true,
-      },
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            // Split vendor chunks for better caching
-            if (id.includes('node_modules')) {
-              if (id.includes('vuetify')) {
-                return 'vuetify'
-              }
-              if (id.includes('@tiptap')) {
-                return 'tiptap'
-              }
-              if (id.includes('chart.js')) {
-                return 'charts'
-              }
-              if (id.includes('xlsx')) {
-                return 'xlsx'
-              }
-              // Group all other node_modules together to prevent circular deps
-              return 'vendor'
-            }
-          },
-        },
-      },
-      chunkSizeWarningLimit: 600,
-      cssCodeSplit: true,
-    },
   },
 
   imports: {
