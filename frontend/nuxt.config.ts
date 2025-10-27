@@ -33,13 +33,18 @@ export default defineNuxtConfig({
         '@@': resolve(__dirname, './'),
       },
     },
+    define: {
+      'process.versions.node': JSON.stringify(undefined),
+    },
     optimizeDeps: {
       exclude: ['xlsx'],
     },
     build: {
       // Enable code splitting for better lazy loading
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
       rollupOptions: {
-        external: ['node:fs', 'node:stream', 'node:crypto'],
         output: {
           manualChunks: (id) => {
             // Split vendor chunks for better caching
