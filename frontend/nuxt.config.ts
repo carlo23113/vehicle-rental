@@ -9,16 +9,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
-  modules: [
-    '@nuxtjs/tailwindcss',
-    '@pinia/nuxt'
-  ],
+  modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt'],
 
-  css: [
-    'vuetify/styles',
-    '@mdi/font/css/materialdesignicons.css',
-    '~/assets/css/animations.css',
-  ],
+  css: ['vuetify/styles', '@mdi/font/css/materialdesignicons.css', '~/assets/css/animations.css'],
 
   build: {
     transpile: ['vuetify'],
@@ -49,7 +42,7 @@ export default defineNuxtConfig({
       },
       rollupOptions: {
         output: {
-          manualChunks: (id) => {
+          manualChunks: id => {
             // Split vendor chunks for better caching
             if (id.includes('node_modules')) {
               if (id.includes('vuetify')) {
@@ -116,23 +109,23 @@ export default defineNuxtConfig({
             if (id.includes('/components/admin/')) {
               return 'admin'
             }
-          }
-        }
+          },
+        },
       },
       chunkSizeWarningLimit: 600,
       cssCodeSplit: true,
-    }
+    },
   },
 
   imports: {
-    dirs: ['stores', 'composables', 'utils']
+    dirs: ['stores', 'composables', 'utils'],
   },
 
   alias: {
     '~': './',
     '@': './',
     '~~': './',
-    '@@': './'
+    '@@': './',
   },
 
   // Enable component lazy loading with path prefixes to avoid naming conflicts
@@ -153,7 +146,6 @@ export default defineNuxtConfig({
     {
       path: '~/components/reports',
       pathPrefix: false,
-      // Lazy load report components (heavy tables/charts)
       global: false,
     },
     {
@@ -174,7 +166,7 @@ export default defineNuxtConfig({
     {
       path: '~/components',
       pathPrefix: false,
-    }
+    },
   ],
 
   // Optimize chunk loading
@@ -209,5 +201,5 @@ export default defineNuxtConfig({
       tailwindcss: {},
       autoprefixer: {},
     },
-  }
+  },
 })
