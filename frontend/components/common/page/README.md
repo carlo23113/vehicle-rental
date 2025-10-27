@@ -199,6 +199,70 @@ Instead of using the default action button, you can provide custom header action
 </template>
 ```
 
+### Using Export Button in Header
+
+You can add the reusable export button to any page using the `header-actions` slot:
+
+```vue
+<template>
+  <CommonPageLayout
+    title="Vehicles"
+    subtitle="Manage your fleet inventory"
+    action-text="Add Vehicle"
+    action-icon="mdi-plus"
+    @action-click="handleAddVehicle"
+  >
+    <!-- Export Button in Header -->
+    <template #header-actions>
+      <CommonUiExportButton
+        :items="filteredVehicles"
+        :columns="exportColumns"
+        filename="vehicles"
+        :loading="exporting"
+        @export="handleExport"
+      />
+    </template>
+
+    <template #content>
+      <VehiclesTableSection :vehicles="vehicles" />
+    </template>
+  </CommonPageLayout>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useExport } from '~/composables/useExport'
+import type { ExportColumn } from '~/composables/useExport'
+
+const { exportData } = useExport()
+const exporting = ref(false)
+
+// Define export columns
+const exportColumns = computed<ExportColumn[]>(() => [
+  { key: 'id', label: 'ID', width: 60 },
+  { key: 'make', label: 'Make', width: 100 },
+  { key: 'model', label: 'Model', width: 100 },
+  { key: 'status', label: 'Status', width: 100 },
+])
+
+// Export handler
+const handleExport = async (format: 'csv' | 'pdf', options: any) => {
+  exporting.value = true
+  try {
+    await exportData(filteredVehicles.value, format, {
+      ...options,
+      columns: exportColumns.value,
+      title: 'Vehicles Report',
+    })
+  } catch (error) {
+    console.error('Export error:', error)
+  } finally {
+    exporting.value = false
+  }
+}
+</script>
+```
+
 ## Custom Skeletons
 
 Override default skeleton loaders:

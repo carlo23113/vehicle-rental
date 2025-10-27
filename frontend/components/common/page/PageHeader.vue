@@ -8,7 +8,8 @@
           </div>
           <p class="page-subtitle">{{ subtitle }}</p>
         </div>
-        <slot name="actions">
+        <div class="header-actions">
+          <slot name="actions" />
           <v-btn
             v-if="actionText"
             color="primary"
@@ -20,7 +21,7 @@
             <v-icon v-if="actionIcon" :icon="actionIcon" start size="20"></v-icon>
             {{ actionText }}
           </v-btn>
-        </slot>
+        </div>
       </div>
     </v-col>
   </v-row>
@@ -33,6 +34,10 @@
 
 .header-content {
   @apply flex-1 min-w-[250px];
+}
+
+.header-actions {
+  @apply flex items-center gap-3;
 }
 
 .title-wrapper {

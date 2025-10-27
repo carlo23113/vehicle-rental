@@ -27,10 +27,32 @@ export interface Vehicle {
   lastMaintenanceDate?: string
   nextMaintenanceDate?: string
   locationId: string
+  // Activity tracking
+  lastRentalDate?: string
+  lastUpdated?: string
+  createdAt?: string
 }
 
 export interface VehicleFilters {
   search: string
   status: VehicleStatus | 'all'
   type: VehicleType | 'all'
+  // Advanced filters
+  priceRange?: {
+    min: number | null
+    max: number | null
+    rateType: 'city' | 'province' | 'both'
+  }
+  mileageRange?: {
+    min: number | null
+    max: number | null
+  }
+  yearRange?: {
+    min: number | null
+    max: number | null
+  }
+  availabilityDateRange?: {
+    startDate: string | null
+    endDate: string | null
+  }
 }

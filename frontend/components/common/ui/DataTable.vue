@@ -1,7 +1,8 @@
 <template>
   <v-card elevation="0" class="table-card">
-    <v-card-text class="p-0">
+    <v-card-text class="!p-0">
       <v-data-table
+        v-model="selectedItemsModel"
         :headers="headers"
         :items="items"
         :items-per-page="itemsPerPage"
@@ -13,7 +14,9 @@
         :height="height"
         :class="tableClass"
         :items-per-page-options="itemsPerPageOptions"
-        @click:row="(_event: any, { item }: any) => $emit('row-click', item)"
+        :show-select="showSelect"
+        :item-value="itemValue"
+        @click:row="(_event: any, { item }: any) => handleRowClick(item)"
       >
         <!-- Pass through all slots -->
         <template v-for="(_, slot) in $slots" #[slot]="scope">
@@ -68,9 +71,12 @@ export interface DataTableProps {
   emptyTitle?: string
   emptyMessage?: string
   loadingText?: string
+  showSelect?: boolean
+  itemValue?: string
+  selectedItems?: any[]
 }
 
-withDefaults(defineProps<DataTableProps>(), {
+const props = withDefaults(defineProps<DataTableProps>(), {
   itemsPerPage: 10,
   itemsPerPageOptions: () => [10, 25, 50, 100],
   loading: false,
@@ -83,11 +89,28 @@ withDefaults(defineProps<DataTableProps>(), {
   emptyTitle: 'No data found',
   emptyMessage: 'Try adjusting your filters or add new items',
   loadingText: 'Loading data...',
+  showSelect: false,
+  itemValue: 'id',
+  selectedItems: () => [],
 })
 
-defineEmits<{
+const emit = defineEmits<{
   'row-click': [item: any]
+  'update:selectedItems': [items: any[]]
 }>()
+
+const selectedItemsModel = computed({
+  get: () => props.selectedItems || [],
+  set: (value) => emit('update:selectedItems', value || []),
+})
+
+const handleRowClick = (item: any) => {
+  // Only emit row-click if selection mode is disabled
+  // This prevents conflict between selection and row click
+  if (!props.showSelect) {
+    emit('row-click', item)
+  }
+}
 </script>
 
 <style scoped>

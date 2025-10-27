@@ -6,7 +6,6 @@
       :color="showFilters ? 'primary' : undefined"
       prepend-icon="mdi-filter-variant"
       @click="showFilters = !showFilters"
-      class="mb-4"
     >
       {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
       <v-badge
@@ -20,7 +19,7 @@
 
     <!-- Expandable Filter Card -->
     <v-expand-transition>
-      <v-card v-if="showFilters" class="mb-6 filter-card" elevation="0">
+      <v-card v-if="showFilters" class="mt-6 filter-card" elevation="0">
         <v-card-text class="pa-6">
           <div class="d-flex justify-space-between align-center mb-6">
             <div class="d-flex align-center gap-3">
@@ -61,21 +60,24 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: false,
-  filters: () => ({})
+  filters: () => ({}),
 })
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  'clear': []
+  clear: []
 }>()
 
 const showFilters = ref(props.modelValue)
 
-watch(() => props.modelValue, (value) => {
-  showFilters.value = value
-})
+watch(
+  () => props.modelValue,
+  value => {
+    showFilters.value = value
+  }
+)
 
-watch(showFilters, (value) => {
+watch(showFilters, value => {
   emit('update:modelValue', value)
 })
 
@@ -117,9 +119,11 @@ const clearFilters = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    135deg,
     rgba(var(--v-theme-primary), 0.1) 0%,
-    rgba(var(--v-theme-secondary), 0.1) 100%);
+    rgba(var(--v-theme-secondary), 0.1) 100%
+  );
 }
 
 .gap-3 {

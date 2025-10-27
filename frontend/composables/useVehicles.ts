@@ -19,10 +19,14 @@ export const useVehicles = () => {
         cityRate: 45,
         provinceRate: 65,
       },
+      imageUrl: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=400&h=300&fit=crop',
       features: ['Bluetooth', 'Backup Camera', 'Cruise Control'],
       lastMaintenanceDate: '2024-09-15',
       nextMaintenanceDate: '2025-03-15',
       locationId: '1',
+      lastRentalDate: '2024-10-20',
+      lastUpdated: '2024-10-25',
+      createdAt: '2023-01-15',
     },
     {
       id: 2,
@@ -40,10 +44,14 @@ export const useVehicles = () => {
         cityRate: 65,
         provinceRate: 90,
       },
+      imageUrl: 'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=400&h=300&fit=crop',
       features: ['AWD', 'Sunroof', 'Apple CarPlay', 'Lane Assist'],
       lastMaintenanceDate: '2024-08-20',
       nextMaintenanceDate: '2025-02-20',
       locationId: '2',
+      lastRentalDate: '2024-10-26',
+      lastUpdated: '2024-10-26',
+      createdAt: '2024-01-10',
     },
     {
       id: 3,
@@ -61,10 +69,14 @@ export const useVehicles = () => {
         cityRate: 75,
         provinceRate: 105,
       },
+      imageUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400&h=300&fit=crop',
       features: ['4WD', 'Towing Package', 'Bed Liner'],
       lastMaintenanceDate: '2024-10-05',
       nextMaintenanceDate: '2025-04-05',
       locationId: '1',
+      lastRentalDate: '2024-10-15',
+      lastUpdated: '2024-10-22',
+      createdAt: '2023-03-20',
     },
     {
       id: 4,
@@ -82,10 +94,14 @@ export const useVehicles = () => {
         cityRate: 95,
         provinceRate: 130,
       },
+      imageUrl: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=300&fit=crop',
       features: ['Autopilot', 'Premium Audio', 'Glass Roof'],
       lastMaintenanceDate: '2024-09-30',
       nextMaintenanceDate: '2025-03-30',
       locationId: '3',
+      lastRentalDate: '2024-10-18',
+      lastUpdated: '2024-10-24',
+      createdAt: '2024-02-05',
     },
     {
       id: 5,
@@ -103,10 +119,14 @@ export const useVehicles = () => {
         cityRate: 120,
         provinceRate: 165,
       },
+      imageUrl: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=300&fit=crop',
       features: ['Leather Seats', 'Navigation', 'Premium Sound', 'Heated Seats'],
       lastMaintenanceDate: '2024-10-18',
       nextMaintenanceDate: '2024-10-25',
       locationId: '3',
+      lastRentalDate: '2024-10-12',
+      lastUpdated: '2024-10-28',
+      createdAt: '2024-03-15',
     },
     {
       id: 6,
@@ -128,6 +148,9 @@ export const useVehicles = () => {
       lastMaintenanceDate: '2024-09-10',
       nextMaintenanceDate: '2025-03-10',
       locationId: '4',
+      lastRentalDate: '2024-09-28',
+      lastUpdated: '2024-10-12',
+      createdAt: '2023-05-20',
     },
     {
       id: 7,
@@ -149,6 +172,9 @@ export const useVehicles = () => {
       lastMaintenanceDate: '2024-08-25',
       nextMaintenanceDate: '2025-02-25',
       locationId: '2',
+      lastRentalDate: '2024-10-10',
+      lastUpdated: '2024-10-18',
+      createdAt: '2023-02-10',
     },
     {
       id: 8,
@@ -167,9 +193,13 @@ export const useVehicles = () => {
         provinceRate: 95,
       },
       features: ['4WD', 'Removable Top', 'Off-Road Package'],
+      imageUrl: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=300&fit=crop',
       lastMaintenanceDate: '2024-10-10',
       nextMaintenanceDate: '2024-11-15',
       locationId: '4',
+      lastRentalDate: '2024-08-22',
+      lastUpdated: '2024-10-14',
+      createdAt: '2024-01-05',
     },
   ])
 
@@ -177,10 +207,15 @@ export const useVehicles = () => {
     search: '',
     status: 'all',
     type: 'all',
+    priceRange: { min: null, max: null, rateType: 'both' },
+    mileageRange: { min: null, max: null },
+    yearRange: { min: null, max: null },
+    availabilityDateRange: { startDate: null, endDate: null },
   })
 
   const filteredVehicles = computed(() => {
     return vehicles.value.filter(vehicle => {
+      // Basic filters
       const matchesSearch =
         !filters.value.search ||
         vehicle.make.toLowerCase().includes(filters.value.search.toLowerCase()) ||
@@ -192,7 +227,74 @@ export const useVehicles = () => {
 
       const matchesType = filters.value.type === 'all' || vehicle.type === filters.value.type
 
-      return matchesSearch && matchesStatus && matchesType
+      // Advanced filters - Price Range
+      let matchesPriceRange = true
+      if (filters.value.priceRange) {
+        const { min, max, rateType } = filters.value.priceRange
+
+        if (min !== null || max !== null) {
+          if (rateType === 'city') {
+            matchesPriceRange =
+              (min === null || vehicle.rates.cityRate >= min) &&
+              (max === null || vehicle.rates.cityRate <= max)
+          } else if (rateType === 'province') {
+            matchesPriceRange =
+              (min === null || vehicle.rates.provinceRate >= min) &&
+              (max === null || vehicle.rates.provinceRate <= max)
+          } else {
+            // 'both' - match if either rate is in range
+            const cityMatch =
+              (min === null || vehicle.rates.cityRate >= min) &&
+              (max === null || vehicle.rates.cityRate <= max)
+            const provinceMatch =
+              (min === null || vehicle.rates.provinceRate >= min) &&
+              (max === null || vehicle.rates.provinceRate <= max)
+            matchesPriceRange = cityMatch || provinceMatch
+          }
+        }
+      }
+
+      // Advanced filters - Mileage Range
+      let matchesMileageRange = true
+      if (filters.value.mileageRange) {
+        const { min, max } = filters.value.mileageRange
+        matchesMileageRange =
+          (min === null || vehicle.mileage >= min) &&
+          (max === null || vehicle.mileage <= max)
+      }
+
+      // Advanced filters - Year Range
+      let matchesYearRange = true
+      if (filters.value.yearRange) {
+        const { min, max } = filters.value.yearRange
+        matchesYearRange =
+          (min === null || vehicle.year >= min) &&
+          (max === null || vehicle.year <= max)
+      }
+
+      // Advanced filters - Availability Date Range
+      let matchesAvailability = true
+      if (filters.value.availabilityDateRange) {
+        const { startDate, endDate } = filters.value.availabilityDateRange
+
+        // Only filter if dates are provided and vehicle is available
+        if ((startDate || endDate) && vehicle.status !== 'available') {
+          matchesAvailability = false
+        }
+        // If dates are set, ensure vehicle is available during that period
+        // For now, we'll just check if status is available
+        // In a real app, you'd check against rental bookings
+      }
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesType &&
+        matchesPriceRange &&
+        matchesMileageRange &&
+        matchesYearRange &&
+        matchesAvailability
+      )
     })
   })
 

@@ -14,14 +14,6 @@
       </template>
     </CommonPageHeader>
 
-    <!-- Filters Section (optional) -->
-    <slot
-      v-if="$slots.filters"
-      name="filters"
-      :show-filters="showFilters"
-      :sections-loaded="sectionsLoaded"
-    />
-
     <!-- Stats Section with Intersection Observer -->
     <div v-if="$slots.stats || $slots['stats-skeleton']" ref="statsSection">
       <slot v-if="sectionsLoaded.stats" name="stats" />
@@ -29,6 +21,14 @@
         <LazyCommonUiStatsSkeleton />
       </slot>
     </div>
+
+    <!-- Filters Section (optional) -->
+    <slot
+      v-if="$slots.filters"
+      name="filters"
+      :show-filters="showFilters"
+      :sections-loaded="sectionsLoaded"
+    />
 
     <!-- Main Content Section with Intersection Observer -->
     <div ref="contentSection">
@@ -106,8 +106,8 @@ onMounted(() => {
 
   // Set up intersection observer for progressive loading (fallback for disabled auto-load)
   observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
+    entries => {
+      entries.forEach(entry => {
         if (entry.isIntersecting) {
           if (entry.target === statsSection.value && !sectionsLoaded.value.stats) {
             sectionsLoaded.value.stats = true
