@@ -126,7 +126,12 @@ export default defineNuxtConfig({
     },
     // Admin components
     {
-      path: '~/components/admin',
+      path: '~/components/admin/tenants',
+      pathPrefix: false,
+      global: false,
+    },
+    {
+      path: '~/components/admin/dashboard',
       pathPrefix: false,
       global: false,
     },
