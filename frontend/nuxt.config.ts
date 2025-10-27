@@ -42,72 +42,23 @@ export default defineNuxtConfig({
       },
       rollupOptions: {
         output: {
-          manualChunks: id => {
+          manualChunks(id) {
             // Split vendor chunks for better caching
             if (id.includes('node_modules')) {
               if (id.includes('vuetify')) {
                 return 'vuetify'
               }
-              if (id.includes('vue-router')) {
-                return 'vue-router'
-              }
-              if (id.includes('@vue') || id.includes('vue')) {
-                return 'vue'
-              }
-              if (id.includes('pinia')) {
-                return 'pinia'
+              if (id.includes('@tiptap')) {
+                return 'tiptap'
               }
               if (id.includes('chart.js')) {
                 return 'charts'
               }
-              if (id.includes('@tiptap')) {
-                return 'tiptap'
-              }
               if (id.includes('xlsx')) {
                 return 'xlsx'
               }
+              // Group all other node_modules together to prevent circular deps
               return 'vendor'
-            }
-
-            // Split by feature/module
-            if (id.includes('/components/dashboard/')) {
-              return 'dashboard'
-            }
-            if (id.includes('/components/reports/')) {
-              return 'reports'
-            }
-            if (id.includes('/components/vehicles/')) {
-              return 'vehicles'
-            }
-            if (id.includes('/components/customers/')) {
-              return 'customers'
-            }
-            if (id.includes('/components/rentals/')) {
-              return 'rentals'
-            }
-            if (id.includes('/components/payments/')) {
-              return 'payments'
-            }
-            if (id.includes('/components/contract/')) {
-              return 'contract'
-            }
-            if (id.includes('/components/maintenance/')) {
-              return 'maintenance'
-            }
-            if (id.includes('/components/locations/')) {
-              return 'locations'
-            }
-            if (id.includes('/components/users/')) {
-              return 'users'
-            }
-            if (id.includes('/components/roles/')) {
-              return 'roles'
-            }
-            if (id.includes('/components/landing/')) {
-              return 'landing'
-            }
-            if (id.includes('/components/admin/')) {
-              return 'admin'
             }
           },
         },
