@@ -11,10 +11,13 @@ export const useRentals = () => {
       customerPhone: '(555) 123-4567',
       vehicleId: 1,
       vehicleName: 'Toyota Camry 2023',
+      vehicleType: 'sedan',
+      vehicleImage: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=400',
       licensePlate: 'ABC-1234',
       startDate: '2025-01-15',
       endDate: '2025-01-20',
       status: 'active',
+      paymentStatus: 'paid',
       dailyRate: 45,
       numberOfDays: 5,
       totalAmount: 225,
@@ -22,7 +25,9 @@ export const useRentals = () => {
       returnLocation: 'Main Office',
       notes: 'Customer requested GPS navigation',
       createdAt: '2025-01-10T10:30:00Z',
-    },
+      isNewCustomer: false,
+      documentsComplete: true,
+    } as any,
     {
       id: 2,
       customerId: 2,
@@ -31,17 +36,22 @@ export const useRentals = () => {
       customerPhone: '(555) 234-5678',
       vehicleId: 2,
       vehicleName: 'Honda CR-V 2024',
+      vehicleType: 'suv',
+      vehicleImage: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=400',
       licensePlate: 'XYZ-5678',
       startDate: '2025-01-14',
       endDate: '2025-01-21',
       status: 'active',
+      paymentStatus: 'unpaid',
       dailyRate: 65,
       numberOfDays: 7,
       totalAmount: 455,
       pickupLocation: 'Airport Branch',
       returnLocation: 'Main Office',
       createdAt: '2025-01-12T14:20:00Z',
-    },
+      isNewCustomer: true,
+      documentsComplete: false,
+    } as any,
     {
       id: 3,
       customerId: 3,
@@ -50,6 +60,8 @@ export const useRentals = () => {
       customerPhone: '(555) 345-6789',
       vehicleId: 3,
       vehicleName: 'Ford F-150 2023',
+      vehicleType: 'truck',
+      vehicleImage: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400',
       licensePlate: 'DEF-9012',
       startDate: '2025-01-13',
       endDate: '2025-01-18',
@@ -70,9 +82,11 @@ export const useRentals = () => {
       customerPhone: '(555) 456-7890',
       vehicleId: 4,
       vehicleName: 'Tesla Model 3 2024',
+      vehicleType: 'luxury',
+      vehicleImage: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400',
       licensePlate: 'GHI-3456',
-      startDate: '2025-01-25',
-      endDate: '2025-02-01',
+      startDate: '2025-10-28',
+      endDate: '2025-11-04',
       startTime: '09:00',
       endTime: '09:00',
       status: 'reserved',
@@ -94,17 +108,21 @@ export const useRentals = () => {
       customerPhone: '(555) 567-8901',
       vehicleId: 7,
       vehicleName: 'Chevrolet Malibu 2023',
+      vehicleType: 'sedan',
+      vehicleImage: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400',
       licensePlate: 'PQR-1357',
       startDate: '2025-01-10',
-      endDate: '2025-01-12',
-      status: 'completed',
+      endDate: '2025-10-20',
+      status: 'active',
+      paymentStatus: 'partially-paid',
       dailyRate: 42,
       numberOfDays: 2,
       totalAmount: 84,
       pickupLocation: 'Main Office',
       returnLocation: 'Airport Branch',
       createdAt: '2025-01-05T16:30:00Z',
-    },
+      documentsComplete: true,
+    } as any,
     {
       id: 6,
       customerId: 6,
@@ -113,6 +131,8 @@ export const useRentals = () => {
       customerPhone: '(555) 678-9012',
       vehicleId: 6,
       vehicleName: 'Mercedes-Benz Sprinter 2023',
+      vehicleType: 'van',
+      vehicleImage: 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=400',
       licensePlate: 'MNO-2468',
       startDate: '2025-01-22',
       endDate: '2025-01-29',
@@ -137,6 +157,8 @@ export const useRentals = () => {
       customerPhone: '(555) 789-0123',
       vehicleId: 1,
       vehicleName: 'Toyota Camry 2023',
+      vehicleType: 'sedan',
+      vehicleImage: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=400',
       licensePlate: 'ABC-1234',
       startDate: '2025-01-05',
       endDate: '2025-01-08',
@@ -156,6 +178,8 @@ export const useRentals = () => {
       customerPhone: '(555) 890-1234',
       vehicleId: 3,
       vehicleName: 'Ford F-150 2023',
+      vehicleType: 'truck',
+      vehicleImage: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400',
       licensePlate: 'DEF-9012',
       startDate: '2025-01-20',
       endDate: '2025-01-22',
@@ -175,10 +199,17 @@ export const useRentals = () => {
     status: 'all',
     paymentStatus: 'all',
     dateRange: 'all',
+    // Advanced filters
+    vehicleType: 'all',
+    priceRange: { min: null, max: null },
+    duration: 'all',
+    customerType: 'all',
+    showOverdueOnly: false,
   })
 
   const filteredRentals = computed(() => {
     return rentals.value.filter(rental => {
+      // Basic filters
       const matchesSearch =
         !filters.value.search ||
         rental.customerName.toLowerCase().includes(filters.value.search.toLowerCase()) ||
@@ -193,7 +224,50 @@ export const useRentals = () => {
       // Simple date range filtering - can be enhanced
       const matchesDateRange = filters.value.dateRange === 'all'
 
-      return matchesSearch && matchesStatus && matchesPaymentStatus && matchesDateRange
+      // Advanced filters
+      const matchesVehicleType =
+        !filters.value.vehicleType ||
+        filters.value.vehicleType === 'all' ||
+        rental.vehicleType === filters.value.vehicleType
+
+      const matchesPriceRange =
+        (!filters.value.priceRange?.min || rental.totalAmount >= filters.value.priceRange.min) &&
+        (!filters.value.priceRange?.max || rental.totalAmount <= filters.value.priceRange.max)
+
+      const matchesDuration = (() => {
+        if (!filters.value.duration || filters.value.duration === 'all') return true
+        const days = rental.numberOfDays
+        if (filters.value.duration === '1-3') return days >= 1 && days <= 3
+        if (filters.value.duration === '4-7') return days >= 4 && days <= 7
+        if (filters.value.duration === '7+') return days >= 7
+        return true
+      })()
+
+      const matchesCustomerType = (() => {
+        if (!filters.value.customerType || filters.value.customerType === 'all') return true
+        if (filters.value.customerType === 'new') return rental.isNewCustomer === true
+        if (filters.value.customerType === 'returning') return rental.isNewCustomer === false
+        return true
+      })()
+
+      const matchesOverdue = (() => {
+        if (!filters.value.showOverdueOnly) return true
+        const endDate = new Date(rental.endDate)
+        const today = new Date()
+        return rental.status === 'active' && endDate < today
+      })()
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesPaymentStatus &&
+        matchesDateRange &&
+        matchesVehicleType &&
+        matchesPriceRange &&
+        matchesDuration &&
+        matchesCustomerType &&
+        matchesOverdue
+      )
     })
   })
 
@@ -236,6 +310,16 @@ export const useRentals = () => {
     return colors[status] || 'default'
   }
 
+  const getStatusIcon = (status: string) => {
+    const icons: Record<string, string> = {
+      active: 'mdi-car-clock',
+      completed: 'mdi-check-circle',
+      reserved: 'mdi-calendar-clock',
+      cancelled: 'mdi-cancel',
+    }
+    return icons[status] || 'mdi-help-circle'
+  }
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -249,6 +333,7 @@ export const useRentals = () => {
     updateRental,
     deleteRental,
     getStatusColor,
+    getStatusIcon,
     getPaymentStatusColor,
     formatDate,
   }

@@ -32,6 +32,7 @@
     <!-- Main Content Slot -->
     <template #content>
       <LazyVehiclesTableSection
+        v-model:selected-vehicles="selectedVehicles"
         :vehicles="displayedItems"
         :is-loading-more="isLoadingMore"
         :get-status-color="getStatusColor"
@@ -43,6 +44,8 @@
         @row-click="handleViewVehicle"
         @bulk-status-update="handleBulkStatusUpdate"
         @status-action="handleStatusAction"
+        @bulk-export="handleBulkExport"
+        @bulk-invoice="handleBulkInvoice"
       />
     </template>
 
@@ -63,10 +66,36 @@
         entity-name="Vehicles"
         :total-count="vehicles.length"
         :filtered-count="filteredVehicles.length"
-        :selected-count="0"
+        :selected-count="selectedVehicles.length"
         :loading="exporting"
         default-filename="vehicles"
         @export="handleExport"
+      />
+
+      <!-- Status Action Dialogs -->
+      <CommonUiStatusActionDialog
+        v-if="statusActionDialog.show"
+        v-model="statusActionDialog.show"
+        :action-title="statusActionDialog.title"
+        :action-icon="statusActionDialog.icon"
+        :action-color="statusActionDialog.color"
+        :confirm-message="statusActionDialog.message"
+        :loading="statusActionDialog.loading"
+        :show-notes-field="statusActionDialog.showNotes"
+        @confirm="confirmStatusAction"
+        @cancel="cancelStatusAction"
+      />
+
+      <!-- Bulk Invoice Dialog -->
+      <CommonUiBulkInvoiceDialog
+        v-model="showBulkInvoiceDialog"
+        :selected-items="selectedVehicles"
+        :loading="generatingInvoices"
+        item-label="vehicle"
+        :get-item-title="(item) => `${item.make} ${item.model}`"
+        :get-item-subtitle="(item) => `${item.year} • ${item.licensePlate}`"
+        @confirm="confirmBulkInvoice"
+        @cancel="showBulkInvoiceDialog = false"
       />
     </template>
 
@@ -120,6 +149,22 @@ const vehicleToDelete = ref<any>(null)
 const deleting = ref(false)
 const exporting = ref(false)
 const showExportDialog = ref(false)
+const selectedVehicles = ref<any[]>([])
+const showBulkInvoiceDialog = ref(false)
+const generatingInvoices = ref(false)
+
+// Status action dialog state
+const statusActionDialog = ref({
+  show: false,
+  title: '',
+  icon: '',
+  color: '',
+  message: '',
+  loading: false,
+  showNotes: false,
+  action: '',
+  item: null as any,
+})
 
 // Export columns configuration
 const exportColumns = computed<ExportOptions['columns']>(() => [
@@ -245,8 +290,9 @@ const handleExport = async (payload: {
     let dataToExport = filteredVehicles.value
     if (payload.scope === 'all') {
       dataToExport = vehicles.value
+    } else if (payload.scope === 'selected') {
+      dataToExport = selectedVehicles.value
     }
-    // Note: 'selected' scope would need selected vehicles from table
 
     // Add timestamp to filename if requested
     let filename = payload.filename
@@ -268,6 +314,63 @@ const handleExport = async (payload: {
     showError('Failed to export vehicles. Please try again.')
   } finally {
     exporting.value = false
+  }
+}
+
+// Bulk export handler - opens export dialog with selected vehicles
+const handleBulkExport = () => {
+  if (selectedVehicles.value.length === 0) {
+    showError('Please select vehicles to export')
+    return
+  }
+  showExportDialog.value = true
+}
+
+// Bulk invoice generation handler
+const handleBulkInvoice = () => {
+  if (selectedVehicles.value.length === 0) {
+    showError('Please select vehicles to generate invoices')
+    return
+  }
+
+  // Filter only rented vehicles
+  const rentedVehicles = selectedVehicles.value.filter(v => v.status === 'rented')
+
+  if (rentedVehicles.length === 0) {
+    showError('No rented vehicles selected. Only rented vehicles can have invoices generated.')
+    return
+  }
+
+  showBulkInvoiceDialog.value = true
+}
+
+// Confirm bulk invoice generation
+const confirmBulkInvoice = async (options: { includeDetails: boolean; sendEmail: boolean }) => {
+  generatingInvoices.value = true
+
+  try {
+    // Get rented vehicles
+    const rentedVehicles = selectedVehicles.value.filter(v => v.status === 'rented')
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500))
+
+    const successMessage = options.sendEmail
+      ? `Successfully generated and sent ${rentedVehicles.length} invoice(s)`
+      : `Successfully generated ${rentedVehicles.length} invoice(s)`
+
+    showSuccess(successMessage)
+    showBulkInvoiceDialog.value = false
+
+    // Navigate to invoices page to view generated invoices
+    setTimeout(() => {
+      router.push('/owner/invoices')
+    }, 1000)
+  } catch (error) {
+    console.error('Bulk invoice generation error:', error)
+    showError('Failed to generate invoices. Please try again.')
+  } finally {
+    generatingInvoices.value = false
   }
 }
 
@@ -294,34 +397,114 @@ const handleBulkStatusUpdate = async (payload: { vehicles: any[]; status: string
   }
 }
 
-// Status action handler
-const handleStatusAction = async (payload: { action: string; item: any }) => {
-  try {
-    console.log('Status action:', payload)
+// Status action configuration mapping
+const statusActionConfig: Record<string, {
+  title: string
+  icon: string
+  color: string
+  getMessage: (item: any) => string
+  showNotes: boolean
+}> = {
+  'mark-available': {
+    title: 'Mark as Available',
+    icon: 'mdi-check-circle',
+    color: 'success',
+    getMessage: (item) => `Mark ${item.make} ${item.model} as available for rent?`,
+    showNotes: false,
+  },
+  'send-to-maintenance': {
+    title: 'Send to Maintenance',
+    icon: 'mdi-tools',
+    color: 'warning',
+    getMessage: (item) => `Send ${item.make} ${item.model} to maintenance? It will be unavailable for rent.`,
+    showNotes: true,
+  },
+  'mark-out-of-service': {
+    title: 'Mark Out of Service',
+    icon: 'mdi-close-circle',
+    color: 'error',
+    getMessage: (item) => `Mark ${item.make} ${item.model} as out of service? It will be completely unavailable.`,
+    showNotes: true,
+  },
+  'return-from-rental': {
+    title: 'Return Vehicle',
+    icon: 'mdi-car-arrow-left',
+    color: 'primary',
+    getMessage: (item) => `Mark ${item.make} ${item.model} as returned from rental? Status will be changed to available.`,
+    showNotes: false,
+  },
+}
 
+// Status action handler - opens confirmation dialog
+const handleStatusAction = (payload: { action: string; item: any }) => {
+  const config = statusActionConfig[payload.action]
+  if (!config) {
+    console.error('Unknown action:', payload.action)
+    return
+  }
+
+  statusActionDialog.value = {
+    show: true,
+    title: config.title,
+    icon: config.icon,
+    color: config.color,
+    message: config.getMessage(payload.item),
+    loading: false,
+    showNotes: config.showNotes,
+    action: payload.action,
+    item: payload.item,
+  }
+}
+
+// Confirm status action
+const confirmStatusAction = async (notes: string) => {
+  statusActionDialog.value.loading = true
+
+  try {
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise(resolve => setTimeout(resolve, 800))
 
     // Map actions to statuses
     const statusMap: Record<string, string> = {
       'mark-available': 'available',
-      'mark-maintenance': 'maintenance',
+      'send-to-maintenance': 'maintenance',
       'mark-out-of-service': 'out-of-service',
-      'mark-rented': 'rented',
+      'return-from-rental': 'available',
     }
 
-    const newStatus = statusMap[payload.action]
+    const newStatus = statusMap[statusActionDialog.value.action]
     if (newStatus) {
-      const index = vehicles.value.findIndex(v => v.id === payload.item.id)
+      const index = vehicles.value.findIndex(v => v.id === statusActionDialog.value.item.id)
       if (index > -1 && vehicles.value[index]) {
         vehicles.value[index].status = newStatus as any
+        vehicles.value[index].lastUpdated = new Date().toISOString()
       }
 
-      showSuccess(`Vehicle status updated to ${newStatus.replace('-', ' ')}`)
+      const vehicleName = `${statusActionDialog.value.item.make} ${statusActionDialog.value.item.model}`
+      showSuccess(`${vehicleName} status updated to ${newStatus.replace('-', ' ')}`)
     }
+
+    statusActionDialog.value.show = false
   } catch (error) {
     console.error('Status action error:', error)
     showError('Failed to update vehicle status. Please try again.')
+  } finally {
+    statusActionDialog.value.loading = false
+  }
+}
+
+// Cancel status action
+const cancelStatusAction = () => {
+  statusActionDialog.value = {
+    show: false,
+    title: '',
+    icon: '',
+    color: '',
+    message: '',
+    loading: false,
+    showNotes: false,
+    action: '',
+    item: null,
   }
 }
 </script>

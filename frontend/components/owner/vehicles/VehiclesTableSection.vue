@@ -61,6 +61,25 @@
           >
             Change Status
           </v-btn>
+
+          <v-btn
+            variant="elevated"
+            prepend-icon="mdi-file-export"
+            color="white"
+            @click="handleBulkExport"
+          >
+            Export Selected
+          </v-btn>
+
+          <v-btn
+            v-if="hasRentedVehicles"
+            variant="elevated"
+            prepend-icon="mdi-file-document-multiple"
+            color="white"
+            @click="handleBulkInvoice"
+          >
+            Generate Invoices
+          </v-btn>
         </template>
       </CommonUiBulkActionsBar>
 
@@ -95,6 +114,9 @@ const emit = defineEmits<{
   'row-click': [vehicle: any]
   'bulk-status-update': [payload: { vehicles: any[]; status: string; notes: string }]
   'status-action': [payload: { action: string; item: any }]
+  'update:selected-vehicles': [vehicles: any[]]
+  'bulk-export': [vehicles: any[]]
+  'bulk-invoice': [vehicles: any[]]
 }>()
 
 // Template ref for child table component
@@ -151,6 +173,24 @@ const handleBulkStatusUpdate = (payload: { status: string; notes: string }) => {
     clearSelection()
   }, 1000)
 }
+
+const handleBulkExport = () => {
+  emit('bulk-export', selectedVehicles.value)
+}
+
+const handleBulkInvoice = () => {
+  emit('bulk-invoice', selectedVehicles.value)
+}
+
+// Check if any selected vehicles are rented (for invoice generation)
+const hasRentedVehicles = computed(() => {
+  return selectedVehicles.value.some(vehicle => vehicle.status === 'rented')
+})
+
+// Emit selected vehicles changes
+watch(selectedVehicles, (newValue) => {
+  emit('update:selected-vehicles', newValue)
+}, { deep: true })
 
 // Clear selection when bulk mode is disabled
 watch(bulkSelectMode, newValue => {

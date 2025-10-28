@@ -9,6 +9,8 @@ export interface Rental {
   customerPhone: string
   vehicleId: number
   vehicleName: string
+  vehicleType?: string
+  vehicleImage?: string
   licensePlate: string
   startDate: string
   endDate: string
@@ -24,6 +26,8 @@ export interface Rental {
   returnLocation: string
   notes?: string
   createdAt: string
+  // For customer type filtering
+  isNewCustomer?: boolean
 }
 
 export interface RentalFilters {
@@ -31,4 +35,13 @@ export interface RentalFilters {
   status: RentalStatus | 'all'
   paymentStatus: PaymentStatus | 'all'
   dateRange: string | 'all'
+  // Advanced filters
+  vehicleType?: string | 'all'
+  priceRange?: {
+    min: number | null
+    max: number | null
+  }
+  duration?: string | 'all'
+  customerType?: string | 'all'
+  showOverdueOnly?: boolean
 }
